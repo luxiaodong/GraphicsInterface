@@ -6,7 +6,8 @@
 //
 
 //#include "HelloTriangle/01_base_code.cpp"
-#include "HelloTriangle/02_instance.cpp"
+//#include "HelloTriangle/02_instance.cpp"
+#include "HelloTriangle/03_validation_layers.cpp"
 
 int main(int argc, const char * argv[])
 {
