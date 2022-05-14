@@ -5,7 +5,8 @@
 //  Created by luxiaodong on 2022/5/13.
 //
 
-#include "HelloTriangle/01_base_code.cpp"
+//#include "HelloTriangle/01_base_code.cpp"
+#include "HelloTriangle/02_instance.cpp"
 
 int main(int argc, const char * argv[])
 {
