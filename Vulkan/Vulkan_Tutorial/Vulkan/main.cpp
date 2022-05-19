@@ -8,7 +8,8 @@
 //#include "HelloTriangle/01_base_code.cpp"
 //#include "HelloTriangle/02_instance.cpp"
 //#include "HelloTriangle/03_validation_layers.cpp"
-#include "HelloTriangle/03_validation_layers_message_callback.cpp"
+//#include "HelloTriangle/03_validation_layers_message_callback.cpp"
+#include "HelloTriangle/04_physical_devices.cpp"
 
 int main(int argc, const char * argv[])
 {
