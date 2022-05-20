@@ -17,13 +17,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		B0A47F19282E4D6200209D51 /* CopyFiles */ = {
+		B0A47F19282E4D6200209D51 /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
+			dstPath = "";
+			dstSubfolderSpec = 16;
 			files = (
 			);
+			name = "Copy Files";
 			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -32,6 +33,7 @@
 		B0575A56283721E900CC9CB9 /* 05_window_surface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 05_window_surface.cpp; path = Vulkan/HelloTriangle/05_window_surface.cpp; sourceTree = "<group>"; };
 		B0575A572837304500CC9CB9 /* 06_swap_chain.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 06_swap_chain.cpp; path = Vulkan/HelloTriangle/06_swap_chain.cpp; sourceTree = "<group>"; };
 		B0575A5828375C8D00CC9CB9 /* 07_image_views.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 07_image_views.cpp; path = Vulkan/HelloTriangle/07_image_views.cpp; sourceTree = "<group>"; };
+		B0575A5928375FFA00CC9CB9 /* 08_graphics_pipeline.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 08_graphics_pipeline.cpp; path = Vulkan/HelloTriangle/08_graphics_pipeline.cpp; sourceTree = "<group>"; };
 		B066EE9C282F9E3600618BB0 /* 01_base_code.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 01_base_code.cpp; path = Vulkan/HelloTriangle/01_base_code.cpp; sourceTree = "<group>"; };
 		B066EE9D282F9F3100618BB0 /* 02_instance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = 02_instance.cpp; path = Vulkan/HelloTriangle/02_instance.cpp; sourceTree = "<group>"; };
 		B066EEA0282FA4B000618BB0 /* 03_validation_layers.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 03_validation_layers.cpp; path = Vulkan/HelloTriangle/03_validation_layers.cpp; sourceTree = "<group>"; };
@@ -78,6 +80,7 @@
 				B0575A56283721E900CC9CB9 /* 05_window_surface.cpp */,
 				B0575A572837304500CC9CB9 /* 06_swap_chain.cpp */,
 				B0575A5828375C8D00CC9CB9 /* 07_image_views.cpp */,
+				B0575A5928375FFA00CC9CB9 /* 08_graphics_pipeline.cpp */,
 				B0A47F1D282E4D6200209D51 /* Vulkan */,
 				B0A47F1C282E4D6200209D51 /* Products */,
 				B0A48A94282E5E0B00209D51 /* Frameworks */,
@@ -123,7 +126,7 @@
 			buildPhases = (
 				B0A47F17282E4D6200209D51 /* Sources */,
 				B0A47F18282E4D6200209D51 /* Frameworks */,
-				B0A47F19282E4D6200209D51 /* CopyFiles */,
+				B0A47F19282E4D6200209D51 /* Copy Files */,
 			);
 			buildRules = (
 			);
