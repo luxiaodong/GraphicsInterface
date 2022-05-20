@@ -29,6 +29,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B0575A56283721E900CC9CB9 /* 05_window_surface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 05_window_surface.cpp; path = Vulkan/HelloTriangle/05_window_surface.cpp; sourceTree = "<group>"; };
 		B066EE9C282F9E3600618BB0 /* 01_base_code.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 01_base_code.cpp; path = Vulkan/HelloTriangle/01_base_code.cpp; sourceTree = "<group>"; };
 		B066EE9D282F9F3100618BB0 /* 02_instance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = 02_instance.cpp; path = Vulkan/HelloTriangle/02_instance.cpp; sourceTree = "<group>"; };
 		B066EEA0282FA4B000618BB0 /* 03_validation_layers.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 03_validation_layers.cpp; path = Vulkan/HelloTriangle/03_validation_layers.cpp; sourceTree = "<group>"; };
@@ -72,6 +73,7 @@
 				B0E08BD22835F31900915DF3 /* 03_validation_layers_message_callback.cpp */,
 				B0E08BD32835FDCE00915DF3 /* 04_physical_devices.cpp */,
 				B0E08BD428367EA000915DF3 /* 04_physical_devices_logic_devices_queue.cpp */,
+				B0575A56283721E900CC9CB9 /* 05_window_surface.cpp */,
 				B0A47F1D282E4D6200209D51 /* Vulkan */,
 				B0A47F1C282E4D6200209D51 /* Products */,
 				B0A48A94282E5E0B00209D51 /* Frameworks */,
