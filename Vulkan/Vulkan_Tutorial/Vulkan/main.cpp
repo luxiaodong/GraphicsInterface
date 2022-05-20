@@ -11,7 +11,8 @@
 //#include "HelloTriangle/03_validation_layers_message_callback.cpp"
 //#include "HelloTriangle/04_physical_devices.cpp"
 //#include "HelloTriangle/04_physical_devices_logic_devices_queue.cpp"
-#include "HelloTriangle/05_window_surface.cpp"
+//#include "HelloTriangle/05_window_surface.cpp"
+#include "HelloTriangle/06_swap_chain.cpp"
 
 int main(int argc, const char * argv[])
 {
