@@ -15,7 +15,8 @@
 //#include "HelloTriangle/06_swap_chain.cpp"
 //#include "HelloTriangle/07_image_views.cpp"
 //#include "HelloTriangle/08_graphics_pipeline.cpp"
-#include "HelloTriangle/09_shader_modules.cpp"
+//#include "HelloTriangle/09_shader_modules.cpp"
+#include "HelloTriangle/10_fixed_functions.cpp"
 
 int main(int argc, const char * argv[])
 {
