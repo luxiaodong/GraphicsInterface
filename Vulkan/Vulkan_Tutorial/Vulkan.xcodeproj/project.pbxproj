@@ -32,6 +32,7 @@
 /* Begin PBXFileReference section */
 		B00083B2283A4F55005AE763 /* 13_framebuffers.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 13_framebuffers.cpp; path = Vulkan/HelloTriangle/13_framebuffers.cpp; sourceTree = "<group>"; };
 		B00083B3283A4FB4005AE763 /* 14_command_buffers.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 14_command_buffers.cpp; path = Vulkan/HelloTriangle/14_command_buffers.cpp; sourceTree = "<group>"; };
+		B00083B4283A7299005AE763 /* 15_rendering_presentation.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 15_rendering_presentation.cpp; path = Vulkan/HelloTriangle/15_rendering_presentation.cpp; sourceTree = "<group>"; };
 		B02D357428393FB6002BA7EF /* 12_conclusion.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 12_conclusion.cpp; path = Vulkan/HelloTriangle/12_conclusion.cpp; sourceTree = "<group>"; };
 		B0575A56283721E900CC9CB9 /* 05_window_surface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 05_window_surface.cpp; path = Vulkan/HelloTriangle/05_window_surface.cpp; sourceTree = "<group>"; };
 		B0575A572837304500CC9CB9 /* 06_swap_chain.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 06_swap_chain.cpp; path = Vulkan/HelloTriangle/06_swap_chain.cpp; sourceTree = "<group>"; };
@@ -93,6 +94,7 @@
 				B02D357428393FB6002BA7EF /* 12_conclusion.cpp */,
 				B00083B2283A4F55005AE763 /* 13_framebuffers.cpp */,
 				B00083B3283A4FB4005AE763 /* 14_command_buffers.cpp */,
+				B00083B4283A7299005AE763 /* 15_rendering_presentation.cpp */,
 				B0A47F1D282E4D6200209D51 /* Vulkan */,
 				B0A47F1C282E4D6200209D51 /* Products */,
 				B0A48A94282E5E0B00209D51 /* Frameworks */,

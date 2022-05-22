@@ -20,7 +20,8 @@
 //#include "HelloTriangle/11_render_passes.cpp"
 //#include "HelloTriangle/12_conclusion.cpp"
 //#include "HelloTriangle/13_framebuffers.cpp"
-#include "HelloTriangle/14_command_buffers.cpp"
+//#include "HelloTriangle/14_command_buffers.cpp"
+#include "HelloTriangle/15_rendering_presentation.cpp"
 
 int main(int argc, const char * argv[])
 {
