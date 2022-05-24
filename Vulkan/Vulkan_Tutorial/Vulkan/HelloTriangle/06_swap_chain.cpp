@@ -406,8 +406,11 @@ private:
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
         VkPhysicalDeviceFeatures deviceFeatures = {};
         createInfo.pEnabledFeatures = &deviceFeatures;
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-        createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+//        createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+//        createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+        std::vector<const char*> extensions = {"VK_KHR_portability_subset"};
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+        createInfo.ppEnabledExtensionNames = extensions.data();
 
         if(enableValidationLayers)
         {
@@ -522,6 +525,8 @@ private:
         {
             extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         }
+        
+        extensions.push_back("VK_KHR_get_physical_device_properties2");
 
         return extensions;
     }
