@@ -12,7 +12,7 @@
 //#include "HelloTriangle/04_physical_devices.cpp"
 //#include "HelloTriangle/04_physical_devices_logic_devices_queue.cpp"
 //#include "HelloTriangle/05_window_surface.cpp"
-#include "HelloTriangle/06_swap_chain.cpp"
+//#include "HelloTriangle/06_swap_chain.cpp"
 //#include "HelloTriangle/07_image_views.cpp"
 //#include "HelloTriangle/08_graphics_pipeline.cpp"
 //#include "HelloTriangle/09_shader_modules.cpp"
@@ -22,7 +22,7 @@
 //#include "HelloTriangle/13_framebuffers.cpp"
 //#include "HelloTriangle/14_command_buffers.cpp"
 //#include "HelloTriangle/15_rendering_presentation.cpp"
-//#include "HelloTriangle/16_frames_in_flight.cpp"
+#include "HelloTriangle/16_frames_in_flight.cpp"
 
 int main(int argc, const char * argv[])
 {
