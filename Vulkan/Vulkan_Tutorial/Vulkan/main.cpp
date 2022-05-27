@@ -22,7 +22,8 @@
 //#include "HelloTriangle/13_framebuffers.cpp"
 //#include "HelloTriangle/14_command_buffers.cpp"
 //#include "HelloTriangle/15_rendering_presentation.cpp"
-#include "HelloTriangle/16_frames_in_flight.cpp"
+//#include "HelloTriangle/16_frames_in_flight.cpp"
+#include "HelloTriangle/16_hello_triangle.cpp"
 
 int main(int argc, const char * argv[])
 {
