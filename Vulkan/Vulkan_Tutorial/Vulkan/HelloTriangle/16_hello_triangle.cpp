@@ -58,6 +58,8 @@ private:
     VkSurfaceKHR m_surfaceKHR;
     VkPhysicalDevice m_physicalDevice;
     VkDevice m_device;
+    VkQueue m_graphicsQueue;
+    VkQueue m_presentQueue;
     QueueFamilyIndices m_indices;
     VkSwapchainKHR m_swapchainKHR;
     std::vector<VkImage> m_swapchainImages;
@@ -70,6 +72,8 @@ private:
     std::vector<VkFramebuffer> m_framebuffers;
     VkCommandPool m_commandPool;
     std::vector<VkCommandBuffer> m_commandBuffers;
+    VkSemaphore m_renderFinishedSemaphore;
+    VkSemaphore m_imageAvailableSemaphore;
 
 private:
     void initWindow()
@@ -104,10 +108,14 @@ private:
             glfwPollEvents();
             drawFrame();
         }
+        
+        vkDeviceWaitIdle(m_device);
     }
     
     void cleanup()
     {
+        vkDestroySemaphore(m_device, m_renderFinishedSemaphore, nullptr);
+        vkDestroySemaphore(m_device, m_imageAvailableSemaphore, nullptr);
         vkFreeCommandBuffers(m_device, m_commandPool, static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
         vkDestroyCommandPool(m_device, m_commandPool, nullptr);
         
@@ -234,7 +242,7 @@ private:
             {
                 m_indices.graphicsFamily = i;
             }
-            
+
             VkBool32 supported;
             vkGetPhysicalDeviceSurfaceSupportKHR(m_physicalDevice, i, m_surfaceKHR, &supported);
             if(supported)
@@ -293,6 +301,9 @@ private:
         {
             throw std::runtime_error("failed to create device!");
         }
+        
+        vkGetDeviceQueue(m_device, graphicsFamily, 0, &m_graphicsQueue);
+        vkGetDeviceQueue(m_device, presentFamily, 0, &m_presentQueue);
     }
     
     void createSwapchain()
@@ -617,7 +628,7 @@ private:
         {
             VkCommandBufferBeginInfo beginInfo = {};
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-            beginInfo.flags = 0; //VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT
+            beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
             beginInfo.pInheritanceInfo = nullptr;
 
             if( vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS )
@@ -651,11 +662,52 @@ private:
     
     void createSemaphores()
     {
+        VkSemaphoreCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        createInfo.flags = 0;
+        
+        if( (vkCreateSemaphore(m_device, &createInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS) |
+            (vkCreateSemaphore(m_device, &createInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS))
+        {
+            throw std::runtime_error("failed to create semaphorses!");
+        }
     }
     
     void drawFrame()
     {
-     
+        uint32_t imageIndex = 0;
+        vkAcquireNextImageKHR(m_device, m_swapchainKHR, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+
+        VkSubmitInfo submitInfo = {};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = &m_imageAvailableSemaphore;
+        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        submitInfo.pWaitDstStageMask = waitStages;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &m_commandBuffers[imageIndex];
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = &m_renderFinishedSemaphore;
+
+        if(vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to queue submit!");
+        }
+        
+        VkPresentInfoKHR presentInfo = {};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = &m_renderFinishedSemaphore;
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = &m_swapchainKHR;
+        presentInfo.pImageIndices = &imageIndex;
+        presentInfo.pResults = nullptr;
+        
+        if(vkQueuePresentKHR(m_presentQueue, &presentInfo) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to queue present!");
+        }
+        
     }
     
     // ===================== helper function =====================
