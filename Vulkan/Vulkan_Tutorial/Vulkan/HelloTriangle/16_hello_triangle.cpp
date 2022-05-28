@@ -19,6 +19,7 @@
 
 const int WIDTH = 400;
 const int HEIGHT = 300;
+const int MAX_FRAMES_IN_FLIGHT = 2;
 
 const std::vector<const char*> validationLayers =
 {
@@ -72,8 +73,10 @@ private:
     std::vector<VkFramebuffer> m_framebuffers;
     VkCommandPool m_commandPool;
     std::vector<VkCommandBuffer> m_commandBuffers;
-    VkSemaphore m_renderFinishedSemaphore;
-    VkSemaphore m_imageAvailableSemaphore;
+    std::vector<VkSemaphore> m_renderFinishedSemaphores;
+    std::vector<VkSemaphore> m_imageAvailableSemaphores;
+    std::vector<VkFence> m_inFlightFences;
+    int m_currentFrame = 0;
 
 private:
     void initWindow()
@@ -114,8 +117,13 @@ private:
     
     void cleanup()
     {
-        vkDestroySemaphore(m_device, m_renderFinishedSemaphore, nullptr);
-        vkDestroySemaphore(m_device, m_imageAvailableSemaphore, nullptr);
+        for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
+        {
+            vkDestroySemaphore(m_device, m_renderFinishedSemaphores[i], nullptr);
+            vkDestroySemaphore(m_device, m_imageAvailableSemaphores[i], nullptr);
+            vkDestroyFence(m_device, m_inFlightFences[i], nullptr);
+        }
+        
         vkFreeCommandBuffers(m_device, m_commandPool, static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
         vkDestroyCommandPool(m_device, m_commandPool, nullptr);
         
@@ -662,32 +670,44 @@ private:
     
     void createSemaphores()
     {
+        m_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+        m_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+        m_inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+        
         VkSemaphoreCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
         createInfo.flags = 0;
         
-        if( (vkCreateSemaphore(m_device, &createInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS) |
-            (vkCreateSemaphore(m_device, &createInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS))
+        VkFenceCreateInfo fenceCreateInfo = {};
+        fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fenceCreateInfo.flags = 0;
+        
+        for(uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
         {
-            throw std::runtime_error("failed to create semaphorses!");
+            if( (vkCreateSemaphore(m_device, &createInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS) |
+                (vkCreateSemaphore(m_device, &createInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS) |
+                (vkCreateFence(m_device, &fenceCreateInfo, nullptr, &m_inFlightFences[i]) ))
+            {
+                throw std::runtime_error("failed to create semaphorses!");
+            }
         }
     }
     
     void drawFrame()
     {
         uint32_t imageIndex = 0;
-        vkAcquireNextImageKHR(m_device, m_swapchainKHR, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+        vkAcquireNextImageKHR(m_device, m_swapchainKHR, UINT64_MAX, m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &imageIndex);
 
         VkSubmitInfo submitInfo = {};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = &m_imageAvailableSemaphore;
+        submitInfo.pWaitSemaphores = &m_imageAvailableSemaphores[m_currentFrame];
         VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
         submitInfo.pWaitDstStageMask = waitStages;
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &m_commandBuffers[imageIndex];
         submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = &m_renderFinishedSemaphore;
+        submitInfo.pSignalSemaphores = &m_renderFinishedSemaphores[m_currentFrame];
 
         if(vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
         {
@@ -697,7 +717,7 @@ private:
         VkPresentInfoKHR presentInfo = {};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = &m_renderFinishedSemaphore;
+        presentInfo.pWaitSemaphores = &m_renderFinishedSemaphores[m_currentFrame];
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = &m_swapchainKHR;
         presentInfo.pImageIndices = &imageIndex;
@@ -708,6 +728,7 @@ private:
             throw std::runtime_error("failed to queue present!");
         }
         
+        m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
     
     // ===================== helper function =====================
