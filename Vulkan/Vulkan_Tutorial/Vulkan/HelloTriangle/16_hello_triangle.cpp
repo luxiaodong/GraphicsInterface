@@ -67,6 +67,9 @@ private:
     VkPipeline m_graphicsPipeline;
     VkPipelineLayout m_pipelineLayout;
     VkRenderPass m_renderPass;
+    std::vector<VkFramebuffer> m_framebuffers;
+    VkCommandPool m_commandPool;
+    std::vector<VkCommandBuffer> m_commandBuffers;
 
 private:
     void initWindow()
@@ -90,6 +93,7 @@ private:
         createFramebuffers();
         createCommandPool();
         createCommandBuffers();
+        recordCommandBuffers();
         createSemaphores();
     }
 
@@ -104,9 +108,17 @@ private:
     
     void cleanup()
     {
-        vkDestroyRenderPass(m_device, m_renderPass, nullptr);
-        vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
+        vkFreeCommandBuffers(m_device, m_commandPool, static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
+        vkDestroyCommandPool(m_device, m_commandPool, nullptr);
+        
+        for(const auto& frameBuffer : m_framebuffers)
+        {
+            vkDestroyFramebuffer(m_device, frameBuffer, nullptr);
+        }
+        
         vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
+        vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
+        vkDestroyRenderPass(m_device, m_renderPass, nullptr);
 
         for(const auto& imageView : m_swapchainImageViews)
         {
@@ -549,14 +561,92 @@ private:
     
     void createFramebuffers()
     {
+        m_framebuffers.resize(m_swapchainImageViews.size());
+        
+        for(size_t i = 0; i < m_swapchainImageViews.size(); ++i)
+        {
+            VkFramebufferCreateInfo createInfo = {};
+            createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            createInfo.renderPass = m_renderPass;
+            createInfo.attachmentCount = 1;
+            createInfo.pAttachments = &m_swapchainImageViews[i];
+            createInfo.width = m_swapchainExtent.width;
+            createInfo.height = m_swapchainExtent.height;
+            createInfo.layers = 1;
+            
+            if( vkCreateFramebuffer(m_device, &createInfo, nullptr, &m_framebuffers[i]) != VK_SUCCESS )
+            {
+                throw std::runtime_error("failed to create frame buffer!");
+            }
+        }
     }
     
     void createCommandPool()
     {
+        VkCommandPoolCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        createInfo.flags = 0;
+        createInfo.queueFamilyIndex = m_indices.graphicsFamily.value();
+        
+        if(vkCreateCommandPool(m_device, &createInfo, nullptr, &m_commandPool) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create command pool!");
+        }
     }
     
     void createCommandBuffers()
     {
+        m_commandBuffers.resize(m_framebuffers.size());
+        
+        VkCommandBufferAllocateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        createInfo.commandPool = m_commandPool;
+        createInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        createInfo.commandBufferCount = static_cast<uint32_t>(m_commandBuffers.size());
+        
+        if( vkAllocateCommandBuffers(m_device, &createInfo, m_commandBuffers.data()) != VK_SUCCESS )
+        {
+            throw std::runtime_error("failed to create command buffer!");
+        }
+    }
+    
+    void recordCommandBuffers()
+    {
+        int i = 0;
+        for(const auto& commandBuffer : m_commandBuffers)
+        {
+            VkCommandBufferBeginInfo beginInfo = {};
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfo.flags = 0; //VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT
+            beginInfo.pInheritanceInfo = nullptr;
+
+            if( vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS )
+            {
+                throw std::runtime_error("failed to begin command buffer!");
+            }
+
+            VkClearValue clearColor = {0.0f,0.0f,0.0f,0.0f};
+            VkRenderPassBeginInfo passBeginInfo = {};
+            passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            passBeginInfo.renderPass = m_renderPass;
+            passBeginInfo.framebuffer = m_framebuffers[i];
+            passBeginInfo.renderArea.offset = {0, 0};
+            passBeginInfo.renderArea.extent = m_swapchainExtent;
+            passBeginInfo.clearValueCount = 1;
+            passBeginInfo.pClearValues = &clearColor;
+
+            vkCmdBeginRenderPass(commandBuffer, &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+            vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+            vkCmdEndRenderPass(commandBuffer);
+
+            if( vkEndCommandBuffer(commandBuffer) != VK_SUCCESS )
+            {
+                throw std::runtime_error("failed to end command buffer!");
+            }
+            
+            i++;
+        }
     }
     
     void createSemaphores()
@@ -634,7 +724,7 @@ private:
         createInfo.pSetLayouts = nullptr;
         createInfo.pushConstantRangeCount = 0;
         createInfo.pPushConstantRanges = nullptr;
-        
+
         if( vkCreatePipelineLayout(m_device, &createInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS )
         {
             throw std::runtime_error("failed to create layout!");
