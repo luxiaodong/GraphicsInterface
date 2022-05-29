@@ -45,6 +45,7 @@
 		B066EE9C282F9E3600618BB0 /* 01_base_code.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 01_base_code.cpp; path = Vulkan/HelloTriangle/01_base_code.cpp; sourceTree = "<group>"; };
 		B066EE9D282F9F3100618BB0 /* 02_instance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = 02_instance.cpp; path = Vulkan/HelloTriangle/02_instance.cpp; sourceTree = "<group>"; };
 		B066EEA0282FA4B000618BB0 /* 03_validation_layers.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 03_validation_layers.cpp; path = Vulkan/HelloTriangle/03_validation_layers.cpp; sourceTree = "<group>"; };
+		B076C45028436950006B642F /* 17_swap_chain_recreation.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 17_swap_chain_recreation.cpp; path = Vulkan/HelloTriangle/17_swap_chain_recreation.cpp; sourceTree = "<group>"; };
 		B0A47F1B282E4D6200209D51 /* Vulkan */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Vulkan; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0A47F1E282E4D6200209D51 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		B0A48A95282E5E0B00209D51 /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = ../3rdParty/glfw/lib/libglfw3.a; sourceTree = "<group>"; };
@@ -99,6 +100,7 @@
 				B00083B4283A7299005AE763 /* 15_rendering_presentation.cpp */,
 				B00083B5283A8791005AE763 /* 16_frames_in_flight.cpp */,
 				B0E338D8284097B300E0F619 /* 16_hello_triangle.cpp */,
+				B076C45028436950006B642F /* 17_swap_chain_recreation.cpp */,
 				B0A47F1D282E4D6200209D51 /* Vulkan */,
 				B0A47F1C282E4D6200209D51 /* Products */,
 				B0A48A94282E5E0B00209D51 /* Frameworks */,
