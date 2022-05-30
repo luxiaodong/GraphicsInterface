@@ -25,7 +25,8 @@
 //#include "HelloTriangle/16_frames_in_flight.cpp"
 //#include "HelloTriangle/16_hello_triangle.cpp"
 //#include "HelloTriangle/17_swap_chain_recreation.cpp"
-#include "HelloTriangle/18_vertex_input.cpp"
+//#include "HelloTriangle/18_vertex_input.cpp"
+#include "HelloTriangle/19_vertex_buffer.cpp"
 
 int main(int argc, const char * argv[])
 {
