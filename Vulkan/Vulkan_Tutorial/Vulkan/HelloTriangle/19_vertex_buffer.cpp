@@ -1009,7 +1009,7 @@ private:
             vkCmdBindPipeline(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(m_commandBuffers[i], 0, 1, &m_vertexBuffer, offsets);
-            vkCmdDraw(m_commandBuffers[i], 3, 1, 0, 0);
+            vkCmdDraw(m_commandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
             vkCmdEndRenderPass(m_commandBuffers[i]);
             
             if(vkEndCommandBuffer(m_commandBuffers[i]) != VK_SUCCESS)
