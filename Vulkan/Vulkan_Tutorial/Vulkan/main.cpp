@@ -28,7 +28,8 @@
 //#include "HelloTriangle/18_vertex_input.cpp"
 //#include "HelloTriangle/19_vertex_buffer.cpp"
 //#include "HelloTriangle/20_staging_buffer.cpp"
-#include "HelloTriangle/21_index_buffer.cpp"
+//#include "HelloTriangle/21_index_buffer.cpp"
+#include "HelloTriangle/22_descriptor_layout.cpp"
 
 int main(int argc, const char * argv[])
 {
