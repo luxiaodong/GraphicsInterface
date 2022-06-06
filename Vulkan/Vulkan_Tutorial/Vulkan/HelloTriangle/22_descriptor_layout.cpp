@@ -22,7 +22,7 @@
 
 const int WIDTH = 400;
 const int HEIGHT = 300;
-const int MAX_FRAMES_IN_FLIGHT = 3;
+const int MAX_FRAMES_IN_FLIGHT = 2;
 
 const std::vector<const char*> validationLayers =
 {
@@ -253,7 +253,6 @@ private:
     
     void cleanup()
     {
-        size_t count = m_swapchainImages.size();
         for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
         {
             vkDestroySemaphore(m_device, m_renderFinishedSemaphores[i], nullptr);
@@ -269,7 +268,7 @@ private:
         
         vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
                 
-        for(size_t i = 0; i < count; ++i)
+        for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
         {
             vkDestroyBuffer(m_device, m_uniformBuffers[i], nullptr);
             vkFreeMemory(m_device, m_uniformMemorys[i], nullptr);
@@ -625,14 +624,15 @@ private:
         VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(details.formats);
         VkPresentModeKHR presentMode = chooseSwapPresentMode(details.presentModes);
         uint32_t imageCount = details.capabilities.minImageCount + 1;
+        imageCount = 2;
         if(details.capabilities.maxImageCount > 0)
         {
-            if(imageCount < details.capabilities.maxImageCount)
+            if(imageCount > details.capabilities.maxImageCount)
             {
                 imageCount = details.capabilities.maxImageCount;
             }
         }
-        
+
         VkSwapchainCreateInfoKHR createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         createInfo.surface = m_surfaceKHR;
@@ -1096,7 +1096,7 @@ private:
     
     void createUniformBuffer()
     {
-        uint32_t count = static_cast<uint32_t>(m_swapchainImages.size());
+        uint32_t count = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
         m_uniformBuffers.resize(count);
         m_uniformMemorys.resize(count);
         
@@ -1111,7 +1111,7 @@ private:
     
     void createDescriptorPool()
     {
-        uint32_t count = static_cast<uint32_t>(m_swapchainImages.size());
+        uint32_t count = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
         VkDescriptorPoolSize poolSize = {};
         poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         poolSize.descriptorCount = count;
@@ -1130,7 +1130,7 @@ private:
     
     void createDescriptorSet()
     {
-        size_t count = m_swapchainImages.size();
+        size_t count = static_cast<size_t>(MAX_FRAMES_IN_FLIGHT);
         std::vector<VkDescriptorSetLayout> layouts(count, m_descriptorSetLayout);
         
         VkDescriptorSetAllocateInfo allocInfo = {};
@@ -1169,7 +1169,7 @@ private:
     
     void createCommandBuffers()
     {
-        m_commandBuffers.resize(m_swapchainFramebuffers.size());
+        m_commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
         VkCommandBufferAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.commandPool = m_commandPool;
