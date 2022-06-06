@@ -26,7 +26,8 @@
 //#include "HelloTriangle/16_hello_triangle.cpp"
 //#include "HelloTriangle/17_swap_chain_recreation.cpp"
 //#include "HelloTriangle/18_vertex_input.cpp"
-#include "HelloTriangle/19_vertex_buffer.cpp"
+//#include "HelloTriangle/19_vertex_buffer.cpp"
+#include "HelloTriangle/20_staging_buffer.cpp"
 
 int main(int argc, const char * argv[])
 {
@@ -37,6 +38,30 @@ int main(int argc, const char * argv[])
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
     }
-    
+
     return EXIT_SUCCESS;
 }
+
+//#include <iostream>
+//using namespace std;
+//
+//int main ()
+//{
+//    const int i = 10;
+//    int *p = const_cast<int*>(&i);
+//    cout <<" i address is "<< &i << endl;
+//    cout <<" i value   is "<< i << endl;
+//    cout <<" p address is "<< &p << endl;
+//    cout <<" p value   is "<< p << endl;
+//    cout <<"*p value   is "<< *p << endl;
+//
+//    cout << "=================================" << endl;
+//    *p = 20;
+//
+//    cout <<" i address is "<< &i << endl;
+//    cout <<" i value   is "<< i << endl;
+//    cout <<" p address is "<< &p << endl;
+//    cout <<" p value   is "<< p << endl;
+//    cout <<"*p value   is "<< *p << endl;
+//}
+
