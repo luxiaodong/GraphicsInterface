@@ -34,6 +34,7 @@
 //#include "HelloTriangle/24_texture_sampler.cpp"
 //#include "HelloTriangle/25_texture_mapping.cpp"
 #include "HelloTriangle/26_depth_buffering.cpp"
+//#include "HelloTriangle/27_model_loading.cpp"
 
 int main(int argc, const char * argv[])
 {
