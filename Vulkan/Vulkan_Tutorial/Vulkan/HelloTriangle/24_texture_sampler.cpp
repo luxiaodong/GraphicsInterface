@@ -1090,7 +1090,7 @@ private:
         createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
         createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         
-        if(vkCreateImage(m_device, &createInfo, nullptr, &m_textureImage) != VK_SUCCESS)
+        if(vkCreateImage(m_device, &createInfo, nullptr, &image) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create image!");
         }
