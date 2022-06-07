@@ -251,6 +251,9 @@ private:
     
     void clearSwapChain()
     {
+        vkDestroyImageView(m_device, m_depthImageView, nullptr);
+        vkDestroyImage(m_device, m_depthImage, nullptr);
+        vkFreeMemory(m_device, m_depthImageMemory, nullptr);
         vkFreeCommandBuffers(m_device, m_commandPool, static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
         
         for (auto framebuffer : m_swapchainFramebuffers)
@@ -283,10 +286,6 @@ private:
     
     void cleanup()
     {
-        vkDestroyImageView(m_device, m_depthImageView, nullptr);
-        vkDestroyImage(m_device, m_depthImage, nullptr);
-        vkFreeMemory(m_device, m_depthImageMemory, nullptr);
-        
         vkDestroySampler(m_device, m_textureSampler, nullptr);
         vkDestroyImageView(m_device, m_textureImageView, nullptr);
         vkDestroyImage(m_device, m_textureImage, nullptr);
@@ -342,6 +341,7 @@ private:
         
         createSwapchain();
         createImageViews();
+        createDepthResources();
         createRenderPass();
         createGraphicsPipeline();
         createFramebuffers();
