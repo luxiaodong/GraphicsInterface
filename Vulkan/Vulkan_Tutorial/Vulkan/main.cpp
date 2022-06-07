@@ -31,7 +31,8 @@
 //#include "HelloTriangle/21_index_buffer.cpp"
 //#include "HelloTriangle/22_descriptor_layout.cpp"
 //#include "HelloTriangle/23_image_texture.cpp"
-#include "HelloTriangle/24_texture_sampler.cpp"
+//#include "HelloTriangle/24_texture_sampler.cpp"
+#include "HelloTriangle/25_texture_mapping.cpp"
 
 int main(int argc, const char * argv[])
 {
