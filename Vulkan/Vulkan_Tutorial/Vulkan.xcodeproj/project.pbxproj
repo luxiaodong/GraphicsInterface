@@ -60,6 +60,7 @@
 		B0A48AA1282E74FB00209D51 /* libvulkan.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvulkan.1.dylib; path = ../3rdParty/VulkanSDK/lib/libvulkan.1.dylib; sourceTree = "<group>"; };
 		B0B206B6284EF03700ED2E36 /* 24_texture_sampler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 24_texture_sampler.cpp; path = Vulkan/HelloTriangle/24_texture_sampler.cpp; sourceTree = "<group>"; };
 		B0B206B7284EF75800ED2E36 /* 25_texture_mapping.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 25_texture_mapping.cpp; path = Vulkan/HelloTriangle/25_texture_mapping.cpp; sourceTree = "<group>"; };
+		B0B206B8284F0E6900ED2E36 /* 26_depth_buffering.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 26_depth_buffering.cpp; path = Vulkan/HelloTriangle/26_depth_buffering.cpp; sourceTree = "<group>"; };
 		B0CD0E6D284484F1003EE23C /* 18_vertex_input.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 18_vertex_input.cpp; path = Vulkan/HelloTriangle/18_vertex_input.cpp; sourceTree = "<group>"; };
 		B0CD0E6E284496A3003EE23C /* 19_vertex_buffer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 19_vertex_buffer.cpp; path = Vulkan/HelloTriangle/19_vertex_buffer.cpp; sourceTree = "<group>"; };
 		B0E08BD22835F31900915DF3 /* 03_validation_layers_message_callback.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 03_validation_layers_message_callback.cpp; path = Vulkan/HelloTriangle/03_validation_layers_message_callback.cpp; sourceTree = "<group>"; };
@@ -117,6 +118,7 @@
 				B089A77D284E4F8100D475B1 /* 23_image_texture.cpp */,
 				B0B206B6284EF03700ED2E36 /* 24_texture_sampler.cpp */,
 				B0B206B7284EF75800ED2E36 /* 25_texture_mapping.cpp */,
+				B0B206B8284F0E6900ED2E36 /* 26_depth_buffering.cpp */,
 				B0A47F1D282E4D6200209D51 /* Vulkan */,
 				B0A47F1C282E4D6200209D51 /* Products */,
 				B0A48A94282E5E0B00209D51 /* Frameworks */,
