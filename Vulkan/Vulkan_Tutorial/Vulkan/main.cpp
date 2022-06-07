@@ -30,7 +30,8 @@
 //#include "HelloTriangle/20_staging_buffer.cpp"
 //#include "HelloTriangle/21_index_buffer.cpp"
 //#include "HelloTriangle/22_descriptor_layout.cpp"
-#include "HelloTriangle/23_image_texture.cpp"
+//#include "HelloTriangle/23_image_texture.cpp"
+#include "HelloTriangle/24_texture_sampler.cpp"
 
 int main(int argc, const char * argv[])
 {
