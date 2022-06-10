@@ -71,7 +71,7 @@ struct Vertex{
 
 const std::vector<Vertex> vertices =
 {
-    {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{0.0f, -0.5f}, {1.0f, 1.0f, 1.0f}},
     {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
     {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
 };
@@ -121,6 +121,9 @@ private:
     std::vector<VkSemaphore> m_imageAvailableSemaphores;
     std::vector<VkFence> m_inFlightFences;
     int m_currentFrame = 0;
+    
+    VkBuffer m_vertexBuffer;
+    VkDeviceMemory m_vertexMemory;
 
 private:
     void initWindow()
@@ -143,6 +146,7 @@ private:
         createGraphicsPipeline();
         createFramebuffers();
         createCommandPool();
+        createVertexBuffer();
         createCommandBuffers();
         recordCommandBuffers();
         createSemaphores();
@@ -167,6 +171,9 @@ private:
             vkDestroySemaphore(m_device, m_imageAvailableSemaphores[i], nullptr);
             vkDestroyFence(m_device, m_inFlightFences[i], nullptr);
         }
+        
+        vkDestroyBuffer(m_device, m_vertexBuffer, nullptr);
+        vkFreeMemory(m_device, m_vertexMemory, nullptr);
         
         vkFreeCommandBuffers(m_device, m_commandPool, static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
         vkDestroyCommandPool(m_device, m_commandPool, nullptr);
@@ -723,6 +730,59 @@ private:
         }
     }
     
+    void createVertexBuffer()
+    {
+        VkBufferCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        createInfo.flags = 0;
+        createInfo.size = sizeof(Vertex) * vertices.size();
+        createInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        createInfo.queueFamilyIndexCount = 1;
+        createInfo.pQueueFamilyIndices = &m_indices.graphicsFamily.value();
+        if(vkCreateBuffer(m_device, &createInfo, nullptr, &m_vertexBuffer) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create buffer!");
+        }
+        
+        VkMemoryRequirements memRequirements;
+        vkGetBufferMemoryRequirements(m_device, m_vertexBuffer, &memRequirements);
+        
+        VkMemoryAllocateInfo allocInfo = {};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size; // > createInfo.size, need alignment
+        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD);
+    
+        if( vkAllocateMemory(m_device, &allocInfo, nullptr, &m_vertexMemory) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to allocate memory!");
+        }
+
+        //buffer相当于memory的头信息, memory是真正的内存.
+        vkBindBufferMemory(m_device, m_vertexBuffer, m_vertexMemory, 0);
+        
+        void* data; //给这个应用程序访问这块内存的指针.从物理地址映射到虚拟地址.
+        vkMapMemory(m_device, m_vertexMemory, 0, createInfo.size, 0, &data);
+        memcpy(data, vertices.data(), createInfo.size); //将数据copy到内存里. 可能不是立即copy, 详见 VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+        vkUnmapMemory(m_device, m_vertexMemory);
+    }
+    
+    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+    {
+        VkPhysicalDeviceMemoryProperties memoryProperties;
+        vkGetPhysicalDeviceMemoryProperties(m_physicalDevice, &memoryProperties);
+        
+        for(uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i)
+        {
+            if( (typeFilter & (1<<i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) )
+            {
+                return i;
+            }
+        }
+        
+        throw std::runtime_error("failed to find suitable memory type!");
+    }
+    
     void recordCommandBuffers()
     {
         int i = 0;
@@ -750,7 +810,10 @@ private:
 
             vkCmdBeginRenderPass(commandBuffer, &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
-            vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+//            vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+            VkDeviceSize offset = 0;
+            vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_vertexBuffer, &offset);
+            vkCmdDraw(commandBuffer, static_cast<uint_fast32_t>(vertices.size()), 1, 0, 0);
             vkCmdEndRenderPass(commandBuffer);
 
             if( vkEndCommandBuffer(commandBuffer) != VK_SUCCESS )
