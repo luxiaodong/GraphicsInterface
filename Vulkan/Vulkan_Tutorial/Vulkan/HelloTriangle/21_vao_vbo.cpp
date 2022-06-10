@@ -732,55 +732,15 @@ private:
     
     void createVertexBuffer()
     {
-        VkBufferCreateInfo createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        createInfo.flags = 0;
-        createInfo.size = sizeof(Vertex) * vertices.size();
-        createInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-        createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        createInfo.queueFamilyIndexCount = 1;
-        createInfo.pQueueFamilyIndices = &m_indices.graphicsFamily.value();
-        if(vkCreateBuffer(m_device, &createInfo, nullptr, &m_vertexBuffer) != VK_SUCCESS)
-        {
-            throw std::runtime_error("failed to create buffer!");
-        }
-        
-        VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(m_device, m_vertexBuffer, &memRequirements);
-        
-        VkMemoryAllocateInfo allocInfo = {};
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memRequirements.size; // > createInfo.size, need alignment
-        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD);
-    
-        if( vkAllocateMemory(m_device, &allocInfo, nullptr, &m_vertexMemory) != VK_SUCCESS)
-        {
-            throw std::runtime_error("failed to allocate memory!");
-        }
+        VkDeviceSize size = sizeof(Vertex) * vertices.size();
+        createBuffer(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD,
+                     m_vertexBuffer, m_vertexMemory);
 
-        //buffer相当于memory的头信息, memory是真正的内存.
-        vkBindBufferMemory(m_device, m_vertexBuffer, m_vertexMemory, 0);
-        
         void* data; //给这个应用程序访问这块内存的指针.从物理地址映射到虚拟地址.
-        vkMapMemory(m_device, m_vertexMemory, 0, createInfo.size, 0, &data);
-        memcpy(data, vertices.data(), createInfo.size); //将数据copy到内存里. 可能不是立即copy, 详见 VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+        vkMapMemory(m_device, m_vertexMemory, 0, size, 0, &data);
+        memcpy(data, vertices.data(), size); //将数据copy到内存里. 可能不是立即copy, 详见 VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
         vkUnmapMemory(m_device, m_vertexMemory);
-    }
-    
-    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
-    {
-        VkPhysicalDeviceMemoryProperties memoryProperties;
-        vkGetPhysicalDeviceMemoryProperties(m_physicalDevice, &memoryProperties);
-        
-        for(uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i)
-        {
-            if( (typeFilter & (1<<i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) )
-            {
-                return i;
-            }
-        }
-        
-        throw std::runtime_error("failed to find suitable memory type!");
     }
     
     void recordCommandBuffers()
@@ -894,6 +854,53 @@ private:
     }
     
     // ===================== helper function =====================
+    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags, VkBuffer &buffer, VkDeviceMemory& memory)
+    {
+        VkBufferCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        createInfo.flags = 0;
+        createInfo.size = size;
+        createInfo.usage = usage;
+        createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        createInfo.queueFamilyIndexCount = 1;
+        createInfo.pQueueFamilyIndices = &m_indices.graphicsFamily.value();
+        if(vkCreateBuffer(m_device, &createInfo, nullptr, &buffer) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create buffer!");
+        }
+        
+        VkMemoryRequirements memRequirements;
+        vkGetBufferMemoryRequirements(m_device, buffer, &memRequirements);
+        
+        VkMemoryAllocateInfo allocInfo = {};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size; // > createInfo.size, need alignment
+        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, flags);
+    
+        if( vkAllocateMemory(m_device, &allocInfo, nullptr, &memory) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to allocate memory!");
+        }
+
+        //buffer相当于memory的头信息, memory是真正的内存.
+        vkBindBufferMemory(m_device, buffer, memory, 0);
+    }
+    
+    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+    {
+        VkPhysicalDeviceMemoryProperties memoryProperties;
+        vkGetPhysicalDeviceMemoryProperties(m_physicalDevice, &memoryProperties);
+        
+        for(uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i)
+        {
+            if( (typeFilter & (1<<i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) )
+            {
+                return i;
+            }
+        }
+        
+        throw std::runtime_error("failed to find suitable memory type!");
+    }
     
     VkSurfaceFormatKHR chooseSurfaceFormat()
     {
