@@ -58,6 +58,7 @@
 		B0A48A9D282E604E00209D51 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		B0A48A9F282E607400209D51 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		B0A48AA1282E74FB00209D51 /* libvulkan.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvulkan.1.dylib; path = ../3rdParty/VulkanSDK/lib/libvulkan.1.dylib; sourceTree = "<group>"; };
+		B0A6ED302853812E00015EB6 /* 21_vao_vbo.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 21_vao_vbo.cpp; path = Vulkan/HelloTriangle/21_vao_vbo.cpp; sourceTree = "<group>"; };
 		B0B206B6284EF03700ED2E36 /* 24_texture_sampler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 24_texture_sampler.cpp; path = Vulkan/HelloTriangle/24_texture_sampler.cpp; sourceTree = "<group>"; };
 		B0B206B7284EF75800ED2E36 /* 25_texture_mapping.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 25_texture_mapping.cpp; path = Vulkan/HelloTriangle/25_texture_mapping.cpp; sourceTree = "<group>"; };
 		B0B206B8284F0E6900ED2E36 /* 26_depth_buffering.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 26_depth_buffering.cpp; path = Vulkan/HelloTriangle/26_depth_buffering.cpp; sourceTree = "<group>"; };
@@ -117,6 +118,7 @@
 				B0CD0E6E284496A3003EE23C /* 19_vertex_buffer.cpp */,
 				B0E824522847061A00BB7C00 /* 20_staging_buffer.cpp */,
 				B089A77B284DC90400D475B1 /* 21_index_buffer.cpp */,
+				B0A6ED302853812E00015EB6 /* 21_vao_vbo.cpp */,
 				B089A77C284DCE6300D475B1 /* 22_descriptor_layout.cpp */,
 				B089A77D284E4F8100D475B1 /* 23_image_texture.cpp */,
 				B0B206B6284EF03700ED2E36 /* 24_texture_sampler.cpp */,

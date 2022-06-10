@@ -29,6 +29,7 @@
 //#include "HelloTriangle/19_vertex_buffer.cpp"
 //#include "HelloTriangle/20_staging_buffer.cpp"
 //#include "HelloTriangle/21_index_buffer.cpp"
+#include "HelloTriangle/21_vao_vbo.cpp"
 //#include "HelloTriangle/22_descriptor_layout.cpp"
 //#include "HelloTriangle/23_image_texture.cpp"
 //#include "HelloTriangle/24_texture_sampler.cpp"
@@ -36,7 +37,7 @@
 //#include "HelloTriangle/26_depth_buffering.cpp"
 //#include "HelloTriangle/27_model_loading.cpp"
 //#include "HelloTriangle/28_mipmapping.cpp"
-#include "HelloTriangle/29_multisampling.cpp"
+//#include "HelloTriangle/29_multisampling.cpp"
 
 int main(int argc, const char * argv[])
 {
