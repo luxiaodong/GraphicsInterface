@@ -141,6 +141,8 @@ private:
     VkBuffer m_uniformBuffer;
     VkDeviceMemory m_uniformMemory;
     VkDescriptorSetLayout m_descriptorSetLayout;
+    VkDescriptorPool m_descriptorPool;
+    VkDescriptorSet m_descriptorSet;
 
 private:
     void initWindow()
@@ -167,6 +169,8 @@ private:
         createVertexBuffer();
         createVertexIndexBuffer();
         createUniformBuffer();
+        createDescriptorPool();
+        createDescriptorSets();
         createCommandBuffers();
         recordCommandBuffers();
         createSemaphores();
@@ -192,7 +196,10 @@ private:
             vkDestroyFence(m_device, m_inFlightFences[i], nullptr);
         }
         
+        vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
         vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayout, nullptr);
+        vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
+        vkFreeMemory(m_device, m_uniformMemory, nullptr);
         
         vkDestroyBuffer(m_device, m_indexBuffer, nullptr);
         vkFreeMemory(m_device, m_indexMemory, nullptr);
@@ -528,7 +535,7 @@ private:
 //        VkShaderModule vertModule = createShaderModule("input_vert.spv");
         VkShaderModule vertModule = createShaderModule("layout_vert.spv");
         VkShaderModule fragModule = createShaderModule("frag.spv");
-        
+
         VkPipelineShaderStageCreateInfo vertShader = {};
         vertShader.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         vertShader.stage = VK_SHADER_STAGE_VERTEX_BIT;
@@ -584,7 +591,8 @@ private:
         rasterization.depthClampEnable = VK_FALSE;
         rasterization.rasterizerDiscardEnable = VK_FALSE;
         rasterization.polygonMode = VK_POLYGON_MODE_FILL;
-        rasterization.cullMode = VK_CULL_MODE_NONE;
+        rasterization.cullMode = VK_CULL_MODE_BACK_BIT;
+        rasterization.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterization.depthBiasEnable = VK_FALSE;
         rasterization.depthBiasConstantFactor = 0.0f;
         rasterization.depthBiasClamp = VK_FALSE;
@@ -802,6 +810,58 @@ private:
                      m_uniformBuffer, m_uniformMemory);
     }
     
+    void createDescriptorPool()
+    {
+        VkDescriptorPoolSize poolSize = {};
+        poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        poolSize.descriptorCount = 1; //有几个 uniform buffer.
+        
+        VkDescriptorPoolCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        createInfo.flags = 0;
+        createInfo.maxSets = 1;
+        createInfo.poolSizeCount = 1;
+        createInfo.pPoolSizes = &poolSize;
+        
+        if( vkCreateDescriptorPool(m_device, &createInfo, nullptr, &m_descriptorPool) != VK_SUCCESS )
+        {
+            throw std::runtime_error("failed to create descriptorPool!");
+        }
+    }
+    
+    void createDescriptorSets()
+    {
+        VkDescriptorSetAllocateInfo allocInfo = {};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = m_descriptorPool;
+        allocInfo.descriptorSetCount = 1;
+        allocInfo.pSetLayouts = &m_descriptorSetLayout;
+        
+        //获得描述符集合
+        if( vkAllocateDescriptorSets(m_device, &allocInfo, &m_descriptorSet) != VK_SUCCESS )
+        {
+            throw std::runtime_error("failed to allocate descriptorSets");
+        }
+        //配置描述符buffer
+        VkDescriptorBufferInfo bufferInfo = {};
+        bufferInfo.buffer = m_uniformBuffer;
+        bufferInfo.offset = 0;
+        bufferInfo.range = sizeof(UniformBufferObject);
+        //写入描述符集的数据
+        VkWriteDescriptorSet writeSet = {};
+        writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writeSet.dstSet = m_descriptorSet;
+        writeSet.dstBinding = 0;
+        writeSet.dstArrayElement = 0;
+        writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        writeSet.descriptorCount = 1;
+        writeSet.pBufferInfo = &bufferInfo;
+        writeSet.pImageInfo = nullptr;
+        writeSet.pTexelBufferView = nullptr;
+        //更新描述符集合
+        vkUpdateDescriptorSets(m_device, 1, &writeSet, 0, nullptr);
+    }
+
     void recordCommandBuffers()
     {
         int i = 0;
@@ -834,6 +894,7 @@ private:
             vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_vertexBuffer, &offset);
 //            vkCmdDraw(commandBuffer, static_cast<uint_fast32_t>(vertices.size()), 1, 0, 0);
             vkCmdBindIndexBuffer(commandBuffer, m_indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
             vkCmdDrawIndexed(commandBuffer, static_cast<uint_fast32_t>(indices.size()), 1, 0, 0, 0);
             vkCmdEndRenderPass(commandBuffer);
 
@@ -921,13 +982,12 @@ private:
     void updateUniformBuffer()
     {
         static int i = 0;
-        i++;
         UniformBufferObject ubo{};
         ubo.modelMat = glm::rotate(glm::mat4(1.0f),i * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         ubo.viewMat = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         ubo.projMat = glm::perspective(glm::radians(45.0f), m_swapchainExtent.width / (float) m_swapchainExtent.height, 0.1f, 10.0f);
         ubo.projMat[1][1] *= -1;
-            
+
         void* data;
         vkMapMemory(m_device, m_uniformMemory, 0, sizeof(ubo), 0, &data);
         memcpy(data, indices.data(), sizeof(ubo));
@@ -1084,7 +1144,7 @@ private:
         binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
         binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         binding.pImmutableSamplers = nullptr;
-                
+
         VkDescriptorSetLayoutCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         createInfo.flags = 0;
