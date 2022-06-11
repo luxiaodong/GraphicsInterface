@@ -34,6 +34,7 @@
 		B00083B3283A4FB4005AE763 /* 14_command_buffers.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 14_command_buffers.cpp; path = Vulkan/HelloTriangle/14_command_buffers.cpp; sourceTree = "<group>"; };
 		B00083B4283A7299005AE763 /* 15_rendering_presentation.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 15_rendering_presentation.cpp; path = Vulkan/HelloTriangle/15_rendering_presentation.cpp; sourceTree = "<group>"; };
 		B00083B5283A8791005AE763 /* 16_frames_in_flight.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 16_frames_in_flight.cpp; path = Vulkan/HelloTriangle/16_frames_in_flight.cpp; sourceTree = "<group>"; };
+		B01229DA2854600A00AFBFA1 /* 22_vertex_mvp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 22_vertex_mvp.cpp; path = Vulkan/HelloTriangle/22_vertex_mvp.cpp; sourceTree = "<group>"; };
 		B02D357428393FB6002BA7EF /* 12_conclusion.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 12_conclusion.cpp; path = Vulkan/HelloTriangle/12_conclusion.cpp; sourceTree = "<group>"; };
 		B0575A56283721E900CC9CB9 /* 05_window_surface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 05_window_surface.cpp; path = Vulkan/HelloTriangle/05_window_surface.cpp; sourceTree = "<group>"; };
 		B0575A572837304500CC9CB9 /* 06_swap_chain.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 06_swap_chain.cpp; path = Vulkan/HelloTriangle/06_swap_chain.cpp; sourceTree = "<group>"; };
@@ -120,6 +121,7 @@
 				B089A77B284DC90400D475B1 /* 21_index_buffer.cpp */,
 				B0A6ED302853812E00015EB6 /* 21_vao_vbo.cpp */,
 				B089A77C284DCE6300D475B1 /* 22_descriptor_layout.cpp */,
+				B01229DA2854600A00AFBFA1 /* 22_vertex_mvp.cpp */,
 				B089A77D284E4F8100D475B1 /* 23_image_texture.cpp */,
 				B0B206B6284EF03700ED2E36 /* 24_texture_sampler.cpp */,
 				B0B206B7284EF75800ED2E36 /* 25_texture_mapping.cpp */,
