@@ -982,15 +982,16 @@ private:
     void updateUniformBuffer()
     {
         static int i = 0;
+        i++;
         UniformBufferObject ubo{};
-        ubo.modelMat = glm::rotate(glm::mat4(1.0f),i * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.modelMat = glm::rotate(glm::mat4(1.0f), glm::radians(1.0f*i), glm::vec3(0.0f, 0.0f, 1.0f));
         ubo.viewMat = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         ubo.projMat = glm::perspective(glm::radians(45.0f), m_swapchainExtent.width / (float) m_swapchainExtent.height, 0.1f, 10.0f);
         ubo.projMat[1][1] *= -1;
 
         void* data;
         vkMapMemory(m_device, m_uniformMemory, 0, sizeof(ubo), 0, &data);
-        memcpy(data, indices.data(), sizeof(ubo));
+        memcpy(data, &ubo, sizeof(ubo));
         vkUnmapMemory(m_device, m_uniformMemory);
     }
     
