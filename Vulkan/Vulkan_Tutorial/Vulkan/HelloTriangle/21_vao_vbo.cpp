@@ -71,10 +71,13 @@ struct Vertex{
 
 const std::vector<Vertex> vertices =
 {
-    {{0.0f, -0.5f}, {1.0f, 1.0f, 1.0f}},
-    {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-    {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
 };
+
+const std::vector<uint16_t> indices = {0,1,2,2,3,0};
 
 struct QueueFamilyIndices
 {
@@ -124,6 +127,8 @@ private:
     
     VkBuffer m_vertexBuffer;
     VkDeviceMemory m_vertexMemory;
+    VkBuffer m_indexBuffer;
+    VkDeviceMemory m_indexMemory;
 
 private:
     void initWindow()
@@ -147,6 +152,7 @@ private:
         createFramebuffers();
         createCommandPool();
         createVertexBuffer();
+        createVertexIndexBuffer();
         createCommandBuffers();
         recordCommandBuffers();
         createSemaphores();
@@ -172,6 +178,8 @@ private:
             vkDestroyFence(m_device, m_inFlightFences[i], nullptr);
         }
         
+        vkDestroyBuffer(m_device, m_indexBuffer, nullptr);
+        vkFreeMemory(m_device, m_indexMemory, nullptr);
         vkDestroyBuffer(m_device, m_vertexBuffer, nullptr);
         vkFreeMemory(m_device, m_vertexMemory, nullptr);
         
@@ -756,6 +764,19 @@ private:
         vkDestroyBuffer(m_device, stagingBuffer, nullptr);
     }
     
+    void createVertexIndexBuffer()
+    {
+        VkDeviceSize size = sizeof(indices[0])*indices.size();
+        createBuffer(size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                     m_indexBuffer, m_indexMemory);
+        
+        void* data;
+        vkMapMemory(m_device, m_indexMemory, 0, size, 0, &data);
+        memcpy(data, indices.data(), size);
+        vkUnmapMemory(m_device, m_indexMemory);
+    }
+    
     void recordCommandBuffers()
     {
         int i = 0;
@@ -786,7 +807,9 @@ private:
 //            vkCmdDraw(commandBuffer, 3, 1, 0, 0);
             VkDeviceSize offset = 0;
             vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_vertexBuffer, &offset);
-            vkCmdDraw(commandBuffer, static_cast<uint_fast32_t>(vertices.size()), 1, 0, 0);
+//            vkCmdDraw(commandBuffer, static_cast<uint_fast32_t>(vertices.size()), 1, 0, 0);
+            vkCmdBindIndexBuffer(commandBuffer, m_indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+            vkCmdDrawIndexed(commandBuffer, static_cast<uint_fast32_t>(indices.size()), 1, 0, 0, 0);
             vkCmdEndRenderPass(commandBuffer);
 
             if( vkEndCommandBuffer(commandBuffer) != VK_SUCCESS )
