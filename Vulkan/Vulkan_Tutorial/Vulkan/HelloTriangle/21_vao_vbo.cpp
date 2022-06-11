@@ -733,14 +733,27 @@ private:
     void createVertexBuffer()
     {
         VkDeviceSize size = sizeof(Vertex) * vertices.size();
-        createBuffer(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD,
-                     m_vertexBuffer, m_vertexMemory);
+        
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingMemory;
+        
+        createBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                     stagingBuffer, stagingMemory);
 
         void* data; //给这个应用程序访问这块内存的指针.从物理地址映射到虚拟地址.
-        vkMapMemory(m_device, m_vertexMemory, 0, size, 0, &data);
+        vkMapMemory(m_device, stagingMemory, 0, size, 0, &data);
         memcpy(data, vertices.data(), size); //将数据copy到内存里. 可能不是立即copy, 详见 VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-        vkUnmapMemory(m_device, m_vertexMemory);
+        vkUnmapMemory(m_device, stagingMemory);
+
+        // VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT 不能用vkMapMemory
+        createBuffer(size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                     m_vertexBuffer, m_vertexMemory);
+        
+        copyBuffer(stagingBuffer, m_vertexBuffer, size);
+        vkFreeMemory(m_device, stagingMemory, nullptr);
+        vkDestroyBuffer(m_device, stagingBuffer, nullptr);
     }
     
     void recordCommandBuffers()
@@ -884,6 +897,44 @@ private:
 
         //buffer相当于memory的头信息, memory是真正的内存.
         vkBindBufferMemory(m_device, buffer, memory, 0);
+    }
+    
+    void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+    {
+        VkCommandBufferAllocateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        createInfo.commandPool = m_commandPool;
+        createInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        createInfo.commandBufferCount = 1;
+        
+        VkCommandBuffer commandBuffer;
+        if( vkAllocateCommandBuffers(m_device, &createInfo, &commandBuffer) != VK_SUCCESS )
+        {
+            throw std::runtime_error("failed to create command buffer!");
+        }
+        
+        VkCommandBufferBeginInfo beginInfo = {};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        
+        vkBeginCommandBuffer(commandBuffer, &beginInfo);
+        
+        VkBufferCopy bufferCopy = {};
+        bufferCopy.srcOffset = 0;
+        bufferCopy.dstOffset = 0;
+        bufferCopy.size = size;
+        vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &bufferCopy);
+        
+        vkEndCommandBuffer(commandBuffer);
+    
+        VkSubmitInfo submitInfo = {};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &commandBuffer;
+        vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+        
+        vkQueueWaitIdle(m_graphicsQueue);
+        vkFreeCommandBuffers(m_device, m_commandPool, 1, &commandBuffer);
     }
     
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
