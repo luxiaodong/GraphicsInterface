@@ -35,6 +35,7 @@
 		B00083B4283A7299005AE763 /* 15_rendering_presentation.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 15_rendering_presentation.cpp; path = Vulkan/HelloTriangle/15_rendering_presentation.cpp; sourceTree = "<group>"; };
 		B00083B5283A8791005AE763 /* 16_frames_in_flight.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 16_frames_in_flight.cpp; path = Vulkan/HelloTriangle/16_frames_in_flight.cpp; sourceTree = "<group>"; };
 		B01229DA2854600A00AFBFA1 /* 22_vertex_mvp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 22_vertex_mvp.cpp; path = Vulkan/HelloTriangle/22_vertex_mvp.cpp; sourceTree = "<group>"; };
+		B026CED42855D48000B2927C /* 25_texture.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 25_texture.cpp; path = Vulkan/HelloTriangle/25_texture.cpp; sourceTree = "<group>"; };
 		B02D357428393FB6002BA7EF /* 12_conclusion.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 12_conclusion.cpp; path = Vulkan/HelloTriangle/12_conclusion.cpp; sourceTree = "<group>"; };
 		B0575A56283721E900CC9CB9 /* 05_window_surface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 05_window_surface.cpp; path = Vulkan/HelloTriangle/05_window_surface.cpp; sourceTree = "<group>"; };
 		B0575A572837304500CC9CB9 /* 06_swap_chain.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = 06_swap_chain.cpp; path = Vulkan/HelloTriangle/06_swap_chain.cpp; sourceTree = "<group>"; };
@@ -125,10 +126,11 @@
 				B089A77D284E4F8100D475B1 /* 23_image_texture.cpp */,
 				B0B206B6284EF03700ED2E36 /* 24_texture_sampler.cpp */,
 				B0B206B7284EF75800ED2E36 /* 25_texture_mapping.cpp */,
+				B026CED42855D48000B2927C /* 25_texture.cpp */,
 				B0B206B8284F0E6900ED2E36 /* 26_depth_buffering.cpp */,
+				B0D7DE58284F54860077905F /* 29_multisampling.cpp */,
 				B0B206B9284F1D3C00ED2E36 /* 27_model_loading.cpp */,
 				B0D7DE57284F4DCD0077905F /* 28_mipmapping.cpp */,
-				B0D7DE58284F54860077905F /* 29_multisampling.cpp */,
 				B0A47F1D282E4D6200209D51 /* Vulkan */,
 				B0A47F1C282E4D6200209D51 /* Products */,
 				B0A48A94282E5E0B00209D51 /* Frameworks */,
