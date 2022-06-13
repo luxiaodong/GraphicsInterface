@@ -16,6 +16,7 @@
 #include <optional>
 #include <cstdint>
 #include <fstream>
+#include <array>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -41,6 +42,7 @@ const std::vector<const char*> deviceExtensions =
 struct Vertex{
     glm::vec2 pos;
     glm::vec3 color;
+    glm::vec2 texCoord;
     
     static std::vector<VkVertexInputBindingDescription> getBindingDescription()
     {
@@ -69,6 +71,13 @@ struct Vertex{
         attr2.offset = offsetof(Vertex, color);
         attr2.format = VK_FORMAT_R32G32B32_SFLOAT;
         attributeDescriptions.push_back(attr2);
+        
+        VkVertexInputAttributeDescription attr3 = {};
+        attr3.binding = 0;
+        attr3.location = 2;
+        attr3.offset = offsetof(Vertex, texCoord);
+        attr3.format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions.push_back(attr3);
         return attributeDescriptions;
     }
 };
@@ -82,10 +91,10 @@ struct UniformBufferObject
 
 const std::vector<Vertex> vertices =
 {
-    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
 };
 
 const std::vector<uint16_t> indices = {0,1,2,2,3,0};
@@ -149,6 +158,8 @@ private:
     
     VkImage m_textureImage;
     VkDeviceMemory m_textureMemory;
+    VkImageView m_textureImageView;
+    VkSampler m_textureSampler;
 
 private:
     void initWindow()
@@ -175,9 +186,11 @@ private:
         createVertexBuffer();
         createVertexIndexBuffer();
         createUniformBuffer();
+        createTextureImage();
+        createTextureSampler();
+        createTextureImageView();
         createDescriptorPool();
         createDescriptorSets();
-        createTextureImage();
         createCommandBuffers();
         recordCommandBuffers();
         createSemaphores();
@@ -203,6 +216,8 @@ private:
             vkDestroyFence(m_device, m_inFlightFences[i], nullptr);
         }
         
+        vkDestroySampler(m_device, m_textureSampler, nullptr);
+        vkDestroyImageView(m_device, m_textureImageView, nullptr);
         vkDestroyImage(m_device, m_textureImage, nullptr);
         vkFreeMemory(m_device, m_textureMemory, nullptr);
         
@@ -543,8 +558,10 @@ private:
     {
 //        VkShaderModule vertModule = createShaderModule("vert.spv");
 //        VkShaderModule vertModule = createShaderModule("input_vert.spv");
-        VkShaderModule vertModule = createShaderModule("layout_vert.spv");
-        VkShaderModule fragModule = createShaderModule("frag.spv");
+//        VkShaderModule vertModule = createShaderModule("layout_vert.spv");
+        VkShaderModule vertModule = createShaderModule("textures_vert.spv");
+//        VkShaderModule fragModule = createShaderModule("frag.spv");
+        VkShaderModule fragModule = createShaderModule("textures_frag.spv");
 
         VkPipelineShaderStageCreateInfo vertShader = {};
         vertShader.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -822,16 +839,18 @@ private:
     
     void createDescriptorPool()
     {
-        VkDescriptorPoolSize poolSize = {};
-        poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        poolSize.descriptorCount = 1; //有几个 uniform buffer.
+        std::array<VkDescriptorPoolSize, 2> poolSizes{};
+        poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        poolSizes[0].descriptorCount = 1; //有几个 uniform buffer.
+        poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSizes[1].descriptorCount = 1;
         
         VkDescriptorPoolCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         createInfo.flags = 0;
         createInfo.maxSets = 1;
-        createInfo.poolSizeCount = 1;
-        createInfo.pPoolSizes = &poolSize;
+        createInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+        createInfo.pPoolSizes = poolSizes.data();
         
         if( vkCreateDescriptorPool(m_device, &createInfo, nullptr, &m_descriptorPool) != VK_SUCCESS )
         {
@@ -857,19 +876,36 @@ private:
         bufferInfo.buffer = m_uniformBuffer;
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject);
+        
+        VkDescriptorImageInfo imageInfo = {};
+        imageInfo.imageView = m_textureImageView;
+        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo.sampler = m_textureSampler;
+                
         //写入描述符集的数据
-        VkWriteDescriptorSet writeSet = {};
-        writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        writeSet.dstSet = m_descriptorSet;
-        writeSet.dstBinding = 0;
-        writeSet.dstArrayElement = 0;
-        writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        writeSet.descriptorCount = 1;
-        writeSet.pBufferInfo = &bufferInfo;
-        writeSet.pImageInfo = nullptr;
-        writeSet.pTexelBufferView = nullptr;
+        std::array<VkWriteDescriptorSet, 2> writeSets = {};
+        writeSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writeSets[0].dstSet = m_descriptorSet;
+        writeSets[0].dstBinding = 0;
+        writeSets[0].dstArrayElement = 0;
+        writeSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        writeSets[0].descriptorCount = 1;
+        writeSets[0].pBufferInfo = &bufferInfo;
+        writeSets[0].pImageInfo = nullptr;
+        writeSets[0].pTexelBufferView = nullptr;
+        
+        writeSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writeSets[1].dstSet = m_descriptorSet;
+        writeSets[1].dstBinding = 1;
+        writeSets[1].dstArrayElement = 0;
+        writeSets[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        writeSets[1].descriptorCount = 1;
+        writeSets[1].pBufferInfo = nullptr;
+        writeSets[1].pImageInfo = &imageInfo;
+        writeSets[1].pTexelBufferView = nullptr;
+        
         //更新描述符集合
-        vkUpdateDescriptorSets(m_device, 1, &writeSet, 0, nullptr);
+        vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writeSets.size()), writeSets.data(), 0, nullptr);
     }
 
     void createTextureImage()
@@ -905,7 +941,7 @@ private:
         createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         createInfo.flags = 0;
         createInfo.imageType = VK_IMAGE_TYPE_2D;
-        createInfo.format = VK_FORMAT_B8G8R8A8_SRGB;
+        createInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
         createInfo.extent.width = texWidth;
         createInfo.extent.height = texHeight;
         createInfo.extent.depth = 1.0f;
@@ -949,7 +985,58 @@ private:
         vkDestroyBuffer(m_device, stagingBuffer, nullptr);
         vkFreeMemory(m_device, stagingMemory, nullptr);
     }
+    
+    void createTextureImageView()
+    {
+        VkImageViewCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        createInfo.image = m_textureImage;
+        createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        createInfo.flags = 0;
+        createInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+        createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        createInfo.subresourceRange.baseMipLevel = 0;
+        createInfo.subresourceRange.levelCount = 1;
+        createInfo.subresourceRange.baseArrayLayer = 0;
+        createInfo.subresourceRange.layerCount = 1;
 
+        if( vkCreateImageView(m_device, &createInfo, nullptr, &m_textureImageView) != VK_SUCCESS )
+        {
+            throw std::runtime_error("failed to create imageView!");
+        }
+    }
+
+    void createTextureSampler()
+    {
+        VkSamplerCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        createInfo.flags = 0;
+        createInfo.magFilter = VK_FILTER_LINEAR;
+        createInfo.minFilter = VK_FILTER_LINEAR;
+        createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        createInfo.mipLodBias = 0.0f;
+        createInfo.anisotropyEnable = VK_FALSE;
+        createInfo.maxAnisotropy = 1.0f; //各项异性支持的最大值
+        createInfo.compareEnable = VK_FALSE;
+        createInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+        createInfo.minLod = 0;
+        createInfo.maxLod = 1;
+        createInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK; //寻址模式是 VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER 时设置
+        createInfo.unnormalizedCoordinates = VK_FALSE; // false,(0,1), true,(0,width/height)
+        
+        if( vkCreateSampler(m_device, &createInfo, nullptr, &m_textureSampler) != VK_SUCCESS )
+        {
+            throw std::runtime_error("failed to create sampler!");
+        }
+    }
+    
     void recordCommandBuffers()
     {
         int i = 0;
@@ -1337,18 +1424,28 @@ private:
     
     void createDescriptorSetLayout()
     {
-        VkDescriptorSetLayoutBinding binding = {};
-        binding.binding = 0;
-        binding.descriptorCount = 1; //表示绑定一个结构体吗
-        binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-        binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        binding.pImmutableSamplers = nullptr;
+        VkDescriptorSetLayoutBinding vertexBinding = {};
+        vertexBinding.binding = 0;
+        vertexBinding.descriptorCount = 1; //表示绑定一个结构体吗
+        vertexBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        vertexBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        vertexBinding.pImmutableSamplers = nullptr;
+        
+        VkDescriptorSetLayoutBinding textureBinding = {};
+        textureBinding.binding = 1;
+        textureBinding.descriptorCount = 1;
+        textureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        textureBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        textureBinding.pImmutableSamplers = nullptr;
 
+        std::array<VkDescriptorSetLayoutBinding, 2> bindings = {vertexBinding, textureBinding};
+        
+        //这里相当于告诉管线,有两个布局,分别在哪个阶段,是什么类型.
         VkDescriptorSetLayoutCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         createInfo.flags = 0;
-        createInfo.bindingCount = 1;
-        createInfo.pBindings = &binding;
+        createInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+        createInfo.pBindings = bindings.data();
 
         if( vkCreateDescriptorSetLayout(m_device, &createInfo, nullptr, &m_descriptorSetLayout) != VK_SUCCESS )
         {
