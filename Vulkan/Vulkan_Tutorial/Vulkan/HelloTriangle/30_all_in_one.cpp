@@ -65,7 +65,7 @@ private:
     VkSwapchainKHR m_swapchainKHR;
     VkExtent2D m_swapchainExtent;
     VkSurfaceFormatKHR m_surfaceFormatKHR;
-    uint32_t m_swapchainImageCount;
+    uint32_t m_swapchainImageCount = 2;
     std::vector<VkImage> m_swapchainImages;
     std::vector<VkImageView> m_swapchainImageViews;
     
@@ -89,7 +89,6 @@ private:
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         m_window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
-        m_swapchainImageCount = 2;
     }
 
     void initVulkan()
@@ -266,8 +265,8 @@ private:
         
         m_surfaceFormatKHR.format = VK_FORMAT_B8G8R8A8_UNORM;
         m_surfaceFormatKHR.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-        m_swapchainExtent.width = WIDTH;
-        m_swapchainExtent.height = HEIGHT;
+        m_swapchainExtent.width = WIDTH * 2;
+        m_swapchainExtent.height = HEIGHT * 2;
         
         VkSwapchainCreateInfoKHR createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -558,10 +557,6 @@ private:
     
     void createSemaphores()
     {
-//        std::vector<VkSemaphore> ; //渲染完成
-//        std::vector<VkSemaphore> m_imageAvailableSemaphores; //送往交换链完成
-//        std::vector<VkFence> m_inFlightFences;
-        
         m_renderFinishedSemaphores.resize(m_swapchainImageCount);
         m_imageAvailableSemaphores.resize(m_swapchainImageCount);
         m_inFlightFences.resize(m_swapchainImageCount);
@@ -573,7 +568,7 @@ private:
         VkFenceCreateInfo fenceCreateInfo = {};
         fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; //创建时设置为发出.发出了下面才能接受到
-        
+
         for(uint32_t i = 0; i < m_swapchainImageCount; ++i)
         {
             if( vkCreateSemaphore(m_device, &createInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
@@ -597,16 +592,14 @@ private:
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = &m_imageAvailableSemaphores[m_currentFrame];
-        
         VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
         submitInfo.pWaitDstStageMask = waitStages;
-        
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &m_commandBuffers[imageIndex];
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = &m_renderFinishedSemaphores[m_currentFrame];
         
-        if( vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) == VK_SUCCESS )
+        if(vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, m_inFlightFences[m_currentFrame]) != VK_SUCCESS)
         {
             throw std::runtime_error("failed submit to graphics queue");
         }
