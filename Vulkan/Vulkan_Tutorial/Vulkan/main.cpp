@@ -41,7 +41,8 @@
 //#include "HelloTriangle/27_model_loading.cpp"
 //#include "HelloTriangle/28_mipmapping.cpp"
 //#include "HelloTriangle/29_multisampling.cpp"
-#include "HelloTriangle/29_lod_sample.cpp"
+//#include "HelloTriangle/29_lod_sample.cpp"
+#include "HelloTriangle/30_all_in_one.cpp"
 
 int main(int argc, const char * argv[])
 {
