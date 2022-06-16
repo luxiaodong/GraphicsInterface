@@ -779,8 +779,8 @@ private:
     
     void createGraphicsPipeline()
     {
-        VkShaderModule vertModule = createShaderModule("textures_vert.spv");
-        VkShaderModule fragModule = createShaderModule("textures_frag.spv");
+        VkShaderModule vertModule = createShaderModule("depth_vert.spv");
+        VkShaderModule fragModule = createShaderModule("depth_frag.spv");
         
         VkPipelineShaderStageCreateInfo vertShader = {};
         vertShader.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -793,14 +793,17 @@ private:
         fragShader.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
         fragShader.module = fragModule;
         fragShader.pName = "main";
+        
+        std::vector<VkVertexInputBindingDescription> bindingDescriptions = Vertex::getBindingDescription();
+        std::vector<VkVertexInputAttributeDescription> attributeDescriptions = Vertex::getAttributeDescription();
 
         VkPipelineVertexInputStateCreateInfo vertexInput = {};
         vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertexInput.flags = 0;
-        vertexInput.vertexAttributeDescriptionCount = 0;
-        vertexInput.pVertexAttributeDescriptions = nullptr;
-        vertexInput.vertexBindingDescriptionCount = 0;
-        vertexInput.pVertexBindingDescriptions = nullptr;
+        vertexInput.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
+        vertexInput.pVertexBindingDescriptions = bindingDescriptions.data();
+        vertexInput.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+        vertexInput.pVertexAttributeDescriptions = attributeDescriptions.data();
         
         VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
         inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
