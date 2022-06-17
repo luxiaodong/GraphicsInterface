@@ -440,6 +440,19 @@ private:
         }
     }
     
+    void createCommandPool()
+    {
+        VkCommandPoolCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        createInfo.flags = 0;
+        createInfo.queueFamilyIndex = m_familyIndices.graphicsFamily.value();
+        
+        if(vkCreateCommandPool(m_device, &createInfo, nullptr, &m_commandPool) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create command pool!");
+        }
+    }
+    
     void loadModel()
     {
         tinyobj::attrib_t attrib;
@@ -529,12 +542,117 @@ private:
         vkFreeMemory(m_device, stagingMemory, nullptr);
     }
     
+    void loadTexture()
+    {
+        int texWidth, texHeight, texChannels;
+        stbi_uc* pixels = stbi_load("texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+
+        if (!pixels)
+        {
+            throw std::runtime_error("failed to load texture image!");
+        }
+        
+        m_textrue2D.width = texWidth;
+        m_textrue2D.height = texHeight;
+        m_textrue2D.data = pixels;
+        m_textrue2D.format = VK_FORMAT_R8G8B8A8_SRGB;
+    }
+    
+    void createTextureBuffer()
+    {
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingMemory;
+        
+        VkDeviceSize size = m_textrue2D.width * m_textrue2D.height * 4;
+        createBufferAndMemoryThenBind(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                     stagingBuffer, stagingMemory);
+        
+        void* data;
+        vkMapMemory(m_device, stagingMemory, 0, size, 0, &data);
+        memcpy(data, m_textrue2D.data, size);
+        vkUnmapMemory(m_device, stagingMemory);
+        
+        stbi_image_free(m_textrue2D.data);
+        
+        createImageAndMemoryThenBind(m_textrue2D.format, m_textrue2D.width, m_textrue2D.height,
+                                      VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                                      VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                      m_textureImage, m_textureMemory);
+    
+        m_textureImageView = createImageView(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+
+        transitionImageLayout(m_textureImage, m_textrue2D.format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        copyBufferToImage(stagingBuffer, m_textureImage, m_textrue2D.width, m_textrue2D.height);
+        transitionImageLayout(m_textureImage, m_textrue2D.format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        
+        vkDestroyBuffer(m_device, stagingBuffer, nullptr);
+        vkFreeMemory(m_device, stagingMemory, nullptr);
+    }
+    
+    void createTextureSampler()
+    {
+        VkSamplerCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        createInfo.flags = 0;
+        createInfo.magFilter = VK_FILTER_LINEAR;
+        createInfo.minFilter = VK_FILTER_LINEAR;
+        createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        createInfo.mipLodBias = 0.0f;
+        createInfo.anisotropyEnable = VK_FALSE;
+        createInfo.maxAnisotropy = 1.0f; //各项异性支持的最大值
+        createInfo.compareEnable = VK_FALSE;
+        createInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+        createInfo.minLod = 0;
+        createInfo.maxLod = 1;
+        createInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK; //寻址模式是 VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER 时设置
+        createInfo.unnormalizedCoordinates = VK_FALSE; // false,(0,1), true,(0,width/height)
+        
+        if( vkCreateSampler(m_device, &createInfo, nullptr, &m_textureSampler) != VK_SUCCESS )
+        {
+            throw std::runtime_error("failed to create sampler!");
+        }
+    }
+    
     void createUniformBuffer()
     {
         VkDeviceSize size = sizeof(UniformBufferObject);
         createBufferAndMemoryThenBind(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                     m_uniformBuffer, m_uniformMemory);
+    }
+    
+    void createDescriptorSetLayout()
+    {
+        VkDescriptorSetLayoutBinding vertexBinding = {};
+        vertexBinding.binding = 0;
+        vertexBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        vertexBinding.descriptorCount = 1;
+        vertexBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        vertexBinding.pImmutableSamplers = nullptr;
+        
+        VkDescriptorSetLayoutBinding textureBinding = {};
+        textureBinding.binding = 1;
+        textureBinding.descriptorCount = 1;
+        textureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        textureBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        textureBinding.pImmutableSamplers = nullptr;
+
+        VkDescriptorSetLayoutBinding binding[] = {vertexBinding, textureBinding};
+        
+        VkDescriptorSetLayoutCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        createInfo.flags = 0;
+        createInfo.bindingCount = 2;
+        createInfo.pBindings = binding;
+
+        if ( vkCreateDescriptorSetLayout(m_device, &createInfo, nullptr, &m_descriptorSetLayout) != VK_SUCCESS )
+        {
+            throw std::runtime_error("failed to create descriptorSetLayout!");
+        }
     }
     
     void createDescriptorPool()
@@ -611,81 +729,6 @@ private:
         vkUpdateDescriptorSets(m_device, 2, writeSets, 0, nullptr);
     }
     
-    void loadTexture()
-    {
-        int texWidth, texHeight, texChannels;
-        stbi_uc* pixels = stbi_load("texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-
-        if (!pixels)
-        {
-            throw std::runtime_error("failed to load texture image!");
-        }
-        
-        m_textrue2D.width = texWidth;
-        m_textrue2D.height = texHeight;
-        m_textrue2D.data = pixels;
-        m_textrue2D.format = VK_FORMAT_R8G8B8A8_SRGB;
-    }
-    
-    void createTextureBuffer()
-    {
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingMemory;
-        
-        VkDeviceSize size = m_textrue2D.width * m_textrue2D.height * 4;
-        createBufferAndMemoryThenBind(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                     stagingBuffer, stagingMemory);
-        
-        void* data;
-        vkMapMemory(m_device, stagingMemory, 0, size, 0, &data);
-        memcpy(data, m_textrue2D.data, size);
-        vkUnmapMemory(m_device, stagingMemory);
-        
-        stbi_image_free(m_textrue2D.data);
-        
-        createImageAndMemoryThenBind(m_textrue2D.format, m_textrue2D.width, m_textrue2D.height,
-                                      VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                                      VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                      m_textureImage, m_textureMemory);
-    
-        m_textureImageView = createImageView(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 1);
-
-        transitionImageLayout(m_textureImage, m_textrue2D.format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        copyBufferToImage(stagingBuffer, m_textureImage, m_textrue2D.width, m_textrue2D.height);
-        transitionImageLayout(m_textureImage, m_textrue2D.format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        
-        vkDestroyBuffer(m_device, stagingBuffer, nullptr);
-        vkFreeMemory(m_device, stagingMemory, nullptr);
-    }
-    
-    void createTextureSampler()
-    {
-        VkSamplerCreateInfo createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-        createInfo.flags = 0;
-        createInfo.magFilter = VK_FILTER_LINEAR;
-        createInfo.minFilter = VK_FILTER_LINEAR;
-        createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        createInfo.mipLodBias = 0.0f;
-        createInfo.anisotropyEnable = VK_FALSE;
-        createInfo.maxAnisotropy = 1.0f; //各项异性支持的最大值
-        createInfo.compareEnable = VK_FALSE;
-        createInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-        createInfo.minLod = 0;
-        createInfo.maxLod = 1;
-        createInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK; //寻址模式是 VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER 时设置
-        createInfo.unnormalizedCoordinates = VK_FALSE; // false,(0,1), true,(0,width/height)
-        
-        if( vkCreateSampler(m_device, &createInfo, nullptr, &m_textureSampler) != VK_SUCCESS )
-        {
-            throw std::runtime_error("failed to create sampler!");
-        }
-    }
-    
     void createRenderPass()
     {
         VkAttachmentDescription colorAttachmentDescription = {};
@@ -728,36 +771,6 @@ private:
         if( vkCreateRenderPass(m_device, &createInfo, nullptr, &m_renderPass) != VK_SUCCESS )
         {
             throw std::runtime_error("failed to create renderpass!");
-        }
-    }
-    
-    void createDescriptorSetLayout()
-    {
-        VkDescriptorSetLayoutBinding vertexBinding = {};
-        vertexBinding.binding = 0;
-        vertexBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        vertexBinding.descriptorCount = 1;
-        vertexBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-        vertexBinding.pImmutableSamplers = nullptr;
-        
-        VkDescriptorSetLayoutBinding textureBinding = {};
-        textureBinding.binding = 1;
-        textureBinding.descriptorCount = 1;
-        textureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        textureBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        textureBinding.pImmutableSamplers = nullptr;
-
-        VkDescriptorSetLayoutBinding binding[] = {vertexBinding, textureBinding};
-        
-        VkDescriptorSetLayoutCreateInfo createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        createInfo.flags = 0;
-        createInfo.bindingCount = 2;
-        createInfo.pBindings = binding;
-
-        if ( vkCreateDescriptorSetLayout(m_device, &createInfo, nullptr, &m_descriptorSetLayout) != VK_SUCCESS )
-        {
-            throw std::runtime_error("failed to create descriptorSetLayout!");
         }
     }
     
@@ -933,19 +946,6 @@ private:
         }
     }
     
-    void createCommandPool()
-    {
-        VkCommandPoolCreateInfo createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        createInfo.flags = 0;
-        createInfo.queueFamilyIndex = m_familyIndices.graphicsFamily.value();
-        
-        if(vkCreateCommandPool(m_device, &createInfo, nullptr, &m_commandPool) != VK_SUCCESS)
-        {
-            throw std::runtime_error("failed to create command pool!");
-        }
-    }
-
     void createCommandBuffersAndRecord()
     {
         m_commandBuffers.resize(m_swapchainImageCount);
@@ -1035,7 +1035,6 @@ private:
     }
     
     // ----------------- helper function ---------------
-   
 
     void updateUniformBuffer()
     {
