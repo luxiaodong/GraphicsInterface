@@ -1,37 +1,53 @@
 /* stb_image - v2.27 - public domain image loader - http://nothings.org/stb
                                   no warranty implied; use at your own risk
+
    Do this:
       #define STB_IMAGE_IMPLEMENTATION
    before you include this file in *one* C or C++ file to create the implementation.
+
    // i.e. it should look like this:
    #include ...
    #include ...
    #include ...
    #define STB_IMAGE_IMPLEMENTATION
    #include "stb_image.h"
+
    You can #define STBI_ASSERT(x) before the #include to avoid using assert.h.
    And #define STBI_MALLOC, STBI_REALLOC, and STBI_FREE to avoid using malloc,realloc,free
+
+
    QUICK NOTES:
       Primarily of interest to game developers and other people who can
           avoid problematic images and only need the trivial interface
+
       JPEG baseline & progressive (12 bpc/arithmetic not supported, same as stock IJG lib)
       PNG 1/2/4/8/16-bit-per-channel
+
       TGA (not sure what subset, if a subset)
       BMP non-1bpp, non-RLE
       PSD (composited view only, no extra channels, 8/16 bit-per-channel)
+
       GIF (*comp always reports as 4-channel)
       HDR (radiance rgbE format)
       PIC (Softimage PIC)
       PNM (PPM and PGM binary only)
+
       Animated GIF still needs a proper API, but here's one way to do it:
           http://gist.github.com/urraka/685d9a6340b26b830d49
+
       - decode from memory or through FILE (define STBI_NO_STDIO to remove code)
       - decode from arbitrary I/O callbacks
       - SIMD acceleration on x86/x64 (SSE2) and ARM (NEON)
+
    Full documentation under "DOCUMENTATION" below.
+
+
 LICENSE
+
   See end of file for license information.
+
 RECENT REVISION HISTORY:
+
       2.27  (2021-07-11) document stbi_info better, 16-bit PNM support, bug fixes
       2.26  (2020-07-13) many minor fixes
       2.25  (2020-02-02) fix warnings
@@ -54,8 +70,12 @@ RECENT REVISION HISTORY:
                          correct channel count for PNG & BMP
       2.10  (2016-01-22) avoid warning introduced in 2.09
       2.09  (2016-01-16) 16-bit TGA; comments in PNM files; STBI_REALLOC_SIZED
+
    See end of file for full revision history.
+
+
  ============================    Contributors    =========================
+
  Image formats                          Extensions, features
     Sean Barrett (jpeg, png, bmp)          Jetro Lauha (stbi_info)
     Nicolas Schulz (hdr, psd)              Martin "SpartanJ" Golini (stbi_info)
@@ -73,6 +93,7 @@ RECENT REVISION HISTORY:
     Arseny Kapoulkine                      Simon Breuss (16-bit PNM)
     John-Mark Allen
     Carmelo J Fdez-Aguera
+
  Bug & warning fixes
     Marc LeBlanc            David Woo          Guillaume George     Martins Mozeiko
     Christpher Lloyd        Jerry Jansson      Joseph Thomson       Blazej Dariusz Roszkowski
@@ -94,7 +115,9 @@ RECENT REVISION HISTORY:
     Luca Sas                Alexander Veselov  Zack Middleton       [reserved]
     Ryan C. Gordon          [reserved]                              [reserved]
                      DO NOT ADD YOUR NAME HERE
+
                      Jacko Dirks
+
   To add your name to the credits, pick a random blank space in the middle and fill it.
   80% of merge conflicts on stb PRs are due to people adding their name at the end
   of the credits.
@@ -4373,6 +4396,7 @@ Init algorithm:
    for (   ; i <= 255; ++i)     stbi__zdefault_length[i]   = 9;
    for (   ; i <= 279; ++i)     stbi__zdefault_length[i]   = 7;
    for (   ; i <= 287; ++i)     stbi__zdefault_length[i]   = 8;
+
    for (i=0; i <=  31; ++i)     stbi__zdefault_distance[i] = 5;
 }
 */

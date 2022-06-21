@@ -23,7 +23,7 @@
 //#include "HelloTriangle/14_command_buffers.cpp"
 //#include "HelloTriangle/15_rendering_presentation.cpp"
 //#include "HelloTriangle/16_frames_in_flight.cpp"
-//#include "HelloTriangle/16_hello_triangle.cpp"
+#include "HelloTriangle/16_hello_triangle.cpp"
 //#include "HelloTriangle/17_swap_chain_recreation.cpp"
 //#include "HelloTriangle/18_vertex_input.cpp"
 //#include "HelloTriangle/19_vertex_buffer.cpp"
@@ -42,7 +42,7 @@
 //#include "HelloTriangle/28_mipmapping.cpp"
 //#include "HelloTriangle/29_multisampling.cpp"
 //#include "HelloTriangle/29_lod_sample.cpp"
-#include "HelloTriangle/30_all_in_one.cpp"
+//#include "HelloTriangle/30_all_in_one.cpp"
 
 int main(int argc, const char * argv[])
 {
