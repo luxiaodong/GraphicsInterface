@@ -1,20 +1,11 @@
 
 #pragma once
 
-#include <iostream>
-#include <stdexcept>
-#include <functional>
-#include <cstdlib>
-#include <vector>
-#include <cstring>
-#include <optional>
-#include <cstdint>
-#include <fstream>
-#include <array>
-#include <unordered_map>
-
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+
+#include "ui.h"
+#include "tools.h"
 
 struct QueueFamilyIndices
 {
@@ -38,7 +29,7 @@ public:
     void loop();
     virtual void clear();
     void resize(int width, int height);
-    
+    void drawFps();
     
 protected:
     void createWindow();
@@ -51,18 +42,19 @@ protected:
     
     void createPipelineCache();
     void createCommandPool();
+    void createDescriptorPool();
     
 protected:
+    void initUi();
     VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t LodLevel);
     QueueFamilyIndices findQueueFamilyIndices();
-    VkShaderModule createShaderModule(const std::string& filename);
-    std::vector<char> readFile(const std::string& filename);
     
 protected:
     GLFWwindow* m_window;
     int m_width = 400;
     int m_height = 300;
     std::string m_title;
+    Ui* m_pUi;
 
     VkInstance m_instance;
     VkSurfaceKHR m_surfaceKHR;

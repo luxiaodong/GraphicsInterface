@@ -8,6 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		B066A145286213A600763515 /* assets in CopyFiles */ = {isa = PBXBuildFile; fileRef = B066A1422862125900763515 /* assets */; };
+		B09AEA292862A380006ED326 /* imgui_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA152862A380006ED326 /* imgui_widgets.cpp */; };
+		B09AEA2C2862A380006ED326 /* imgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA1E2862A380006ED326 /* imgui.cpp */; };
+		B09AEA2D2862A380006ED326 /* imgui_tables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA232862A380006ED326 /* imgui_tables.cpp */; };
+		B09AEA2E2862A380006ED326 /* imgui_demo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA242862A380006ED326 /* imgui_demo.cpp */; };
+		B09AEA2F2862A380006ED326 /* imgui_draw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA252862A380006ED326 /* imgui_draw.cpp */; };
+		B09AEA322862AD42006ED326 /* ui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA302862AD42006ED326 /* ui.cpp */; };
+		B09AEA352862BC7B006ED326 /* tools.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA332862BC7B006ED326 /* tools.cpp */; };
 		B0A47F1F282E4D6200209D51 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A47F1E282E4D6200209D51 /* main.cpp */; };
 		B0A48A96282E5E0B00209D51 /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A48A95282E5E0B00209D51 /* libglfw3.a */; };
 		B0A48A98282E5EBF00209D51 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A48A97282E5EBF00209D51 /* CoreFoundation.framework */; };
@@ -34,6 +41,21 @@
 
 /* Begin PBXFileReference section */
 		B066A1422862125900763515 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
+		B09AEA122862A380006ED326 /* imgui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui.h; sourceTree = "<group>"; };
+		B09AEA132862A380006ED326 /* imstb_textedit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imstb_textedit.h; sourceTree = "<group>"; };
+		B09AEA142862A380006ED326 /* imconfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imconfig.h; sourceTree = "<group>"; };
+		B09AEA152862A380006ED326 /* imgui_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_widgets.cpp; sourceTree = "<group>"; };
+		B09AEA162862A380006ED326 /* imstb_truetype.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imstb_truetype.h; sourceTree = "<group>"; };
+		B09AEA1E2862A380006ED326 /* imgui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui.cpp; sourceTree = "<group>"; };
+		B09AEA1F2862A380006ED326 /* imgui_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui_internal.h; sourceTree = "<group>"; };
+		B09AEA212862A380006ED326 /* imstb_rectpack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imstb_rectpack.h; sourceTree = "<group>"; };
+		B09AEA232862A380006ED326 /* imgui_tables.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_tables.cpp; sourceTree = "<group>"; };
+		B09AEA242862A380006ED326 /* imgui_demo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_demo.cpp; sourceTree = "<group>"; };
+		B09AEA252862A380006ED326 /* imgui_draw.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_draw.cpp; sourceTree = "<group>"; };
+		B09AEA302862AD42006ED326 /* ui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ui.cpp; sourceTree = "<group>"; };
+		B09AEA312862AD42006ED326 /* ui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui.h; sourceTree = "<group>"; };
+		B09AEA332862BC7B006ED326 /* tools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tools.cpp; sourceTree = "<group>"; };
+		B09AEA342862BC7B006ED326 /* tools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tools.h; sourceTree = "<group>"; };
 		B0A47F1B282E4D6200209D51 /* Vulkan */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Vulkan; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0A47F1E282E4D6200209D51 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		B0A48A95282E5E0B00209D51 /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = ../3rdParty/glfw/lib/libglfw3.a; sourceTree = "<group>"; };
@@ -66,9 +88,29 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B09AE9F82862A380006ED326 /* imgui */ = {
+			isa = PBXGroup;
+			children = (
+				B09AEA122862A380006ED326 /* imgui.h */,
+				B09AEA132862A380006ED326 /* imstb_textedit.h */,
+				B09AEA142862A380006ED326 /* imconfig.h */,
+				B09AEA152862A380006ED326 /* imgui_widgets.cpp */,
+				B09AEA162862A380006ED326 /* imstb_truetype.h */,
+				B09AEA1E2862A380006ED326 /* imgui.cpp */,
+				B09AEA1F2862A380006ED326 /* imgui_internal.h */,
+				B09AEA212862A380006ED326 /* imstb_rectpack.h */,
+				B09AEA232862A380006ED326 /* imgui_tables.cpp */,
+				B09AEA242862A380006ED326 /* imgui_demo.cpp */,
+				B09AEA252862A380006ED326 /* imgui_draw.cpp */,
+			);
+			name = imgui;
+			path = ../3rdParty/imgui;
+			sourceTree = "<group>";
+		};
 		B0A47F12282E4D6200209D51 = {
 			isa = PBXGroup;
 			children = (
+				B09AE9F82862A380006ED326 /* imgui */,
 				B0A47F1D282E4D6200209D51 /* Vulkan */,
 				B0A47F1C282E4D6200209D51 /* Products */,
 				B0A48A94282E5E0B00209D51 /* Frameworks */,
@@ -113,6 +155,10 @@
 			children = (
 				B0E13A14286170A200D1D2B6 /* application.h */,
 				B0E13A15286170A200D1D2B6 /* application.cpp */,
+				B09AEA312862AD42006ED326 /* ui.h */,
+				B09AEA302862AD42006ED326 /* ui.cpp */,
+				B09AEA342862BC7B006ED326 /* tools.h */,
+				B09AEA332862BC7B006ED326 /* tools.cpp */,
 			);
 			path = common;
 			sourceTree = "<group>";
@@ -191,9 +237,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B09AEA2F2862A380006ED326 /* imgui_draw.cpp in Sources */,
 				B0E13A16286170A200D1D2B6 /* application.cpp in Sources */,
+				B09AEA2E2862A380006ED326 /* imgui_demo.cpp in Sources */,
 				B0E13A1C2861729300D1D2B6 /* hello_triangle.cpp in Sources */,
 				B0A47F1F282E4D6200209D51 /* main.cpp in Sources */,
+				B09AEA292862A380006ED326 /* imgui_widgets.cpp in Sources */,
+				B09AEA2D2862A380006ED326 /* imgui_tables.cpp in Sources */,
+				B09AEA2C2862A380006ED326 /* imgui.cpp in Sources */,
+				B09AEA322862AD42006ED326 /* ui.cpp in Sources */,
+				B09AEA352862BC7B006ED326 /* tools.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

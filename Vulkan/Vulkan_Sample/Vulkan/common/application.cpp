@@ -14,6 +14,7 @@ const std::vector<const char*> deviceExtensions =
 
 Application::Application(std::string title) : m_title(title)
 {
+    m_pUi = nullptr;
 }
 
 Application::~Application()
@@ -34,11 +35,18 @@ void Application::init()
     createSurface();
     choosePhysicalDevice();
     createLogicDeivce();
+    
+    Tools::m_physicalDevice = m_physicalDevice;
+    Tools::m_device = m_device;
+    Tools::m_commandPool = m_commandPool;
+    
     createSwapchain();
     createSwapchainImageView();
     
     createPipelineCache();
     createCommandPool();
+    
+    initUi();
 }
 
 void Application::loop()
@@ -47,6 +55,7 @@ void Application::loop()
     {
         glfwPollEvents();
         render();
+        drawFps();
     }
     
     vkDeviceWaitIdle(m_device);
@@ -77,6 +86,39 @@ void Application::clear()
 
 void Application::resize(int width, int height)
 {
+}
+
+void Application::drawFps()
+{
+    ImGuiIO& io = ImGui::GetIO();
+
+    io.DisplaySize = ImVec2((float)m_width, (float)m_height);
+    io.DeltaTime = 1;
+
+    ImGui::NewFrame();
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
+    ImGui::SetNextWindowPos(ImVec2(10, 10));
+    ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Vulkan Example", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+    ImGui::TextUnformatted(m_title.c_str());
+    ImGui::TextUnformatted("Apple Max");
+    uint32_t lastFPS = 60;
+    ImGui::Text("%.2f ms/frame (%.1d fps)", (1000.0f / lastFPS), lastFPS);
+
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 5.0f * UIOverlay.scale));
+#endif
+    ImGui::PushItemWidth(110.0f);
+//    OnUpdateUIOverlay(&UIOverlay);
+    ImGui::PopItemWidth();
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+    ImGui::PopStyleVar();
+#endif
+
+    ImGui::End();
+    ImGui::PopStyleVar();
+    ImGui::Render();
 }
 
 void Application::createWindow()
@@ -260,6 +302,11 @@ void Application::createCommandPool()
     }
 }
 
+void Application::createDescriptorPool()
+{
+    
+}
+
 
 // -- helper function --
 
@@ -283,41 +330,6 @@ VkImageView Application::createImageView(VkImage image, VkFormat format, VkImage
         throw std::runtime_error("failed to create imageView!");
     }
     return imageView;
-}
-
-VkShaderModule Application::createShaderModule(const std::string& filename)
-{
-    std::vector<char> code = readFile(filename);
-    
-    VkShaderModuleCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.flags = 0;
-    createInfo.codeSize = code.size();
-    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-    
-    VkShaderModule shaderModule;
-    if( vkCreateShaderModule(m_device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS )
-    {
-        throw std::runtime_error("failed to create shader module!");
-    }
-    return shaderModule;
-}
-
-std::vector<char> Application::readFile(const std::string& filename)
-{
-    std::ifstream file(filename, std::ios::ate | std::ios::binary);
-
-    if (!file.is_open())
-    {
-       throw std::runtime_error("failed to open file!");
-    }
-
-    size_t fileSize = (size_t) file.tellg();
-    std::vector<char> buffer(fileSize);
-    file.seekg(0);
-    file.read(buffer.data(), fileSize);
-    file.close();
-    return buffer;
 }
 
 QueueFamilyIndices Application::findQueueFamilyIndices()
@@ -352,4 +364,23 @@ QueueFamilyIndices Application::findQueueFamilyIndices()
     }
     
     return indices;
+}
+
+void Application::initUi()
+{
+    m_pUi = new Ui();
+    m_pUi->m_device = m_device;
+    m_pUi->m_graphicsQueue = m_graphicsQueue;
+    
+//    if (settings.overlay) {
+//            UIOverlay.device = vulkanDevice;
+//            UIOverlay.queue = queue;
+//            UIOverlay.shaders = {
+//                loadShader(getShadersPath() + "base/uioverlay.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+//                loadShader(getShadersPath() + "base/uioverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT),
+//            };
+//            UIOverlay.prepareResources();
+//            UIOverlay.preparePipeline(pipelineCache, renderPass);
+//        }
+    
 }

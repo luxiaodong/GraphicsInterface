@@ -106,8 +106,8 @@ void Hello_triangle::createPipelineLayout()
 
 void Hello_triangle::createGraphicsPipeline()
 {
-    VkShaderModule vertModule = createShaderModule("assets/vert.spv");
-    VkShaderModule fragModule = createShaderModule("assets/frag.spv");
+    VkShaderModule vertModule = Tools::createShaderModule("assets/vert.spv");
+    VkShaderModule fragModule = Tools::createShaderModule("assets/frag.spv");
     
     VkPipelineShaderStageCreateInfo vertShader = {};
     vertShader.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
