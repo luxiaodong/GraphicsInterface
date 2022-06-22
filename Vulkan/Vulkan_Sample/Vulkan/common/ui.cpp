@@ -39,7 +39,6 @@ Ui::Ui()
 void Ui::prepareResources()
 {
     ImGuiIO& io = ImGui::GetIO();
-    // Create font texture
     unsigned char* fontData;
     int texWidth, texHeight;
     
@@ -66,6 +65,7 @@ void Ui::prepareResources()
     
     VkCommandBuffer cmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
     
+    // 设置图片布局再拷贝
     Tools::setImageLayout(cmd, m_fontImage, VK_IMAGE_LAYOUT_UNDEFINED,
                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_PIPELINE_STAGE_HOST_BIT,
                           VK_PIPELINE_STAGE_TRANSFER_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
@@ -87,35 +87,60 @@ void Ui::prepareResources()
     
     vkFreeMemory(m_device, stagingMemory, nullptr);
     vkDestroyBuffer(m_device, stagingBuffer, nullptr);
-    
+    // 创建采样器
     Tools::createTextureSampler(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, 1, m_fontSampler);
 
+    createDescriptorPool();
+    createDescriptorSetLayout();
 
-//            // Descriptor pool
-//            std::vector<VkDescriptorPoolSize> poolSizes = {
-//                vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
-//            };
-//            VkDescriptorPoolCreateInfo descriptorPoolInfo = vks::initializers::descriptorPoolCreateInfo(poolSizes, 2);
-//            VK_CHECK_RESULT(vkCreateDescriptorPool(device->logicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
-//
-//            // Descriptor set layout
-//            std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
-//                vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0),
-//            };
-//            VkDescriptorSetLayoutCreateInfo descriptorLayout = vks::initializers::descriptorSetLayoutCreateInfo(setLayoutBindings);
-//            VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device->logicalDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
-//
-//            // Descriptor set
-//            VkDescriptorSetAllocateInfo allocInfo = vks::initializers::descriptorSetAllocateInfo(descriptorPool, &descriptorSetLayout, 1);
-//            VK_CHECK_RESULT(vkAllocateDescriptorSets(device->logicalDevice, &allocInfo, &descriptorSet));
-//            VkDescriptorImageInfo fontDescriptor = vks::initializers::descriptorImageInfo(
-//                sampler,
-//                fontView,
-//                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-//            );
-//            std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
-//                vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &fontDescriptor)
-//            };
-//            vkUpdateDescriptorSets(device->logicalDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
+    Tools::allocateDescriptorSets(m_descriptorPool, &m_descriptorSetLayout, 1, m_descriptorSet);
 
+    VkDescriptorImageInfo imageInfo = {};
+    imageInfo.imageView = m_fontImageView;
+    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    imageInfo.sampler = m_fontSampler;
+    
+    VkWriteDescriptorSet writeDescriptorSet = Tools::createWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &imageInfo);
+    
+    vkUpdateDescriptorSets(m_device, 1, &writeDescriptorSet, 0, nullptr);
+}
+
+void Ui::createDescriptorPool()
+{
+    VkDescriptorPoolSize poolSize = {};
+    poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    poolSize.descriptorCount = 1;
+    
+    VkDescriptorPoolCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.poolSizeCount = 1;
+    createInfo.pPoolSizes = &poolSize;
+    createInfo.maxSets = 2;
+    
+    if( vkCreateDescriptorPool(m_device, &createInfo, nullptr, &m_descriptorPool) != VK_SUCCESS )
+    {
+        throw std::runtime_error("failed to create descriptorPool!");
+    }
+}
+
+void Ui::createDescriptorSetLayout()
+{
+    VkDescriptorSetLayoutBinding fontBinding = Tools::createDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
+    
+    VkDescriptorSetLayoutCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.bindingCount = 1;
+    createInfo.pBindings = &fontBinding;
+
+    if ( vkCreateDescriptorSetLayout(m_device, &createInfo, nullptr, &m_descriptorSetLayout) != VK_SUCCESS )
+    {
+        throw std::runtime_error("failed to create descriptorSetLayout!");
+    }
+}
+
+void Ui::preparePipeline(const VkPipelineCache pipelineCache, const VkRenderPass renderPass)
+{
+    
 }

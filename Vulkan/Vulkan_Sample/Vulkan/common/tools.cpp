@@ -254,6 +254,61 @@ void Tools::createTextureSampler(VkFilter filter, VkSamplerAddressMode addressMo
     }
 }
 
+void Tools::allocateDescriptorSets(VkDescriptorPool descriptorPool, VkDescriptorSetLayout* pSetLayouts, uint32_t descriptorSetCount, VkDescriptorSet& descriptorSet)
+{
+    VkDescriptorSetAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = descriptorPool;
+    allocInfo.descriptorSetCount = 1;
+    allocInfo.pSetLayouts = pSetLayouts;
+    
+    if( vkAllocateDescriptorSets(m_device, &allocInfo, &descriptorSet) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to allocate descriptorSets!");
+    }
+}
+
+VkDescriptorSetLayoutBinding Tools::createDescriptorSetLayoutBinding(VkDescriptorType descriptorType, VkShaderStageFlags stageFlags, uint32_t binding, uint32_t count)
+{
+    VkDescriptorSetLayoutBinding descriptorSetLayoutBinding = {};
+    descriptorSetLayoutBinding.binding = binding;
+    descriptorSetLayoutBinding.descriptorType = descriptorType;
+    descriptorSetLayoutBinding.descriptorCount = count;
+    descriptorSetLayoutBinding.stageFlags = stageFlags;
+    descriptorSetLayoutBinding.pImmutableSamplers = nullptr;
+    return descriptorSetLayoutBinding;
+}
+
+VkWriteDescriptorSet Tools::createWriteDescriptorSet(VkDescriptorSet descriptorSet, VkDescriptorType descriptorType, uint32_t binding, VkDescriptorBufferInfo* bufferInfo, uint32_t count)
+{
+    VkWriteDescriptorSet writeDescriptorSet = {};
+    writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writeDescriptorSet.dstSet = descriptorSet;
+    writeDescriptorSet.dstBinding = binding;
+    writeDescriptorSet.dstArrayElement = 0;
+    writeDescriptorSet.descriptorCount = 1;
+    writeDescriptorSet.descriptorType = descriptorType;
+    writeDescriptorSet.pBufferInfo = bufferInfo;
+    writeDescriptorSet.pImageInfo = nullptr;
+    writeDescriptorSet.pTexelBufferView = nullptr;
+    return writeDescriptorSet;
+}
+
+VkWriteDescriptorSet Tools::createWriteDescriptorSet(VkDescriptorSet descriptorSet, VkDescriptorType descriptorType, uint32_t binding, VkDescriptorImageInfo* imageInfo, uint32_t count)
+{
+    VkWriteDescriptorSet writeDescriptorSet = {};
+    writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writeDescriptorSet.dstSet = descriptorSet;
+    writeDescriptorSet.dstBinding = binding;
+    writeDescriptorSet.dstArrayElement = 0;
+    writeDescriptorSet.descriptorCount = 1;
+    writeDescriptorSet.descriptorType = descriptorType;
+    writeDescriptorSet.pBufferInfo = nullptr;
+    writeDescriptorSet.pImageInfo = imageInfo;
+    writeDescriptorSet.pTexelBufferView = nullptr;
+    return writeDescriptorSet;
+}
+
 void Tools::setImageLayout( VkCommandBuffer cmdbuffer, VkImage image, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkImageAspectFlags aspectMask)
 {
     VkImageSubresourceRange subresourceRange = {};

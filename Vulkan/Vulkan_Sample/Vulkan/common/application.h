@@ -40,8 +40,12 @@ protected:
     void createSwapchain();
     void createSwapchainImageView();
     
+    void createDepthBuffer();
+    
     void createPipelineCache();
     void createCommandPool();
+    void createRenderPass();
+    
     void createDescriptorPool();
     
 protected:
@@ -71,6 +75,12 @@ protected:
     std::vector<VkImage> m_swapchainImages;
     std::vector<VkImageView> m_swapchainImageViews;
     
+    VkImage m_depthImage;
+    VkDeviceMemory m_depthMemory;
+    VkImageView m_depthImageView;
+    
     VkCommandPool m_commandPool;
+    VkDescriptorPool m_descriptorPool;
     VkPipelineCache m_pipelineCache;
+    VkRenderPass m_renderPass;
 };

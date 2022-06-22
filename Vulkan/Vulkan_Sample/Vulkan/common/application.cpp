@@ -68,6 +68,10 @@ void Application::render()
 
 void Application::clear()
 {
+    vkDestroyImageView(m_device, m_depthImageView, nullptr);
+    vkDestroyImage(m_device, m_depthImage, nullptr);
+    vkFreeMemory(m_device, m_depthMemory, nullptr);
+    
     vkDestroyCommandPool(m_device, m_commandPool, nullptr);
     vkDestroyPipelineCache(m_device, m_pipelineCache, nullptr);
     
@@ -279,6 +283,23 @@ void Application::createSwapchainImageView()
     }
 }
 
+void Application::createDepthBuffer()
+{
+    Tools::createImageAndMemoryThenBind(VK_FORMAT_D32_SFLOAT, m_swapchainExtent.width, m_swapchainExtent.height, 1,
+                                 VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                                 VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                 m_depthImage, m_depthMemory);
+    
+    Tools::createImageView(m_depthImage, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT, 1, m_depthImageView);
+    
+    VkCommandBuffer cmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+    Tools::setImageLayout(cmd, m_depthImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
+    Tools::flushCommandBuffer(cmd, m_graphicsQueue, true);
+    
+
+//    transitionImageLayout(m_depthImage, VK_FORMAT_D32_SFLOAT, , , 1);
+}
+
 void Application::createPipelineCache()
 {
     VkPipelineCacheCreateInfo createInfo = {};
@@ -302,9 +323,14 @@ void Application::createCommandPool()
     }
 }
 
-void Application::createDescriptorPool()
+void Application::createRenderPass()
 {
     
+}
+
+void Application::createDescriptorPool()
+{
+//    m_descriptorPool
 }
 
 
