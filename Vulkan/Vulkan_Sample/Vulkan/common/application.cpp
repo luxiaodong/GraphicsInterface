@@ -47,7 +47,7 @@ void Application::init()
     
     createRenderPass();
     createFramebuffers();
-//    initUi();
+    initUi();
 }
 
 void Application::loop()
@@ -477,8 +477,8 @@ void Application::initUi()
         m_pUi = new Ui();
         m_pUi->m_device = m_device;
         m_pUi->m_graphicsQueue = m_graphicsQueue;
-        m_pUi->m_width = m_width;
-        m_pUi->m_height = m_height;
+        m_pUi->m_width = m_width*2;
+        m_pUi->m_height = m_height*2;
         m_pUi->m_title = m_title;
         m_pUi->prepareResources();
         m_pUi->preparePipeline(m_pipelineCache, m_renderPass);

@@ -37,6 +37,18 @@ Ui::Ui()
 
 Ui::~Ui()
 {
+    if(m_vertexBuffer)
+    {
+        vkFreeMemory(m_device, m_vertexMemory, nullptr);
+        vkDestroyBuffer(m_device, m_vertexBuffer, nullptr);
+    }
+    
+    if(m_indexBuffer)
+    {
+        vkFreeMemory(m_device, m_indexMemory, nullptr);
+        vkDestroyBuffer(m_device, m_indexBuffer, nullptr);
+    }
+    
     vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
     vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);

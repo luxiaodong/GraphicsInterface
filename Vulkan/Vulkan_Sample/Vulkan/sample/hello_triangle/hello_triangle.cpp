@@ -32,7 +32,6 @@ void Hello_triangle::clear()
     }
     
     vkFreeCommandBuffers(m_device, m_commandPool, static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
-//    vkDestroyRenderPass(m_device, m_renderPass, nullptr);
     
     vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
@@ -161,52 +160,6 @@ void Hello_triangle::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
 }
 
-//void Hello_triangle::createRenderPass()
-//{
-//    // xxx = {}  === memery set 0
-//    VkAttachmentDescription attachmentDescription;
-//    attachmentDescription.flags = 0;
-//    attachmentDescription.format = m_surfaceFormatKHR.format;
-//    attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
-//    attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-//    attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-//    attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-//    attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-//    attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-//    attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-//
-//    VkAttachmentReference attachmentReference;
-//    attachmentReference.attachment = 0;
-//    attachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-//
-//    VkSubpassDescription subpassDescription;
-//    subpassDescription.flags = 0;
-//    subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-//    subpassDescription.inputAttachmentCount = 0;
-//    subpassDescription.pInputAttachments = nullptr;
-//    subpassDescription.colorAttachmentCount = 1;
-//    subpassDescription.pColorAttachments = &attachmentReference;
-//    subpassDescription.pResolveAttachments = nullptr;
-//    subpassDescription.pDepthStencilAttachment = nullptr;
-//    subpassDescription.preserveAttachmentCount = 0;
-//    subpassDescription.pPreserveAttachments = nullptr;
-//
-//    VkRenderPassCreateInfo createInfo = {};
-//    createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-//    createInfo.flags = 0;
-//    createInfo.attachmentCount = 1;
-//    createInfo.pAttachments = &attachmentDescription;
-//    createInfo.subpassCount = 1;
-//    createInfo.pSubpasses = &subpassDescription;
-//    createInfo.dependencyCount = 0;
-//    createInfo.pDependencies = nullptr;
-//
-//    if( vkCreateRenderPass(m_device, &createInfo, nullptr, &m_renderPass) != VK_SUCCESS )
-//    {
-//        throw std::runtime_error("failed to create renderpass");
-//    }
-//}
-
 void Hello_triangle::createCommandBuffers()
 {
     m_commandBuffers.resize(m_framebuffers.size());
@@ -266,7 +219,10 @@ void Hello_triangle::recordCommandBuffers()
 //        vkCmdSetViewport(commandBuffer, 0, 1, &viewport2);
 //        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
         
-//        m_pUi->draw(commandBuffer);
+        if(m_pUi)
+        {
+            m_pUi->draw(commandBuffer);
+        }
         
         vkCmdEndRenderPass(commandBuffer);
 
