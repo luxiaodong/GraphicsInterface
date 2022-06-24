@@ -29,7 +29,6 @@ public:
     void loop();
     virtual void clear();
     void resize(int width, int height);
-    void drawFps();
     
 protected:
     void createWindow();
@@ -45,7 +44,7 @@ protected:
     void createPipelineCache();
     void createCommandPool();
     void createRenderPass();
-    
+    void createFramebuffers();
     void createDescriptorPool();
     
 protected:
@@ -58,7 +57,7 @@ protected:
     int m_width = 400;
     int m_height = 300;
     std::string m_title;
-    Ui* m_pUi;
+    Ui* m_pUi = nullptr;
 
     VkInstance m_instance;
     VkSurfaceKHR m_surfaceKHR;
@@ -83,4 +82,5 @@ protected:
     VkDescriptorPool m_descriptorPool;
     VkPipelineCache m_pipelineCache;
     VkRenderPass m_renderPass;
+    std::vector<VkFramebuffer> m_framebuffers;
 };

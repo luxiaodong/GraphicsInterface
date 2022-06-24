@@ -14,7 +14,6 @@ const std::vector<const char*> deviceExtensions =
 
 Application::Application(std::string title) : m_title(title)
 {
-    m_pUi = nullptr;
 }
 
 Application::~Application()
@@ -34,19 +33,21 @@ void Application::init()
     createInstance();
     createSurface();
     choosePhysicalDevice();
-    createLogicDeivce();
-    
     Tools::m_physicalDevice = m_physicalDevice;
+    createLogicDeivce();
     Tools::m_device = m_device;
+    createCommandPool();
     Tools::m_commandPool = m_commandPool;
     
     createSwapchain();
     createSwapchainImageView();
     
+    createDepthBuffer();
     createPipelineCache();
-    createCommandPool();
     
-    initUi();
+    createRenderPass();
+    createFramebuffers();
+//    initUi();
 }
 
 void Application::loop()
@@ -55,7 +56,7 @@ void Application::loop()
     {
         glfwPollEvents();
         render();
-        drawFps();
+        //drawFps();
     }
     
     vkDeviceWaitIdle(m_device);
@@ -68,6 +69,19 @@ void Application::render()
 
 void Application::clear()
 {
+    if(m_pUi)
+    {
+        delete m_pUi;
+        m_pUi = nullptr;
+    }
+    
+    vkDestroyRenderPass(m_device, m_renderPass, nullptr);
+    
+    for(const auto& frameBuffer : m_framebuffers)
+    {
+        vkDestroyFramebuffer(m_device, frameBuffer, nullptr);
+    }
+    
     vkDestroyImageView(m_device, m_depthImageView, nullptr);
     vkDestroyImage(m_device, m_depthImage, nullptr);
     vkFreeMemory(m_device, m_depthMemory, nullptr);
@@ -90,39 +104,6 @@ void Application::clear()
 
 void Application::resize(int width, int height)
 {
-}
-
-void Application::drawFps()
-{
-    ImGuiIO& io = ImGui::GetIO();
-
-    io.DisplaySize = ImVec2((float)m_width, (float)m_height);
-    io.DeltaTime = 1;
-
-    ImGui::NewFrame();
-
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
-    ImGui::SetNextWindowPos(ImVec2(10, 10));
-    ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-    ImGui::Begin("Vulkan Example", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-    ImGui::TextUnformatted(m_title.c_str());
-    ImGui::TextUnformatted("Apple Max");
-    uint32_t lastFPS = 60;
-    ImGui::Text("%.2f ms/frame (%.1d fps)", (1000.0f / lastFPS), lastFPS);
-
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 5.0f * UIOverlay.scale));
-#endif
-    ImGui::PushItemWidth(110.0f);
-//    OnUpdateUIOverlay(&UIOverlay);
-    ImGui::PopItemWidth();
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-    ImGui::PopStyleVar();
-#endif
-
-    ImGui::End();
-    ImGui::PopStyleVar();
-    ImGui::Render();
 }
 
 void Application::createWindow()
@@ -325,7 +306,104 @@ void Application::createCommandPool()
 
 void Application::createRenderPass()
 {
+    VkAttachmentDescription depthAttachmentDescription = {};
+    depthAttachmentDescription.flags = 0;
+    depthAttachmentDescription.format = VK_FORMAT_D32_SFLOAT;
+    depthAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+    depthAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    depthAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            
+    VkAttachmentDescription colorAttachmentDescription = {};
+    colorAttachmentDescription.flags = 0;
+    colorAttachmentDescription.format = m_surfaceFormatKHR.format;
+    colorAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+    colorAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    colorAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    colorAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
     
+    VkAttachmentReference colorAttachmentReference = {};
+    colorAttachmentReference.attachment = 0;
+    colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    
+    VkAttachmentReference depthAttachmentReference = {};
+    depthAttachmentReference.attachment = 1;
+    depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    
+    VkSubpassDescription subpassDescription = {};
+    subpassDescription.flags = 0;
+    subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpassDescription.inputAttachmentCount = 0;
+    subpassDescription.pInputAttachments = nullptr;
+    subpassDescription.colorAttachmentCount = 1;
+    subpassDescription.pColorAttachments = &colorAttachmentReference;
+    subpassDescription.pResolveAttachments = nullptr;
+    subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
+    subpassDescription.preserveAttachmentCount = 0;
+    subpassDescription.pPreserveAttachments = nullptr;
+    
+    VkAttachmentDescription attachmentDescription[] = {colorAttachmentDescription, depthAttachmentDescription};
+    
+    VkRenderPassCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.attachmentCount = 2;
+    createInfo.pAttachments = attachmentDescription;
+    createInfo.subpassCount = 1;
+    createInfo.pSubpasses = &subpassDescription;
+    createInfo.dependencyCount = 0;
+    createInfo.pDependencies = nullptr;
+    
+//    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+//    dependencies[0].dstSubpass = 0;
+//    dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+//    dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+//    dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+//    dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+//    dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+//
+//    dependencies[1].srcSubpass = 0;
+//    dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+//    dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+//    dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+//    dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+//    dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+//    dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+    if( vkCreateRenderPass(m_device, &createInfo, nullptr, &m_renderPass) != VK_SUCCESS )
+    {
+        throw std::runtime_error("failed to create renderpass!");
+    }
+}
+
+void Application::createFramebuffers()
+{
+    m_framebuffers.resize(m_swapchainImageViews.size());
+    
+    for(size_t i = 0; i < m_swapchainImageViews.size(); ++i)
+    {
+        VkImageView attachments[] = {m_swapchainImageViews[i], m_depthImageView};
+        
+        VkFramebufferCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        createInfo.renderPass = m_renderPass;
+        createInfo.attachmentCount = 2;
+        createInfo.pAttachments = attachments;
+        createInfo.width = m_swapchainExtent.width;
+        createInfo.height = m_swapchainExtent.height;
+        createInfo.layers = 1;
+        
+        if( vkCreateFramebuffer(m_device, &createInfo, nullptr, &m_framebuffers[i]) != VK_SUCCESS )
+        {
+            throw std::runtime_error("failed to create frame buffer!");
+        }
+    }
 }
 
 void Application::createDescriptorPool()
@@ -394,9 +472,17 @@ QueueFamilyIndices Application::findQueueFamilyIndices()
 
 void Application::initUi()
 {
-    m_pUi = new Ui();
-    m_pUi->m_device = m_device;
-    m_pUi->m_graphicsQueue = m_graphicsQueue;
+    if(m_pUi == nullptr)
+    {
+        m_pUi = new Ui();
+        m_pUi->m_device = m_device;
+        m_pUi->m_graphicsQueue = m_graphicsQueue;
+        m_pUi->m_width = m_width;
+        m_pUi->m_height = m_height;
+        m_pUi->m_title = m_title;
+        m_pUi->prepareResources();
+        m_pUi->preparePipeline(m_pipelineCache, m_renderPass);
+    }
     
 //    if (settings.overlay) {
 //            UIOverlay.device = vulkanDevice;

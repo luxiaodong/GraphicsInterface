@@ -1,6 +1,8 @@
 
 #pragma once
 
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 #include <iostream>
 #include <stdexcept>
 #include <functional>
@@ -13,7 +15,18 @@
 #include <array>
 #include <unordered_map>
 
-#include <vulkan/vulkan.h>
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/hash.hpp>
+//
+//#define STB_IMAGE_IMPLEMENTATION
+//#include <stb_image.h>
+//
+//#define TINYOBJLOADER_IMPLEMENTATION
+//#include <tiny_obj_loader.h>
 
 class Tools
 {
@@ -22,8 +35,6 @@ public:
     static VkDevice m_device;
     static VkCommandPool m_commandPool;
     
-    static std::vector<char> readFile(const std::string& filename);
-    static VkShaderModule createShaderModule(const std::string& filename);
     static uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
     static void createBufferAndMemoryThenBind(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags, VkBuffer &buffer, VkDeviceMemory& memory);
     static void createImageAndMemoryThenBind(VkFormat format, uint32_t width, uint32_t height, uint32_t lodLevels, VkSampleCountFlagBits sampleFlag, VkImageUsageFlags usage, VkImageTiling tiling, VkMemoryPropertyFlags flags, VkImage &image, VkDeviceMemory &imageMemory);
@@ -36,7 +47,30 @@ public:
     static void createTextureSampler(VkFilter filter, VkSamplerAddressMode addressMode, uint32_t maxLod, VkSampler &sampler);
 
     static void allocateDescriptorSets(VkDescriptorPool descriptorPool, VkDescriptorSetLayout* pSetLayouts, uint32_t descriptorSetCount, VkDescriptorSet& descriptorSet);
-    static VkDescriptorSetLayoutBinding createDescriptorSetLayoutBinding(VkDescriptorType descriptorType, VkShaderStageFlags stageFlags, uint32_t binding, uint32_t count = 1);
-    static VkWriteDescriptorSet createWriteDescriptorSet(VkDescriptorSet descriptorSet, VkDescriptorType descriptorType, uint32_t binding, VkDescriptorBufferInfo* bufferInfo, uint32_t count = 1);
-    static VkWriteDescriptorSet createWriteDescriptorSet(VkDescriptorSet descriptorSet, VkDescriptorType descriptorType, uint32_t binding, VkDescriptorImageInfo* imageInfo, uint32_t count = 1);
+    static VkDescriptorSetLayoutBinding getDescriptorSetLayoutBinding(VkDescriptorType descriptorType, VkShaderStageFlags stageFlags, uint32_t binding, uint32_t count = 1);
+    static VkWriteDescriptorSet getWriteDescriptorSet(VkDescriptorSet descriptorSet, VkDescriptorType descriptorType, uint32_t binding, VkDescriptorBufferInfo* bufferInfo, uint32_t count = 1);
+    static VkWriteDescriptorSet getWriteDescriptorSet(VkDescriptorSet descriptorSet, VkDescriptorType descriptorType, uint32_t binding, VkDescriptorImageInfo* imageInfo, uint32_t count = 1);
+
+    static std::vector<char> readFile(const std::string& filename);
+    static VkShaderModule createShaderModule(const std::string& filename);
+    static VkPipelineShaderStageCreateInfo getPipelineShaderStageCreateInfo(VkShaderModule module, VkShaderStageFlagBits stage);
+    
+    static VkVertexInputBindingDescription getVertexInputBindingDescription(uint32_t binding, uint32_t stride);
+    static VkVertexInputAttributeDescription getVertexInputAttributeDescription(uint32_t binding, uint32_t location, VkFormat format, uint32_t offset);
+    
+    static VkPipelineVertexInputStateCreateInfo getPipelineVertexInputStateCreateInfo(std::vector<VkVertexInputBindingDescription> &bindingDescriptions, std::vector<VkVertexInputAttributeDescription> &attributeDescriptions);
+    static VkPipelineInputAssemblyStateCreateInfo getPipelineInputAssemblyStateCreateInfo(VkPrimitiveTopology topology, VkBool32 primitiveRestartEnable);
+    static VkViewport getViewport(float x, float y, float width, float height);
+    static VkPipelineViewportStateCreateInfo getPipelineViewportStateCreateInfo( std::vector<VkViewport>& viewPorts, std::vector<VkRect2D>& scissors);
+    static VkPipelineRasterizationStateCreateInfo getPipelineRasterizationStateCreateInfo(VkPolygonMode polygonMode, VkCullModeFlagBits cullMode, VkFrontFace frontFace);
+    static VkPipelineMultisampleStateCreateInfo getPipelineMultisampleStateCreateInfo(VkSampleCountFlagBits sampleCount);
+    static VkPipelineDepthStencilStateCreateInfo getPipelineDepthStencilStateCreateInfo(VkBool32 depthTest, VkBool32 depthWrite, VkCompareOp compareOp);
+    static VkPipelineColorBlendAttachmentState getPipelineColorBlendAttachmentState(VkBool32 blend, VkColorComponentFlags colorComponent);
+    static VkPipelineColorBlendStateCreateInfo getPipelineColorBlendStateCreateInfo(uint32_t count, VkPipelineColorBlendAttachmentState* pColorBlendAttachment);
+    static VkPipelineColorBlendStateCreateInfo getPipelineColorBlendStateCreateInfo(std::vector<VkPipelineColorBlendAttachmentState>& colorBlendAttachment);
+    static VkGraphicsPipelineCreateInfo getGraphicsPipelineCreateInfo(std::vector<VkPipelineShaderStageCreateInfo>& shaderStages, VkPipelineLayout layout, VkRenderPass renderPass);
+    static VkPipelineDynamicStateCreateInfo getPipelineDynamicStateCreateInfo(std::vector<VkDynamicState>& dynamicStates);
+    static VkPipelineDynamicStateCreateInfo getPipelineDynamicStateCreateInfo(uint32_t count, VkDynamicState* pDynamicState);
+    
+    
 };

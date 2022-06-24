@@ -268,7 +268,7 @@ void Tools::allocateDescriptorSets(VkDescriptorPool descriptorPool, VkDescriptor
     }
 }
 
-VkDescriptorSetLayoutBinding Tools::createDescriptorSetLayoutBinding(VkDescriptorType descriptorType, VkShaderStageFlags stageFlags, uint32_t binding, uint32_t count)
+VkDescriptorSetLayoutBinding Tools::getDescriptorSetLayoutBinding(VkDescriptorType descriptorType, VkShaderStageFlags stageFlags, uint32_t binding, uint32_t count)
 {
     VkDescriptorSetLayoutBinding descriptorSetLayoutBinding = {};
     descriptorSetLayoutBinding.binding = binding;
@@ -279,7 +279,7 @@ VkDescriptorSetLayoutBinding Tools::createDescriptorSetLayoutBinding(VkDescripto
     return descriptorSetLayoutBinding;
 }
 
-VkWriteDescriptorSet Tools::createWriteDescriptorSet(VkDescriptorSet descriptorSet, VkDescriptorType descriptorType, uint32_t binding, VkDescriptorBufferInfo* bufferInfo, uint32_t count)
+VkWriteDescriptorSet Tools::getWriteDescriptorSet(VkDescriptorSet descriptorSet, VkDescriptorType descriptorType, uint32_t binding, VkDescriptorBufferInfo* bufferInfo, uint32_t count)
 {
     VkWriteDescriptorSet writeDescriptorSet = {};
     writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -294,7 +294,7 @@ VkWriteDescriptorSet Tools::createWriteDescriptorSet(VkDescriptorSet descriptorS
     return writeDescriptorSet;
 }
 
-VkWriteDescriptorSet Tools::createWriteDescriptorSet(VkDescriptorSet descriptorSet, VkDescriptorType descriptorType, uint32_t binding, VkDescriptorImageInfo* imageInfo, uint32_t count)
+VkWriteDescriptorSet Tools::getWriteDescriptorSet(VkDescriptorSet descriptorSet, VkDescriptorType descriptorType, uint32_t binding, VkDescriptorImageInfo* imageInfo, uint32_t count)
 {
     VkWriteDescriptorSet writeDescriptorSet = {};
     writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -307,6 +307,190 @@ VkWriteDescriptorSet Tools::createWriteDescriptorSet(VkDescriptorSet descriptorS
     writeDescriptorSet.pImageInfo = imageInfo;
     writeDescriptorSet.pTexelBufferView = nullptr;
     return writeDescriptorSet;
+}
+
+VkPipelineShaderStageCreateInfo Tools::getPipelineShaderStageCreateInfo(VkShaderModule module, VkShaderStageFlagBits stage)
+{
+    VkPipelineShaderStageCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    createInfo.stage = stage;
+    createInfo.module = module;
+    createInfo.pName = "main";
+    return createInfo;
+}
+
+VkVertexInputBindingDescription Tools::getVertexInputBindingDescription(uint32_t binding, uint32_t stride)
+{
+    VkVertexInputBindingDescription des = {};
+    des.binding = binding;
+    des.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    des.stride = stride;
+    return des;
+}
+
+VkVertexInputAttributeDescription Tools::getVertexInputAttributeDescription(uint32_t binding, uint32_t location, VkFormat format, uint32_t offset)
+{
+    VkVertexInputAttributeDescription des = {};
+    des.binding = binding;
+    des.location = location;
+    des.format = format;
+    des.offset = offset;
+    return des;
+}
+
+VkPipelineVertexInputStateCreateInfo Tools::getPipelineVertexInputStateCreateInfo(std::vector<VkVertexInputBindingDescription> &bindingDescriptions, std::vector<VkVertexInputAttributeDescription> &attributeDescriptions)
+{
+    VkPipelineVertexInputStateCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
+    createInfo.pVertexBindingDescriptions = bindingDescriptions.data();
+    createInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    createInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+    return createInfo;
+}
+
+VkPipelineInputAssemblyStateCreateInfo Tools::getPipelineInputAssemblyStateCreateInfo(VkPrimitiveTopology topology, VkBool32 primitiveRestartEnable)
+{
+    VkPipelineInputAssemblyStateCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.primitiveRestartEnable = primitiveRestartEnable;
+    createInfo.topology = topology;
+    return createInfo;
+}
+
+VkViewport Tools::getViewport(float x, float y, float width, float height)
+{
+    VkViewport viewport;
+    viewport.x = x;
+    viewport.y = y;
+    viewport.width = width;
+    viewport.height = height;
+    viewport.minDepth = 0;
+    viewport.maxDepth = 1;
+    return viewport;
+}
+
+VkPipelineViewportStateCreateInfo Tools::getPipelineViewportStateCreateInfo( std::vector<VkViewport>& viewPorts, std::vector<VkRect2D>& scissors)
+{
+    VkPipelineViewportStateCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.viewportCount = static_cast<uint32_t>(viewPorts.size());
+    createInfo.pViewports = viewPorts.data();
+    createInfo.scissorCount = static_cast<uint32_t>(scissors.size());
+    createInfo.pScissors = scissors.data();
+    return createInfo;
+}
+
+VkPipelineRasterizationStateCreateInfo Tools::getPipelineRasterizationStateCreateInfo(VkPolygonMode polygonMode, VkCullModeFlagBits cullMode, VkFrontFace frontFace)
+{
+    VkPipelineRasterizationStateCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.depthClampEnable = VK_FALSE;
+    createInfo.rasterizerDiscardEnable = VK_FALSE;
+    createInfo.polygonMode = polygonMode;
+    createInfo.cullMode = cullMode;
+    createInfo.frontFace = frontFace;
+    createInfo.depthBiasEnable = VK_FALSE;
+    createInfo.depthBiasConstantFactor = 0.0f;
+    createInfo.depthBiasClamp = VK_FALSE;
+    createInfo.depthBiasSlopeFactor = 0.0f;
+    createInfo.lineWidth = 1.0f;
+    return createInfo;
+}
+
+VkPipelineMultisampleStateCreateInfo Tools::getPipelineMultisampleStateCreateInfo(VkSampleCountFlagBits sampleCount)
+{
+    VkPipelineMultisampleStateCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.rasterizationSamples = sampleCount;
+    createInfo.sampleShadingEnable = VK_FALSE;
+    createInfo.pSampleMask = nullptr;
+    createInfo.alphaToCoverageEnable = VK_FALSE;
+    createInfo.alphaToOneEnable = VK_FALSE;
+    return createInfo;
+}
+
+VkPipelineDepthStencilStateCreateInfo Tools::getPipelineDepthStencilStateCreateInfo(VkBool32 depthTest, VkBool32 depthWrite, VkCompareOp compareOp)
+{
+    VkPipelineDepthStencilStateCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.depthTestEnable = depthTest;
+    createInfo.depthWriteEnable = depthWrite;
+    createInfo.depthCompareOp = compareOp;
+    createInfo.depthBoundsTestEnable = VK_FALSE;
+    createInfo.stencilTestEnable = VK_FALSE;
+    createInfo.minDepthBounds = 0.0f;
+    createInfo.minDepthBounds = 1.0f;
+    return createInfo;
+}
+
+VkPipelineColorBlendAttachmentState Tools::getPipelineColorBlendAttachmentState(VkBool32 blend, VkColorComponentFlags colorComponent)
+{
+    VkPipelineColorBlendAttachmentState state = {};
+    state.blendEnable = blend;
+    state.colorWriteMask = colorComponent;
+    state.colorBlendOp = VK_BLEND_OP_ADD;
+    state.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+    state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    state.alphaBlendOp = VK_BLEND_OP_ADD;
+    state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+    return state;
+}
+
+VkPipelineColorBlendStateCreateInfo Tools::getPipelineColorBlendStateCreateInfo(std::vector<VkPipelineColorBlendAttachmentState>& colorBlendAttachments)
+{
+    uint32_t count = static_cast<uint32_t>(colorBlendAttachments.size());
+    VkPipelineColorBlendAttachmentState *pColorBlendAttachment = colorBlendAttachments.data();
+    return getPipelineColorBlendStateCreateInfo(count, pColorBlendAttachment);
+}
+
+VkPipelineColorBlendStateCreateInfo Tools::getPipelineColorBlendStateCreateInfo(uint32_t count, VkPipelineColorBlendAttachmentState* pColorBlendAttachment)
+{
+    VkPipelineColorBlendStateCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.logicOpEnable = VK_FALSE;
+    createInfo.logicOp = VK_LOGIC_OP_COPY;
+    createInfo.attachmentCount = count;
+    createInfo.pAttachments = pColorBlendAttachment;
+    return createInfo;
+}
+
+VkPipelineDynamicStateCreateInfo Tools::getPipelineDynamicStateCreateInfo(std::vector<VkDynamicState>& dynamicStates)
+{
+    uint32_t count = static_cast<uint32_t>(dynamicStates.size());
+    VkDynamicState *pDynamicState = dynamicStates.data();
+    return getPipelineDynamicStateCreateInfo(count, pDynamicState);
+}
+
+VkPipelineDynamicStateCreateInfo Tools::getPipelineDynamicStateCreateInfo(uint32_t count, VkDynamicState* pDynamicState)
+{
+    VkPipelineDynamicStateCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.dynamicStateCount = count;
+    createInfo.pDynamicStates = pDynamicState;
+    return createInfo;
+}
+
+VkGraphicsPipelineCreateInfo Tools::getGraphicsPipelineCreateInfo(std::vector<VkPipelineShaderStageCreateInfo>& shaderStages, VkPipelineLayout layout, VkRenderPass renderPass)
+{
+    VkGraphicsPipelineCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    createInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
+    createInfo.pStages = shaderStages.data();
+    createInfo.layout = layout;
+    createInfo.renderPass = renderPass;
+    createInfo.basePipelineHandle = VK_NULL_HANDLE;
+    createInfo.basePipelineIndex = 0;
+    return createInfo;
 }
 
 void Tools::setImageLayout( VkCommandBuffer cmdbuffer, VkImage image, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkImageAspectFlags aspectMask)

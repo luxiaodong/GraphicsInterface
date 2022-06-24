@@ -15,9 +15,8 @@ public:
     
 protected:
     void createPipelineLayout();
-    void createRenderPass();
+//    void createRenderPass();
     void createGraphicsPipeline();
-    void createFramebuffers();
     void createCommandBuffers();
     void recordCommandBuffers();
     void createSemaphores();
@@ -25,8 +24,7 @@ protected:
 protected:
     VkPipelineLayout m_pipelineLayout;
     VkPipeline m_graphicsPipeline;
-    VkRenderPass m_renderPass;
-    std::vector<VkFramebuffer> m_framebuffers;
+//    VkRenderPass m_renderPass;
     std::vector<VkCommandBuffer> m_commandBuffers;
     std::vector<VkSemaphore> m_renderFinishedSemaphores;
     std::vector<VkSemaphore> m_imageAvailableSemaphores;
