@@ -328,6 +328,12 @@ private:
         std::vector<VkExtensionProperties> extensionProperties(propertiesCount);
         vkEnumerateInstanceExtensionProperties("", &propertiesCount, extensionProperties.data());
 
+        uint32_t apiVersion;
+        vkEnumerateInstanceVersion(&apiVersion);
+        std::cout << "version: "<<VK_API_VERSION_MAJOR(apiVersion)<<"."
+                                <<VK_API_VERSION_MINOR(apiVersion)<<"."
+                                <<VK_API_VERSION_PATCH(apiVersion)<<std::endl;
+        
         std::vector<const char *> extensions;
         std::cout << "InstanceExtensionProperties : " << propertiesCount << std::endl;
         for(auto& property : extensionProperties)
