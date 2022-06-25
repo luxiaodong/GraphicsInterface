@@ -56,7 +56,6 @@ void Application::loop()
     {
         glfwPollEvents();
         render();
-        //drawFps();
     }
     
     vkDeviceWaitIdle(m_device);

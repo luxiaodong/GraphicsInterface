@@ -127,6 +127,9 @@ void Ui::prepareResources()
     VkWriteDescriptorSet writeDescriptorSet = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &imageInfo);
     
     vkUpdateDescriptorSets(m_device, 1, &writeDescriptorSet, 0, nullptr);
+    
+    // 字体准备好后可以更新UI了.
+    updateUI();
 }
 
 void Ui::createDescriptorPool()
@@ -289,6 +292,7 @@ void Ui::updateBuffer()
         return ;
     }
     
+    // 注意: vertexBuffer不能重新创建, vertexMemory可以, 因为vertexBuffer地址已经到了commandBuffer
     //vertex buffer
     if(m_vertexBuffer)
     {
@@ -332,7 +336,8 @@ void Ui::updateBuffer()
     vkMapMemory(m_device, m_vertexMemory, 0, m_vertexBufferSize, 0, (void**)&vertexDstAddress);
     vkMapMemory(m_device, m_indexMemory, 0, m_indexBufferSize, 0, (void**)&indexDstAddress);
     
-    for (int n = 0; n < imDrawData->CmdListsCount; n++) {
+    for (int n = 0; n < imDrawData->CmdListsCount; n++)
+    {
         const ImDrawList* cmd_list = imDrawData->CmdLists[n];
         memcpy(vertexDstAddress, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
         memcpy(indexDstAddress, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
@@ -346,6 +351,7 @@ void Ui::updateBuffer()
 
 void Ui::draw(const VkCommandBuffer commandBuffer)
 {
+    // 不知道为什么需要再更新一下, 否则没有顶点数据.
     updateUI();
     updateBuffer();
     

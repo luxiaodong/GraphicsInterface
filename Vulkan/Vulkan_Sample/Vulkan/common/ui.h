@@ -20,11 +20,10 @@ public:
     
 public:
     void draw(const VkCommandBuffer commandBuffer);
-    
-protected:
     void updateUI();
     void updateBuffer();
     
+protected:
     void createDescriptorSetLayout();
     void createDescriptorPool();
     void createPipelineLayout();
