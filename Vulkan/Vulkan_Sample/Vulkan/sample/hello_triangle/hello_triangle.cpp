@@ -218,11 +218,8 @@ void Hello_triangle::recordCommandBuffers()
 //        VkViewport viewport2 = Tools::getViewport(0, 0, m_swapchainExtent.width/2, m_swapchainExtent.height/2);
 //        vkCmdSetViewport(commandBuffer, 0, 1, &viewport2);
 //        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-        
-        if(m_pUi)
-        {
-            m_pUi->draw(commandBuffer);
-        }
+
+        drawUi(commandBuffer);
         
         vkCmdEndRenderPass(commandBuffer);
 

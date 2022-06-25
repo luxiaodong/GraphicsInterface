@@ -20,7 +20,7 @@ public:
     
 public:
     void draw(const VkCommandBuffer commandBuffer);
-    void updateUI();
+    void updateUI(uint32_t lastFPS);
     void updateBuffer();
     
 protected:

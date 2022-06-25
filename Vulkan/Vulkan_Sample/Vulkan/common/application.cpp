@@ -52,10 +52,20 @@ void Application::init()
 
 void Application::loop()
 {
+    m_lastTimestamp = std::chrono::steady_clock::now();
+    
     while (!glfwWindowShouldClose(m_window))
     {
         glfwPollEvents();
+        
         render();
+        
+        std::chrono::steady_clock::time_point tNow = std::chrono::steady_clock::now();
+        float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(tNow - m_lastTimestamp).count();
+        m_averageDuration = m_averageDuration * 0.99 + deltaTime * 0.01;
+        m_averageFPS = static_cast<int>(1.f/m_averageDuration);
+        m_lastTimestamp = tNow;
+//        std::cout << m_averageFPS << std::endl;
     }
     
     vkDeviceWaitIdle(m_device);
@@ -494,4 +504,15 @@ void Application::initUi()
 //            UIOverlay.preparePipeline(pipelineCache, renderPass);
 //        }
     
+}
+
+void Application::drawUi(const VkCommandBuffer commandBuffer)
+{
+    if(m_pUi)
+    {
+        // 不知道为什么需要再更新一下, 否则没有顶点数据.
+        m_pUi->updateUI(m_averageFPS);
+        m_pUi->updateBuffer();
+        m_pUi->draw(commandBuffer);
+    }
 }

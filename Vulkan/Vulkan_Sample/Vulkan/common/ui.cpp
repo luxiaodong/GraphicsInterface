@@ -129,7 +129,7 @@ void Ui::prepareResources()
     vkUpdateDescriptorSets(m_device, 1, &writeDescriptorSet, 0, nullptr);
     
     // 字体准备好后可以更新UI了.
-    updateUI();
+    updateUI(60);
 }
 
 void Ui::createDescriptorPool()
@@ -253,7 +253,7 @@ void Ui::preparePipeline(const VkPipelineCache pipelineCache, const VkRenderPass
     vkDestroyShaderModule(m_device, fragModule, nullptr);
 }
 
-void Ui::updateUI()
+void Ui::updateUI(uint32_t lastFPS)
 {
     ImGuiIO& io = ImGui::GetIO();
 
@@ -268,7 +268,6 @@ void Ui::updateUI()
     ImGui::Begin("Vulkan Example", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
     ImGui::TextUnformatted(m_title.c_str());
     ImGui::TextUnformatted("Apple Max");
-    uint32_t lastFPS = 60;
     ImGui::Text("%.2f ms/frame (%.1d fps)", (1000.0f / lastFPS), lastFPS);
 
     ImGui::PushItemWidth(110.0f);
@@ -351,10 +350,6 @@ void Ui::updateBuffer()
 
 void Ui::draw(const VkCommandBuffer commandBuffer)
 {
-    // 不知道为什么需要再更新一下, 否则没有顶点数据.
-    updateUI();
-    updateBuffer();
-    
     ImDrawData* imDrawData = ImGui::GetDrawData();
     if ((!imDrawData) || (imDrawData->CmdListsCount == 0)) {
         return;

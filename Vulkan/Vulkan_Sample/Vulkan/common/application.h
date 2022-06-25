@@ -49,6 +49,7 @@ protected:
     
 protected:
     void initUi();
+    void drawUi(const VkCommandBuffer commandBuffer);
     VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t LodLevel);
     QueueFamilyIndices findQueueFamilyIndices();
     
@@ -58,6 +59,9 @@ protected:
     int m_height = 300;
     std::string m_title;
     Ui* m_pUi = nullptr;
+    std::chrono::steady_clock::time_point m_lastTimestamp;
+    float m_averageDuration = 0.0f;
+    uint32_t m_averageFPS = 0;
 
     VkInstance m_instance;
     VkSurfaceKHR m_surfaceKHR;
