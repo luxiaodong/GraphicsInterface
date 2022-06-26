@@ -43,9 +43,12 @@ protected:
     
     void createPipelineCache();
     void createCommandPool();
+    void createCommandBuffers();
     void createRenderPass();
     void createFramebuffers();
     void createDescriptorPool();
+    
+    void createSemaphores();
     
 protected:
     void initUi();
@@ -87,4 +90,9 @@ protected:
     VkPipelineCache m_pipelineCache;
     VkRenderPass m_renderPass;
     std::vector<VkFramebuffer> m_framebuffers;
+    std::vector<VkCommandBuffer> m_commandBuffers;
+    
+    std::vector<VkSemaphore> m_renderFinishedSemaphores;
+    std::vector<VkSemaphore> m_imageAvailableSemaphores;
+    std::vector<VkFence> m_inFlightFences;
 };

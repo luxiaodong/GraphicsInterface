@@ -278,8 +278,9 @@ void Ui::updateUI(uint32_t lastFPS)
     ImGui::Render();
 }
 
-void Ui::updateBuffer()
+bool Ui::updateBuffer()
 {
+    bool rtn = false;
     ImDrawData* imDrawData = ImGui::GetDrawData();
 
     // Note: Alignment is done inside buffer creation
@@ -288,7 +289,7 @@ void Ui::updateBuffer()
 
     // Update buffers only if vertex or index count has been changed compared to current buffer size
     if ((vertexBufferSize == 0) || (indexBufferSize == 0)) {
-        return ;
+        return rtn;
     }
     
     // 注意: vertexBuffer不能重新创建, vertexMemory可以, 因为vertexBuffer地址已经到了commandBuffer
@@ -309,6 +310,7 @@ void Ui::updateBuffer()
                                              VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                              m_vertexBuffer, m_vertexMemory);
         m_vertexBufferSize = vertexBufferSize;
+        rtn = true;
     }
     
     //index buffer
@@ -328,6 +330,7 @@ void Ui::updateBuffer()
                                              VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                              m_indexBuffer, m_indexMemory);
         m_indexBufferSize = indexBufferSize;
+        rtn = true;
     }
     
     ImDrawVert* vertexDstAddress = nullptr;
@@ -346,6 +349,8 @@ void Ui::updateBuffer()
     
     vkUnmapMemory(m_device, m_vertexMemory);
     vkUnmapMemory(m_device, m_indexMemory);
+    
+    return rtn;
 }
 
 void Ui::draw(const VkCommandBuffer commandBuffer)

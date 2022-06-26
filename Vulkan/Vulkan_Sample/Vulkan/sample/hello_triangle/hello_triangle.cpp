@@ -16,23 +16,11 @@ void Hello_triangle::init()
     createPipelineLayout();
 //    createRenderPass();
     createGraphicsPipeline();
-    
-    createCommandBuffers();
     recordCommandBuffers();
-    createSemaphores();
 }
 
 void Hello_triangle::clear()
 {
-    for(size_t i = 0; i < m_swapchainImageCount; ++i)
-    {
-        vkDestroySemaphore(m_device, m_renderFinishedSemaphores[i], nullptr);
-        vkDestroySemaphore(m_device, m_imageAvailableSemaphores[i], nullptr);
-        vkDestroyFence(m_device, m_inFlightFences[i], nullptr);
-    }
-    
-    vkFreeCommandBuffers(m_device, m_commandPool, static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
-    
     vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
     
@@ -160,22 +148,6 @@ void Hello_triangle::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
 }
 
-void Hello_triangle::createCommandBuffers()
-{
-    m_commandBuffers.resize(m_framebuffers.size());
-    
-    VkCommandBufferAllocateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    createInfo.commandPool = m_commandPool;
-    createInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    createInfo.commandBufferCount = static_cast<uint32_t>(m_commandBuffers.size());
-    
-    if( vkAllocateCommandBuffers(m_device, &createInfo, m_commandBuffers.data()) != VK_SUCCESS )
-    {
-        throw std::runtime_error("failed to create command buffer!");
-    }
-}
-
 void Hello_triangle::recordCommandBuffers()
 {
     int i = 0;
@@ -229,31 +201,6 @@ void Hello_triangle::recordCommandBuffers()
         }
         
         i++;
-    }
-}
-
-void Hello_triangle::createSemaphores()
-{
-    m_renderFinishedSemaphores.resize(m_swapchainImageCount);
-    m_imageAvailableSemaphores.resize(m_swapchainImageCount);
-    m_inFlightFences.resize(m_swapchainImageCount);
-    
-    VkSemaphoreCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    createInfo.flags = 0;
-    
-    VkFenceCreateInfo fenceCreateInfo = {};
-    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; //创建时设置为发出.发出了下面才能接受到
-    
-    for(uint32_t i = 0; i < m_swapchainImageCount; ++i)
-    {
-        if( (vkCreateSemaphore(m_device, &createInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS) |
-            (vkCreateSemaphore(m_device, &createInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS) |
-            (vkCreateFence(m_device, &fenceCreateInfo, nullptr, &m_inFlightFences[i]) ))
-        {
-            throw std::runtime_error("failed to create semaphorses!");
-        }
     }
 }
 

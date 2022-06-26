@@ -21,7 +21,7 @@ public:
 public:
     void draw(const VkCommandBuffer commandBuffer);
     void updateUI(uint32_t lastFPS);
-    void updateBuffer();
+    bool updateBuffer();
     
 protected:
     void createDescriptorSetLayout();
