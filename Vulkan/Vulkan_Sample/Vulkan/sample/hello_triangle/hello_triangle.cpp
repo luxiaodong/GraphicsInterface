@@ -14,9 +14,7 @@ void Hello_triangle::init()
     Application::init();
     
     createPipelineLayout();
-//    createRenderPass();
     createGraphicsPipeline();
-    recordCommandBuffers();
 }
 
 void Hello_triangle::clear()
@@ -25,49 +23,6 @@ void Hello_triangle::clear()
     vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
     
     Application::clear();
-}
-
-void Hello_triangle::render()
-{
-    //fence需要手动重置为未发出的信号
-    vkWaitForFences(m_device, 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
-    vkResetFences(m_device, 1, &m_inFlightFences[m_currentFrame]);
-    
-    uint32_t imageIndex = 0;
-    vkAcquireNextImageKHR(m_device, m_swapchainKHR, UINT64_MAX, m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &imageIndex);
-
-    VkSubmitInfo submitInfo = {};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = &m_imageAvailableSemaphores[m_currentFrame];
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    submitInfo.pWaitDstStageMask = waitStages;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &m_commandBuffers[imageIndex];
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &m_renderFinishedSemaphores[m_currentFrame];
-
-    //在命令缓冲区结束后需要发起的fence
-    if(vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, m_inFlightFences[m_currentFrame]) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to queue submit!");
-    }
-    
-    VkPresentInfoKHR presentInfo = {};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &m_renderFinishedSemaphores[m_currentFrame];
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = &m_swapchainKHR;
-    presentInfo.pImageIndices = &imageIndex;
-    presentInfo.pResults = nullptr;
-    
-    if(vkQueuePresentKHR(m_presentQueue, &presentInfo) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to queue present!");
-    }
-    
-    m_currentFrame = (m_currentFrame + 1) % m_swapchainImageCount;
 }
 
 void Hello_triangle::createPipelineLayout()
@@ -148,59 +103,16 @@ void Hello_triangle::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
 }
 
-void Hello_triangle::recordCommandBuffers()
+void Hello_triangle::recordRenderCommand(const VkCommandBuffer commandBuffer)
 {
-    int i = 0;
-    for(const auto& commandBuffer : m_commandBuffers)
-    {
-        VkCommandBufferBeginInfo beginInfo = {};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-        beginInfo.pInheritanceInfo = nullptr;
-
-        if( vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS )
-        {
-            throw std::runtime_error("failed to begin command buffer!");
-        }
-
-        std::array<VkClearValue, 2> clearValues{};
-        clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
-        clearValues[1].depthStencil = {1.0f, 0};
-        
-        VkRenderPassBeginInfo passBeginInfo = {};
-        passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        passBeginInfo.renderPass = m_renderPass;
-        passBeginInfo.framebuffer = m_framebuffers[i];
-        passBeginInfo.renderArea.offset = {0, 0};
-        passBeginInfo.renderArea.extent = m_swapchainExtent;
-        passBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-        passBeginInfo.pClearValues = clearValues.data();
-
-        VkViewport viewport = Tools::getViewport(0, 0, m_swapchainExtent.width, m_swapchainExtent.height);
-        VkRect2D scissor;
-        scissor.offset = {0, 0};
-        scissor.extent = m_swapchainExtent;
-
-        vkCmdBeginRenderPass(commandBuffer, &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
-        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-        
-//        VkViewport viewport2 = Tools::getViewport(0, 0, m_swapchainExtent.width/2, m_swapchainExtent.height/2);
-//        vkCmdSetViewport(commandBuffer, 0, 1, &viewport2);
-//        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-
-        drawUi(commandBuffer);
-        
-        vkCmdEndRenderPass(commandBuffer);
-
-        if( vkEndCommandBuffer(commandBuffer) != VK_SUCCESS )
-        {
-            throw std::runtime_error("failed to end command buffer!");
-        }
-        
-        i++;
-    }
+    VkViewport viewport = Tools::getViewport(0, 0, m_swapchainExtent.width, m_swapchainExtent.height);
+    VkRect2D scissor;
+    scissor.offset = {0, 0};
+    scissor.extent = m_swapchainExtent;
+    
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 }
 

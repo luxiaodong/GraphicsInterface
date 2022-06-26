@@ -298,8 +298,8 @@ bool Ui::updateBuffer()
     {
         if(m_vertexBufferSize != vertexBufferSize)
         {
-            vkDestroyBuffer(m_device, m_vertexBuffer, nullptr);
             vkFreeMemory(m_device, m_vertexMemory, nullptr);
+            vkDestroyBuffer(m_device, m_vertexBuffer, nullptr);
             m_vertexBuffer = VK_NULL_HANDLE;
         }
     }
@@ -318,8 +318,8 @@ bool Ui::updateBuffer()
     {
         if(m_indexBufferSize != indexBufferSize)
         {
-            vkDestroyBuffer(m_device, m_indexBuffer, nullptr);
             vkFreeMemory(m_device, m_indexMemory, nullptr);
+            vkDestroyBuffer(m_device, m_indexBuffer, nullptr);
             m_indexBuffer = VK_NULL_HANDLE;
         }
     }
@@ -353,7 +353,7 @@ bool Ui::updateBuffer()
     return rtn;
 }
 
-void Ui::draw(const VkCommandBuffer commandBuffer)
+void Ui::recordRenderCommand(const VkCommandBuffer commandBuffer)
 {
     ImDrawData* imDrawData = ImGui::GetDrawData();
     if ((!imDrawData) || (imDrawData->CmdListsCount == 0)) {

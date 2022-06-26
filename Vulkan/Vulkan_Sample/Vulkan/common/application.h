@@ -24,10 +24,16 @@ public:
     virtual ~Application();
 
     virtual void init();
-    void run();
-    virtual void render();
-    void loop();
     virtual void clear();
+    void run();
+    void loop();
+    void logic();
+    void render();
+    
+    void beginRenderCommandAndPass(const VkCommandBuffer commandBuffer, int frameBufferIndex);
+    virtual void recordRenderCommand(const VkCommandBuffer commandBuffer) = 0;
+    void endRenderCommandAndPass(const VkCommandBuffer commandBuffer);
+    
     void resize(int width, int height);
     
 protected:
@@ -52,7 +58,6 @@ protected:
     
 protected:
     void initUi();
-    void drawUi(const VkCommandBuffer commandBuffer);
     VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t LodLevel);
     QueueFamilyIndices findQueueFamilyIndices();
     
@@ -62,6 +67,7 @@ protected:
     int m_height = 300;
     std::string m_title;
     Ui* m_pUi = nullptr;
+    
     std::chrono::steady_clock::time_point m_lastTimestamp;
     float m_averageDuration = 0.0f;
     uint32_t m_averageFPS = 0;
@@ -95,4 +101,6 @@ protected:
     std::vector<VkSemaphore> m_renderFinishedSemaphores;
     std::vector<VkSemaphore> m_imageAvailableSemaphores;
     std::vector<VkFence> m_inFlightFences;
+    
+    uint32_t m_currentFrame = 0;
 };

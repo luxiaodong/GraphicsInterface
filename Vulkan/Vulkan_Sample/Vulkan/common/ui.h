@@ -19,7 +19,7 @@ public:
     void preparePipeline(const VkPipelineCache pipelineCache, const VkRenderPass renderPass);
     
 public:
-    void draw(const VkCommandBuffer commandBuffer);
+    void recordRenderCommand(const VkCommandBuffer commandBuffer);
     void updateUI(uint32_t lastFPS);
     bool updateBuffer();
     

@@ -11,7 +11,7 @@ public:
     
     virtual void init();
     virtual void clear();
-    virtual void render();
+    virtual void recordRenderCommand(const VkCommandBuffer commandBuffer);
     
 protected:
     void createPipelineLayout();
@@ -21,6 +21,4 @@ protected:
 protected:
     VkPipelineLayout m_pipelineLayout;
     VkPipeline m_graphicsPipeline;
-
-    uint32_t m_currentFrame = 0;
 };
