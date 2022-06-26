@@ -50,7 +50,7 @@ void Application::init()
     createCommandBuffers();
 
     createSemaphores();
-    initUi();
+//    initUi();
 }
 
 void Application::loop()
@@ -67,9 +67,9 @@ void Application::loop()
         std::chrono::steady_clock::time_point tNow = std::chrono::steady_clock::now();
         float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(tNow - m_lastTimestamp).count();
         m_averageDuration = m_averageDuration * 0.99 + deltaTime * 0.01;
-        m_averageFPS = static_cast<int>(1.f/m_averageDuration);
+        m_averageFPS = static_cast<int>(1.f/deltaTime);
         m_lastTimestamp = tNow;
-//        std::cout << m_averageFPS << std::endl;
+        std::cout << m_averageFPS << std::endl;
         
         vkDeviceWaitIdle(m_device);
     }
