@@ -1,15 +1,15 @@
 
-#include "hello_triangle.h"
+#include "triangle.h"
 
 
-Hello_triangle::Hello_triangle(std::string title) : Application(title)
+Triangle::Triangle(std::string title) : Application(title)
 {
 }
 
-Hello_triangle::~Hello_triangle()
+Triangle::~Triangle()
 {}
 
-void Hello_triangle::init()
+void Triangle::init()
 {
     Application::init();
     
@@ -17,7 +17,7 @@ void Hello_triangle::init()
     createGraphicsPipeline();
 }
 
-void Hello_triangle::clear()
+void Triangle::clear()
 {
     vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
@@ -25,7 +25,7 @@ void Hello_triangle::clear()
     Application::clear();
 }
 
-void Hello_triangle::createPipelineLayout()
+void Triangle::createPipelineLayout()
 {
     VkPipelineLayoutCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -41,7 +41,7 @@ void Hello_triangle::createPipelineLayout()
     }
 }
 
-void Hello_triangle::createGraphicsPipeline()
+void Triangle::createGraphicsPipeline()
 {
     VkShaderModule vertModule = Tools::createShaderModule("assets/vert.spv");
     VkShaderModule fragModule = Tools::createShaderModule("assets/frag.spv");
@@ -103,7 +103,7 @@ void Hello_triangle::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
 }
 
-void Hello_triangle::recordRenderCommand(const VkCommandBuffer commandBuffer)
+void Triangle::recordRenderCommand(const VkCommandBuffer commandBuffer)
 {
     VkViewport viewport = Tools::getViewport(0, 0, m_swapchainExtent.width, m_swapchainExtent.height);
     VkRect2D scissor;

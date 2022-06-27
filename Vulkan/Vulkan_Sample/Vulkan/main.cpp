@@ -1,9 +1,9 @@
 
-#include "sample/hello_triangle/hello_triangle.h"
+#include "sample/triangle/triangle.h"
 
 int main(int argc, const char * argv[])
 {
-    Hello_triangle app("hello triangle");
+    Triangle app("hello triangle");
     try {
         app.run();
     } catch (const std::exception& e) {

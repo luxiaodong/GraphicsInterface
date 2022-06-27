@@ -23,7 +23,7 @@
 		B0A48AA0282E607400209D51 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A48A9F282E607400209D51 /* Cocoa.framework */; };
 		B0A48AA2282E74FB00209D51 /* libvulkan.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A48AA1282E74FB00209D51 /* libvulkan.1.dylib */; };
 		B0E13A16286170A200D1D2B6 /* application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0E13A15286170A200D1D2B6 /* application.cpp */; };
-		B0E13A1C2861729300D1D2B6 /* hello_triangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0E13A1B2861729300D1D2B6 /* hello_triangle.cpp */; };
+		B0E13A1C2861729300D1D2B6 /* triangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0E13A1B2861729300D1D2B6 /* triangle.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -67,8 +67,8 @@
 		B0A48AA1282E74FB00209D51 /* libvulkan.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvulkan.1.dylib; path = ../3rdParty/VulkanSDK/lib/libvulkan.1.dylib; sourceTree = "<group>"; };
 		B0E13A14286170A200D1D2B6 /* application.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = application.h; sourceTree = "<group>"; };
 		B0E13A15286170A200D1D2B6 /* application.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = application.cpp; sourceTree = "<group>"; };
-		B0E13A1A2861729300D1D2B6 /* hello_triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hello_triangle.h; sourceTree = "<group>"; };
-		B0E13A1B2861729300D1D2B6 /* hello_triangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = hello_triangle.cpp; sourceTree = "<group>"; };
+		B0E13A1A2861729300D1D2B6 /* triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = triangle.h; sourceTree = "<group>"; };
+		B0E13A1B2861729300D1D2B6 /* triangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = triangle.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -166,18 +166,18 @@
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
-				B0E13A192861729300D1D2B6 /* hello_triangle */,
+				B0E13A192861729300D1D2B6 /* triangle */,
 			);
 			path = sample;
 			sourceTree = "<group>";
 		};
-		B0E13A192861729300D1D2B6 /* hello_triangle */ = {
+		B0E13A192861729300D1D2B6 /* triangle */ = {
 			isa = PBXGroup;
 			children = (
-				B0E13A1A2861729300D1D2B6 /* hello_triangle.h */,
-				B0E13A1B2861729300D1D2B6 /* hello_triangle.cpp */,
+				B0E13A1A2861729300D1D2B6 /* triangle.h */,
+				B0E13A1B2861729300D1D2B6 /* triangle.cpp */,
 			);
-			path = hello_triangle;
+			path = triangle;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -240,7 +240,7 @@
 				B09AEA2F2862A380006ED326 /* imgui_draw.cpp in Sources */,
 				B0E13A16286170A200D1D2B6 /* application.cpp in Sources */,
 				B09AEA2E2862A380006ED326 /* imgui_demo.cpp in Sources */,
-				B0E13A1C2861729300D1D2B6 /* hello_triangle.cpp in Sources */,
+				B0E13A1C2861729300D1D2B6 /* triangle.cpp in Sources */,
 				B0A47F1F282E4D6200209D51 /* main.cpp in Sources */,
 				B09AEA292862A380006ED326 /* imgui_widgets.cpp in Sources */,
 				B09AEA2D2862A380006ED326 /* imgui_tables.cpp in Sources */,

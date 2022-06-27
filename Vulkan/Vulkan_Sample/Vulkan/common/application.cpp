@@ -69,7 +69,7 @@ void Application::loop()
         m_averageDuration = m_averageDuration * 0.99 + deltaTime * 0.01;
         m_averageFPS = static_cast<int>(1.f/deltaTime);
         m_lastTimestamp = tNow;
-        std::cout << m_averageFPS << std::endl;
+//        std::cout << m_averageFPS << std::endl;
         
         vkDeviceWaitIdle(m_device);
     }

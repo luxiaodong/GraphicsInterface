@@ -3,11 +3,11 @@
 
 #include "common/application.h"
 
-class Hello_triangle : public Application
+class Triangle : public Application
 {
 public:
-    Hello_triangle(std::string title);
-    virtual ~Hello_triangle();
+    Triangle(std::string title);
+    virtual ~Triangle();
     
     virtual void init();
     virtual void clear();
