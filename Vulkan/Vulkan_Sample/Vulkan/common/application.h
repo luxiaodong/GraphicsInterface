@@ -29,6 +29,7 @@ public:
     void loop();
     void logic();
     void render();
+    virtual void prepareRenderData() = 0;
     
     void beginRenderCommandAndPass(const VkCommandBuffer commandBuffer, int frameBufferIndex);
     virtual void recordRenderCommand(const VkCommandBuffer commandBuffer) = 0;
@@ -52,7 +53,7 @@ protected:
     void createCommandBuffers();
     void createRenderPass();
     void createFramebuffers();
-    void createDescriptorPool();
+    void createDescriptorPool(const std::vector<VkDescriptorPoolSize>& poolSizes);
     
     void createSemaphores();
     

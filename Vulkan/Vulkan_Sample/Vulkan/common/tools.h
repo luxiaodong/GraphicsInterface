@@ -71,6 +71,4 @@ public:
     static VkGraphicsPipelineCreateInfo getGraphicsPipelineCreateInfo(std::vector<VkPipelineShaderStageCreateInfo>& shaderStages, VkPipelineLayout layout, VkRenderPass renderPass);
     static VkPipelineDynamicStateCreateInfo getPipelineDynamicStateCreateInfo(std::vector<VkDynamicState>& dynamicStates);
     static VkPipelineDynamicStateCreateInfo getPipelineDynamicStateCreateInfo(uint32_t count, VkDynamicState* pDynamicState);
-    
-    
 };

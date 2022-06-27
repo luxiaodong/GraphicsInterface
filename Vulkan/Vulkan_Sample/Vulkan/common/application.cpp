@@ -83,11 +83,16 @@ void Application::logic()
     }
 }
 
+void Application::prepareRenderData()
+{}
+
 void Application::render()
 {
+    prepareRenderData();
+    
     if(m_pUi)
     {
-        m_pUi->updateBuffer();
+        m_pUi->prepareRenderData();
     }
     
     //fence需要手动重置为未发出的信号
@@ -530,9 +535,19 @@ void Application::createSemaphores()
     }
 }
 
-void Application::createDescriptorPool()
+void Application::createDescriptorPool(const std::vector<VkDescriptorPoolSize>& poolSizes)
 {
-//    m_descriptorPool
+    VkDescriptorPoolCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+    createInfo.pPoolSizes = poolSizes.data();
+    createInfo.maxSets = 1;
+
+    if( vkCreateDescriptorPool(m_device, &createInfo, nullptr, &m_descriptorPool) != VK_SUCCESS )
+    {
+        throw std::runtime_error("failed to create descriptorPool!");
+    }
 }
 
 void Application::beginRenderCommandAndPass(const VkCommandBuffer commandBuffer, int frameBufferIndex)
