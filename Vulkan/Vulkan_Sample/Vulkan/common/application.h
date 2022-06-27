@@ -35,6 +35,8 @@ public:
     virtual void recordRenderCommand(const VkCommandBuffer commandBuffer) = 0;
     void endRenderCommandAndPass(const VkCommandBuffer commandBuffer);
     
+    void keyboard(int key, int scancode, int action, int mods);
+    void mouse(double x, double y);
     void resize(int width, int height);
     
 protected:

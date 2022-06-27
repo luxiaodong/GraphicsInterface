@@ -24,6 +24,7 @@
 		B0A48AA2282E74FB00209D51 /* libvulkan.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A48AA1282E74FB00209D51 /* libvulkan.1.dylib */; };
 		B0E13A16286170A200D1D2B6 /* application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0E13A15286170A200D1D2B6 /* application.cpp */; };
 		B0E13A1C2861729300D1D2B6 /* triangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0E13A1B2861729300D1D2B6 /* triangle.cpp */; };
+		B0FF2F182869F9E0004471C2 /* camera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0FF2F162869F9E0004471C2 /* camera.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -69,6 +70,8 @@
 		B0E13A15286170A200D1D2B6 /* application.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = application.cpp; sourceTree = "<group>"; };
 		B0E13A1A2861729300D1D2B6 /* triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = triangle.h; sourceTree = "<group>"; };
 		B0E13A1B2861729300D1D2B6 /* triangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = triangle.cpp; sourceTree = "<group>"; };
+		B0FF2F162869F9E0004471C2 /* camera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = camera.cpp; sourceTree = "<group>"; };
+		B0FF2F172869F9E0004471C2 /* camera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = camera.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -153,6 +156,8 @@
 		B0E13A13286170A200D1D2B6 /* common */ = {
 			isa = PBXGroup;
 			children = (
+				B0FF2F172869F9E0004471C2 /* camera.h */,
+				B0FF2F162869F9E0004471C2 /* camera.cpp */,
 				B0E13A14286170A200D1D2B6 /* application.h */,
 				B0E13A15286170A200D1D2B6 /* application.cpp */,
 				B09AEA312862AD42006ED326 /* ui.h */,
@@ -240,6 +245,7 @@
 				B09AEA2F2862A380006ED326 /* imgui_draw.cpp in Sources */,
 				B0E13A16286170A200D1D2B6 /* application.cpp in Sources */,
 				B09AEA2E2862A380006ED326 /* imgui_demo.cpp in Sources */,
+				B0FF2F182869F9E0004471C2 /* camera.cpp in Sources */,
 				B0E13A1C2861729300D1D2B6 /* triangle.cpp in Sources */,
 				B0A47F1F282E4D6200209D51 /* main.cpp in Sources */,
 				B09AEA292862A380006ED326 /* imgui_widgets.cpp in Sources */,

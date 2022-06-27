@@ -12,6 +12,18 @@ const std::vector<const char*> deviceExtensions =
     "VK_KHR_portability_subset",
 };
 
+static void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    auto app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
+    app->keyboard(key, scancode, action, mods);
+}
+
+static void mouseCallback(GLFWwindow* window, double x, double y)
+{
+    auto app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
+    app->mouse(x, y);
+}
+
 Application::Application(std::string title) : m_title(title)
 {
 }
@@ -55,6 +67,10 @@ void Application::init()
 
 void Application::loop()
 {
+    glfwSetWindowUserPointer(m_window, this);
+    glfwSetKeyCallback(m_window, keyboardCallback);
+    glfwSetCursorPosCallback(m_window, mouseCallback);
+    
     m_lastTimestamp = std::chrono::steady_clock::now();
     
     while (!glfwWindowShouldClose(m_window))
@@ -188,6 +204,40 @@ void Application::clear()
     vkDestroyInstance(m_instance, nullptr);
     glfwDestroyWindow(m_window);
     glfwTerminate();
+}
+
+void Application::mouse(double x, double y)
+{
+    std::cout << x << std::endl;
+    std::cout << y << std::endl;
+}
+
+void Application::keyboard(int key, int scancode, int action, int mods)
+{
+    // action == GLFW_RELEASE, GLFW_PRESS, GLFW_REPEAT
+    // mods == GLFW_MOD_SHIFT  GLFW_MOD_CONTROL GLFW_MOD_ALT GLFW_MOD_SUPER
+    if(action != GLFW_RELEASE) return ;
+    
+    if(key == GLFW_KEY_ESCAPE)
+    {
+        std::cout << "escape" << std::endl;
+    }
+    else if(key == GLFW_KEY_LEFT)
+    {
+        std::cout << "left" << std::endl;
+    }
+    else if(key == GLFW_KEY_RIGHT)
+    {
+        std::cout << "right" << std::endl;
+    }
+    else if(key == GLFW_KEY_UP)
+    {
+        std::cout << "up" << std::endl;
+    }
+    else if(key == GLFW_KEY_DOWN)
+    {
+        std::cout << "down" << std::endl;
+    }
 }
 
 void Application::resize(int width, int height)
