@@ -26,6 +26,13 @@ static void mouseCallback(GLFWwindow* window, double x, double y)
 
 Application::Application(std::string title) : m_title(title)
 {
+#define PICCOLO_XSTR(s) PICCOLO_STR(s)
+#define PICCOLO_STR(s) #s
+    
+    char const* vk_layer_path    = PICCOLO_XSTR(VK_LAYER_PATH);
+    char const* vk_icd_filenames = PICCOLO_XSTR(VK_ICD_FILENAMES);
+    setenv("VK_LAYER_PATH", vk_layer_path, 1);
+    setenv("VK_ICD_FILENAMES", vk_icd_filenames, 1);
 }
 
 Application::~Application()
@@ -276,7 +283,9 @@ void Application::createInstance()
         std::cout << "\t" << property.extensionName << std::endl;
         extensions.push_back(property.extensionName);
     }
-
+    
+//    auto extensions = glfwGetRequiredInstanceExtensions(&propertiesCount);
+    
     //add all extension
     createInfo.enabledExtensionCount = propertiesCount;
     createInfo.ppEnabledExtensionNames = extensions.data();
@@ -288,7 +297,9 @@ void Application::createInstance()
 
 void Application::createSurface()
 {
-    if( glfwCreateWindowSurface(m_instance, m_window, nullptr, &m_surfaceKHR) != VK_SUCCESS )
+    VkResult result = glfwCreateWindowSurface(m_instance, m_window, nullptr, &m_surfaceKHR);
+    
+    if( result != VK_SUCCESS )
     {
         throw std::runtime_error("failed to create windowSurface!");
     }
