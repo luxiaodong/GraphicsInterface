@@ -31,6 +31,9 @@
 class Tools
 {
 public:
+    static std::string getShaderPath();
+    static std::string getModelPath();
+    
     static VkPhysicalDevice m_physicalDevice;
     static VkDevice m_device;
     static VkCommandPool m_commandPool;

@@ -6,6 +6,7 @@
 
 #include "ui.h"
 #include "tools.h"
+#include "camera.h"
 
 struct QueueFamilyIndices
 {
@@ -24,6 +25,7 @@ public:
     virtual ~Application();
 
     virtual void init();
+    virtual void setEnabledFeatures();
     virtual void clear();
     void run();
     void loop();
@@ -70,7 +72,8 @@ protected:
     int m_height = 300;
     std::string m_title;
     Ui* m_pUi = nullptr;
-    
+    Camera m_camera;
+
     std::chrono::steady_clock::time_point m_lastTimestamp;
     float m_averageDuration = 0.0f;
     uint32_t m_averageFPS = 0;
@@ -82,6 +85,10 @@ protected:
     QueueFamilyIndices m_familyIndices;
     VkQueue m_graphicsQueue;
     VkQueue m_presentQueue;
+    
+    VkPhysicalDeviceProperties m_deviceProperties;
+    VkPhysicalDeviceFeatures m_deviceFeatures;
+    VkPhysicalDeviceMemoryProperties m_deviceMemoryProperties;
     
     VkSwapchainKHR m_swapchainKHR;
     VkExtent2D m_swapchainExtent;

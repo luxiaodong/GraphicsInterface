@@ -17,6 +17,8 @@ void Triangle::init()
     prepareVertex();
     prepareUniform();
     createGraphicsPipeline();
+    
+    
 }
 
 void Triangle::clear()
@@ -128,7 +130,7 @@ void Triangle::prepareUniform()
     bufferInfo.offset = 0;
     bufferInfo.range = sizeof(Uniform);
     bufferInfo.buffer = m_uniformBuffer;
-            
+
     VkWriteDescriptorSet writeSetBuffer = {};
     writeSetBuffer.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     writeSetBuffer.dstSet = m_descriptorSet;
@@ -176,12 +178,12 @@ void Triangle::createPipelineLayout()
 
 void Triangle::createGraphicsPipeline()
 {
-    VkShaderModule vertModule = Tools::createShaderModule("assets/triangle/triangle.vert.spv");
-    VkShaderModule fragModule = Tools::createShaderModule("assets/triangle/triangle.frag.spv");
+    VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "triangle/triangle.vert.spv");
+    VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "triangle/triangle.frag.spv");
     
     VkPipelineShaderStageCreateInfo vertShader = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
     VkPipelineShaderStageCreateInfo fragShader = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
-        
+
     VkPipelineVertexInputStateCreateInfo vertexInput = {};
     vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInput.vertexBindingDescriptionCount = static_cast<uint32_t>(m_vertexInputBindDes.size());

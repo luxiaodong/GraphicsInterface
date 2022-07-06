@@ -26,9 +26,9 @@ static void mouseCallback(GLFWwindow* window, double x, double y)
 
 Application::Application(std::string title) : m_title(title)
 {
-#define PICCOLO_XSTR(s) PICCOLO_STR(s)
 #define PICCOLO_STR(s) #s
-    
+#define PICCOLO_XSTR(s) PICCOLO_STR(s)
+
     char const* vk_layer_path    = PICCOLO_XSTR(VK_LAYER_PATH);
     char const* vk_icd_filenames = PICCOLO_XSTR(VK_ICD_FILENAMES);
     setenv("VK_LAYER_PATH", vk_layer_path, 1);
@@ -58,6 +58,8 @@ void Application::init()
     createCommandPool();
     Tools::m_commandPool = m_commandPool;
     
+    setEnabledFeatures();
+    
     createSwapchain();
     createSwapchainImageView();
     
@@ -71,6 +73,9 @@ void Application::init()
     createSemaphores();
 //    initUi();
 }
+
+void Application::setEnabledFeatures()
+{}
 
 void Application::loop()
 {
@@ -313,6 +318,10 @@ void Application::choosePhysicalDevice()
     vkEnumeratePhysicalDevices(m_instance, &physicalDeviceCount, physicalDevices.data());
     std::cout << "physicalDeviceCount : " << physicalDeviceCount << std::endl;
     m_physicalDevice = physicalDevices[0];
+    
+    vkGetPhysicalDeviceProperties(m_physicalDevice, &m_deviceProperties);
+    vkGetPhysicalDeviceFeatures(m_physicalDevice, &m_deviceFeatures);
+    vkGetPhysicalDeviceMemoryProperties(m_physicalDevice, &m_deviceMemoryProperties);
 }
 
 void Application::createLogicDeivce()
@@ -465,7 +474,7 @@ void Application::createRenderPass()
     depthAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            
+
     VkAttachmentDescription colorAttachmentDescription = {};
     colorAttachmentDescription.flags = 0;
     colorAttachmentDescription.format = m_surfaceFormatKHR.format;

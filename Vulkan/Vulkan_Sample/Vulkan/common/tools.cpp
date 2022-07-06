@@ -5,6 +5,16 @@ VkPhysicalDevice Tools::m_physicalDevice = VK_NULL_HANDLE;
 VkDevice Tools::m_device = VK_NULL_HANDLE;
 VkCommandPool Tools::m_commandPool = VK_NULL_HANDLE;
 
+std::string Tools::getShaderPath()
+{
+    return "assets/shaders/";
+}
+
+std::string Tools::getModelPath()
+{
+    return "assets/models/";
+}
+
 std::vector<char> Tools::readFile(const std::string& filename)
 {
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
