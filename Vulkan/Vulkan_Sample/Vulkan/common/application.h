@@ -69,8 +69,8 @@ protected:
     
 protected:
     GLFWwindow* m_window;
-    int m_width = 400;
-    int m_height = 300;
+    int m_width = 1280;
+    int m_height = 720;
     std::string m_title;
     Ui* m_pUi = nullptr;
     Camera m_camera;

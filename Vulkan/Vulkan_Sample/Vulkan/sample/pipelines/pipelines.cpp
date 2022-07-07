@@ -3,11 +3,11 @@
 
 Pipelines::Pipelines(std::string title) : Application(title)
 {
+    m_pModel = new vkglTF::Model();
 }
 
 Pipelines::~Pipelines()
 {}
-
 
 void Pipelines::init()
 {
@@ -45,6 +45,8 @@ void Pipelines::setEnabledFeatures()
 
 void Pipelines::clear()
 {
+    delete m_pModel;
+    
     vkFreeMemory(m_device, m_uniformMemory, nullptr);
     vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
 
@@ -61,7 +63,7 @@ void Pipelines::loadModel()
 {
     const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
     
-    m_model.loadFromFile(Tools::getModelPath() + "treasure_smooth.gltf", m_graphicsQueue, glTFLoadingFlags);
+    m_pModel->loadFromFile(Tools::getModelPath() + "treasure_smooth.gltf", m_graphicsQueue, glTFLoadingFlags);
 }
 
 void Pipelines::prepareUniform()
@@ -173,7 +175,7 @@ void Pipelines::createGraphicsPipeline()
     };
 
     VkPipelineDynamicStateCreateInfo dynamic = Tools::getPipelineDynamicStateCreateInfo(dynamicStates);
-    VkPipelineRasterizationStateCreateInfo rasterization = Tools::getPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
+    VkPipelineRasterizationStateCreateInfo rasterization = Tools::getPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE);
     VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
     VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_FALSE, VK_FALSE, VK_COMPARE_OP_ALWAYS);
 
@@ -236,8 +238,8 @@ void Pipelines::recordRenderCommand(const VkCommandBuffer commandBuffer)
 //    VkDeviceSize offset = {0};
 //    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_vertexBuffer, &offset);
 //    vkCmdBindIndexBuffer(commandBuffer, m_indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-    m_model.bindBuffers(commandBuffer);
     
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    m_pModel->bindBuffers(commandBuffer);
+    m_pModel->draw(commandBuffer);
 }

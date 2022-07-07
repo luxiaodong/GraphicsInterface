@@ -224,8 +224,8 @@ void Ui::preparePipeline(const VkPipelineCache pipelineCache, const VkRenderPass
     VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_FALSE, VK_FALSE, VK_COMPARE_OP_ALWAYS);
     VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
 
-    VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "triangle/uioverlay.vert.spv");
-    VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "triangle/uioverlay.frag.spv");
+    VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "base/uioverlay.vert.spv");
+    VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "base/uioverlay.frag.spv");
 //    VkShaderModule vertModule = Tools::createShaderModule("assets/base/uioverlay.vert.spv");
 //    VkShaderModule fragModule = Tools::createShaderModule("assets/base/uioverlay.frag.spv");
     VkPipelineShaderStageCreateInfo vert = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);

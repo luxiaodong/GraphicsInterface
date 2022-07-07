@@ -22,6 +22,7 @@ public:
     virtual ~Triangle();
     
     virtual void init();
+    virtual void initCamera();
     virtual void clear();
     
     virtual void prepareRenderData();

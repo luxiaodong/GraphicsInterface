@@ -17,8 +17,13 @@ void Triangle::init()
     prepareVertex();
     prepareUniform();
     createGraphicsPipeline();
-    
-    
+}
+
+void Triangle::initCamera()
+{
+    m_camera.setPosition(glm::vec3(0.0f, 0.0f, -2.5f));
+    m_camera.setRotation(glm::vec3(0.0f));
+    m_camera.setPerspective(60.0f, (float)m_width / (float)m_height, 1.0f, 256.0f);
 }
 
 void Triangle::clear()
@@ -108,6 +113,12 @@ void Triangle::prepareUniform()
     Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                          m_uniformBuffer, m_uniformMemory);
+
+    Triangle::Uniform mvp = {};
+    mvp.modelMatrix = glm::mat4(1.0f);
+    mvp.viewMatrix = m_camera.m_viewMat;
+    mvp.projectionMatrix = m_camera.m_projMat;
+    Tools::mapMemory(m_uniformMemory, sizeof(Triangle::Uniform), &mvp);
 
     VkDescriptorPoolSize poolSize = {};
     poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -242,16 +253,16 @@ void Triangle::createGraphicsPipeline()
 
 void Triangle::prepareRenderData()
 {
-    static int i = 0;
-    i++;
-    Triangle::Uniform mvp = {};
-    
-    mvp.modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(1.0f*i), glm::vec3(0.0f, 0.0f, 1.0f));
-    mvp.viewMatrix = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    mvp.projectionMatrix = glm::perspective(glm::radians(45.0f), m_swapchainExtent.width / (float) m_swapchainExtent.height, 0.1f, 10.0f);
-    mvp.projectionMatrix[1][1] *= -1;
-
-    Tools::mapMemory(m_uniformMemory, sizeof(Triangle::Uniform), &mvp);
+//    static int i = 0;
+//    i++;
+//    Triangle::Uniform mvp = {};
+//
+//    mvp.modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(1.0f*i), glm::vec3(0.0f, 0.0f, 1.0f));
+//    mvp.viewMatrix = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+//    mvp.projectionMatrix = glm::perspective(glm::radians(45.0f), m_swapchainExtent.width / (float) m_swapchainExtent.height, 0.1f, 10.0f);
+//    mvp.projectionMatrix[1][1] *= -1;
+//
+//    Tools::mapMemory(m_uniformMemory, sizeof(Triangle::Uniform), &mvp);
 }
 
 void Triangle::recordRenderCommand(const VkCommandBuffer commandBuffer)

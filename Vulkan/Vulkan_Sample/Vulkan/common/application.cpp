@@ -225,8 +225,8 @@ void Application::clear()
 
 void Application::mouse(double x, double y)
 {
-    std::cout << x << std::endl;
-    std::cout << y << std::endl;
+//    std::cout << x << std::endl;
+//    std::cout << y << std::endl;
 }
 
 void Application::keyboard(int key, int scancode, int action, int mods)

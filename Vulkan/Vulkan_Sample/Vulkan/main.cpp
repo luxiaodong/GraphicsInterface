@@ -4,7 +4,7 @@
 
 int main(int argc, const char * argv[])
 {
-//    Triangle app("hello triangle");
+//    Triangle app("triangle");
     Pipelines app("pipeline");
     try {
         app.run();

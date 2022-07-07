@@ -41,7 +41,7 @@ protected:
     void createDescriptorSet();
 
 protected:
-    vkglTF::Model m_model;
+    vkglTF::Model* m_pModel;
     
     VkPipelineLayout m_pipelineLayout;
 //    VkPipeline m_graphicsPipeline;
