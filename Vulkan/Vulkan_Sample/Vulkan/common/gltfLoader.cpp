@@ -1453,7 +1453,7 @@ void vkglTF::Model::loadFromFile(std::string filename, VkQueue transferQueue, ui
 			std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings{};
 			if (descriptorBindingFlags & DescriptorBindingFlags::ImageBaseColor) {
 //				setLayoutBindings.push_back(vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, static_cast<uint32_t>(setLayoutBindings.size())));
-                
+
                 setLayoutBindings.push_back(Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, static_cast<uint32_t>(setLayoutBindings.size())));
                 
 			}

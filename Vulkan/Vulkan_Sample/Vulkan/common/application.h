@@ -25,6 +25,7 @@ public:
     virtual ~Application();
 
     virtual void init();
+    virtual void initCamera();
     virtual void setEnabledFeatures();
     virtual void clear();
     void run();
@@ -57,7 +58,7 @@ protected:
     void createCommandBuffers();
     void createRenderPass();
     void createFramebuffers();
-    void createDescriptorPool(const std::vector<VkDescriptorPoolSize>& poolSizes);
+    void createDescriptorPool(const std::vector<VkDescriptorPoolSize>& poolSizes, uint32_t maxSets);
     
     void createSemaphores();
     
@@ -89,6 +90,7 @@ protected:
     VkPhysicalDeviceProperties m_deviceProperties;
     VkPhysicalDeviceFeatures m_deviceFeatures;
     VkPhysicalDeviceMemoryProperties m_deviceMemoryProperties;
+    VkPhysicalDeviceFeatures m_deviceEnabledFeatures = {}; //上面是总的特征,这个是程序支持的特征.
     
     VkSwapchainKHR m_swapchainKHR;
     VkExtent2D m_swapchainExtent;

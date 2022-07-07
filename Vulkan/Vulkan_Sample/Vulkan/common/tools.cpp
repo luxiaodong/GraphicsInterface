@@ -270,6 +270,15 @@ void Tools::createTextureSampler(VkFilter filter, VkSamplerAddressMode addressMo
     }
 }
 
+VkDescriptorSetLayoutCreateInfo Tools::getDescriptorSetLayoutCreateInfo(const VkDescriptorSetLayoutBinding* pBindings, uint32_t bindingCount)
+{
+    VkDescriptorSetLayoutCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    createInfo.pBindings = pBindings;
+    createInfo.bindingCount = bindingCount;
+    return createInfo;
+}
+
 void Tools::allocateDescriptorSets(VkDescriptorPool descriptorPool, VkDescriptorSetLayout* pSetLayouts, uint32_t descriptorSetCount, VkDescriptorSet& descriptorSet)
 {
     VkDescriptorSetAllocateInfo allocInfo = {};

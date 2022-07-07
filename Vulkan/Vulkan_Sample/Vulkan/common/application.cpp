@@ -48,6 +48,8 @@ void Application::run()
 
 void Application::init()
 {
+    initCamera();
+
     createWindow();
     createInstance();
     createSurface();
@@ -73,6 +75,9 @@ void Application::init()
     createSemaphores();
 //    initUi();
 }
+
+void Application::initCamera()
+{}
 
 void Application::setEnabledFeatures()
 {}
@@ -362,6 +367,7 @@ void Application::createLogicDeivce()
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
+    createInfo.pEnabledFeatures = &m_deviceEnabledFeatures;
     
     if( vkCreateDevice(m_physicalDevice, &createInfo, nullptr, &m_device) != VK_SUCCESS )
     {
@@ -605,14 +611,14 @@ void Application::createSemaphores()
     }
 }
 
-void Application::createDescriptorPool(const std::vector<VkDescriptorPoolSize>& poolSizes)
+void Application::createDescriptorPool(const std::vector<VkDescriptorPoolSize>& poolSizes, uint32_t maxSets)
 {
     VkDescriptorPoolCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     createInfo.flags = 0;
     createInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
     createInfo.pPoolSizes = poolSizes.data();
-    createInfo.maxSets = 1;
+    createInfo.maxSets = maxSets;
 
     if( vkCreateDescriptorPool(m_device, &createInfo, nullptr, &m_descriptorPool) != VK_SUCCESS )
     {

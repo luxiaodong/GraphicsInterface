@@ -113,7 +113,7 @@ void Triangle::prepareUniform()
     poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSize.descriptorCount = 1;
     std::vector<VkDescriptorPoolSize> poolSizes = {poolSize};
-    createDescriptorPool(poolSizes);
+    createDescriptorPool(poolSizes, 1);
     
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
