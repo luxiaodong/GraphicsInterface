@@ -505,16 +505,24 @@ VkPipelineDynamicStateCreateInfo Tools::getPipelineDynamicStateCreateInfo(uint32
     return createInfo;
 }
 
-VkGraphicsPipelineCreateInfo Tools::getGraphicsPipelineCreateInfo(std::vector<VkPipelineShaderStageCreateInfo>& shaderStages, VkPipelineLayout layout, VkRenderPass renderPass)
+VkGraphicsPipelineCreateInfo Tools::getGraphicsPipelineCreateInfo(VkPipelineLayout layout, VkRenderPass renderPass)
 {
     VkGraphicsPipelineCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    createInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
-    createInfo.pStages = shaderStages.data();
     createInfo.layout = layout;
     createInfo.renderPass = renderPass;
     createInfo.basePipelineHandle = VK_NULL_HANDLE;
     createInfo.basePipelineIndex = 0;
+    return createInfo;
+}
+
+VkGraphicsPipelineCreateInfo Tools::getGraphicsPipelineCreateInfo(std::vector<VkPipelineShaderStageCreateInfo>& shaderStages, VkPipelineLayout layout, VkRenderPass renderPass)
+{
+    VkGraphicsPipelineCreateInfo createInfo = Tools::getGraphicsPipelineCreateInfo(layout, renderPass);
+    
+    createInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    createInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
+    createInfo.pStages = shaderStages.data();
     return createInfo;
 }
 

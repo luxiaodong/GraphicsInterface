@@ -83,6 +83,8 @@ public:
     static VkPipelineColorBlendAttachmentState getPipelineColorBlendAttachmentState(VkBool32 blend, VkColorComponentFlags colorComponent);
     static VkPipelineColorBlendStateCreateInfo getPipelineColorBlendStateCreateInfo(uint32_t count, VkPipelineColorBlendAttachmentState* pColorBlendAttachment);
     static VkPipelineColorBlendStateCreateInfo getPipelineColorBlendStateCreateInfo(std::vector<VkPipelineColorBlendAttachmentState>& colorBlendAttachment);
+    
+    static VkGraphicsPipelineCreateInfo getGraphicsPipelineCreateInfo(VkPipelineLayout layout, VkRenderPass renderPass);
     static VkGraphicsPipelineCreateInfo getGraphicsPipelineCreateInfo(std::vector<VkPipelineShaderStageCreateInfo>& shaderStages, VkPipelineLayout layout, VkRenderPass renderPass);
     static VkPipelineDynamicStateCreateInfo getPipelineDynamicStateCreateInfo(std::vector<VkDynamicState>& dynamicStates);
     static VkPipelineDynamicStateCreateInfo getPipelineDynamicStateCreateInfo(uint32_t count, VkDynamicState* pDynamicState);

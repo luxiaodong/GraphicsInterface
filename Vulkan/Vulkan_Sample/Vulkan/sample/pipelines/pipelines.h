@@ -16,7 +16,7 @@ public:
         glm::mat4 projectionMatrix;
         glm::mat4 modelMatrix;
         glm::mat4 viewMatrix;
-        glm::vec4 lightPos = glm::vec4(0.0f, 2.0f, 1.0f, 0.0f);
+        glm::vec4 lightPos;
     };
 
     Pipelines(std::string title);
@@ -46,8 +46,8 @@ protected:
     VkPipelineLayout m_pipelineLayout;
 //    VkPipeline m_graphicsPipeline;
     VkPipeline m_phong;
-    VkPipeline m_wireframe;
     VkPipeline m_toon;
+    VkPipeline m_wireframe;
 
 //    //顶点绑定和顶点描述
 //    std::vector<VkVertexInputBindingDescription> m_vertexInputBindDes;

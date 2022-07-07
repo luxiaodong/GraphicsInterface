@@ -98,6 +98,8 @@ void Camera::update(float deltaTime)
         if (m_isMoveRight)
             m_position += glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
 
+//        std::cout << m_position.x <<","<< m_position.y <<","<< m_position.z << std::endl;
+        
         updateViewMatrix();
     }
 }

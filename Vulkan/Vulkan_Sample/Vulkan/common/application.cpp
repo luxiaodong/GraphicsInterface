@@ -55,12 +55,12 @@ void Application::init()
     createSurface();
     choosePhysicalDevice();
     Tools::m_physicalDevice = m_physicalDevice;
+    setEnabledFeatures();
+    
     createLogicDeivce();
     Tools::m_device = m_device;
     createCommandPool();
     Tools::m_commandPool = m_commandPool;
-    
-    setEnabledFeatures();
     
     createSwapchain();
     createSwapchainImageView();
@@ -99,10 +99,12 @@ void Application::loop()
         
         std::chrono::steady_clock::time_point tNow = std::chrono::steady_clock::now();
         float deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(tNow - m_lastTimestamp).count();
+        m_camera.update(deltaTime);
+        
         m_averageDuration = m_averageDuration * 0.99 + deltaTime * 0.01;
         m_averageFPS = static_cast<int>(1.f/deltaTime);
         m_lastTimestamp = tNow;
-//        std::cout << m_averageFPS << std::endl;
+//        std::cout << deltaTime << std::endl;
         
         vkDeviceWaitIdle(m_device);
     }
@@ -241,19 +243,19 @@ void Application::keyboard(int key, int scancode, int action, int mods)
     }
     else if(key == GLFW_KEY_LEFT)
     {
-        std::cout << "left" << std::endl;
+        m_camera.m_isMoveLeft = true;
     }
     else if(key == GLFW_KEY_RIGHT)
     {
-        std::cout << "right" << std::endl;
+        m_camera.m_isMoveRight = true;
     }
     else if(key == GLFW_KEY_UP)
     {
-        std::cout << "up" << std::endl;
+        m_camera.m_isMoveUp = true;
     }
     else if(key == GLFW_KEY_DOWN)
     {
-        std::cout << "down" << std::endl;
+        m_camera.m_isMoveDown = true;
     }
 }
 
@@ -327,6 +329,7 @@ void Application::choosePhysicalDevice()
     vkGetPhysicalDeviceProperties(m_physicalDevice, &m_deviceProperties);
     vkGetPhysicalDeviceFeatures(m_physicalDevice, &m_deviceFeatures);
     vkGetPhysicalDeviceMemoryProperties(m_physicalDevice, &m_deviceMemoryProperties);
+//    std::cout << m_deviceFeatures.fillModeNonSolid << std::endl;
 }
 
 void Application::createLogicDeivce()
