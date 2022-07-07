@@ -28,11 +28,23 @@
 //#define TINYOBJLOADER_IMPLEMENTATION
 //#include <tiny_obj_loader.h>
 
+#define VK_CHECK_RESULT(f)                      \
+{                                               \
+    VkResult res = (f);                         \
+    if (res != VK_SUCCESS)                      \
+    {                                           \
+        std::cout << "Fatal : VkResult is \"" << res << "\" in " << __FILE__ << " at line " << __LINE__ << "\n"; \
+        assert(res == VK_SUCCESS);              \
+    }                                           \
+}
+
 class Tools
 {
 public:
     static std::string getShaderPath();
     static std::string getModelPath();
+    static bool isFileExists(const std::string &filename);
+    static std::vector<char> readFile(const std::string& filename);
     
     static VkPhysicalDevice m_physicalDevice;
     static VkDevice m_device;
@@ -54,7 +66,6 @@ public:
     static VkWriteDescriptorSet getWriteDescriptorSet(VkDescriptorSet descriptorSet, VkDescriptorType descriptorType, uint32_t binding, VkDescriptorBufferInfo* bufferInfo, uint32_t count = 1);
     static VkWriteDescriptorSet getWriteDescriptorSet(VkDescriptorSet descriptorSet, VkDescriptorType descriptorType, uint32_t binding, VkDescriptorImageInfo* imageInfo, uint32_t count = 1);
 
-    static std::vector<char> readFile(const std::string& filename);
     static VkShaderModule createShaderModule(const std::string& filename);
     static VkPipelineShaderStageCreateInfo getPipelineShaderStageCreateInfo(VkShaderModule module, VkShaderStageFlagBits stage);
     

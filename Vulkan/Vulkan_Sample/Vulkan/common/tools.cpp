@@ -15,6 +15,12 @@ std::string Tools::getModelPath()
     return "assets/models/";
 }
 
+bool Tools::isFileExists(const std::string &filename)
+{
+    std::ifstream f(filename.c_str());
+    return !f.fail();
+}
+
 std::vector<char> Tools::readFile(const std::string& filename)
 {
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
