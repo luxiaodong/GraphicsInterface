@@ -241,21 +241,29 @@ void Application::keyboard(int key, int scancode, int action, int mods)
     {
         std::cout << "escape" << std::endl;
     }
-    else if(key == GLFW_KEY_LEFT)
+    else if(key == GLFW_KEY_1)
     {
-        m_camera.m_isMoveLeft = true;
+        m_camera.m_moveAxis = 1;
     }
-    else if(key == GLFW_KEY_RIGHT)
+    else if(key == GLFW_KEY_2)
     {
-        m_camera.m_isMoveRight = true;
+        m_camera.m_moveAxis = 2;
     }
-    else if(key == GLFW_KEY_UP)
+    else if(key == GLFW_KEY_3)
     {
-        m_camera.m_isMoveUp = true;
+        m_camera.m_moveAxis = 3;
     }
-    else if(key == GLFW_KEY_DOWN)
+    else if(key == GLFW_KEY_4)
     {
-        m_camera.m_isMoveDown = true;
+        m_camera.m_moveAxis = 4;
+    }
+    else if(key == GLFW_KEY_5)
+    {
+        m_camera.m_moveAxis = 5;
+    }
+    else if(key == GLFW_KEY_6)
+    {
+        m_camera.m_moveAxis = 6;
     }
 }
 

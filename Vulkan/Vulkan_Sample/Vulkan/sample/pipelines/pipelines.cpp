@@ -25,7 +25,7 @@ void Pipelines::init()
 
 void Pipelines::initCamera()
 {
-    m_camera.setPosition(glm::vec3(5.0f, 0.0f, -10.5f));
+    m_camera.setPosition(glm::vec3(2.0f, 4.0f, -9.0f));
     m_camera.setRotation(glm::vec3(-25.0f, 15.0f, 0.0f));
     m_camera.setRotationSpeed(0.5f);
     m_camera.setPerspective(60.0f, (float)(m_width/3.0f) / (float)m_height, 0.1f, 256.0f);

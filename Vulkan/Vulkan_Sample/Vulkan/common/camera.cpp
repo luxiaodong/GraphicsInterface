@@ -3,7 +3,7 @@
 
 bool Camera::isMoving()
 {
-    return m_isMoveLeft || m_isMoveRight || m_isMoveUp || m_isMoveDown;
+    return m_moveAxis;
 }
 
 void Camera::setPosition(glm::vec3 position)
@@ -81,26 +81,37 @@ void Camera::update(float deltaTime)
     m_isNeedUpdated = false;
     if (isMoving())
     {
-        glm::vec3 camFront;
-        camFront.x = -cos(glm::radians(m_rotation.x)) * sin(glm::radians(m_rotation.y));
-        camFront.y = sin(glm::radians(m_rotation.x));
-        camFront.z = cos(glm::radians(m_rotation.x)) * cos(glm::radians(m_rotation.y));
-        camFront = glm::normalize(camFront);
-
-        float moveSpeed = deltaTime * m_movementSpeed;
-
-        if (m_isMoveUp)
-            m_position += camFront * moveSpeed;
-        if (m_isMoveDown)
-            m_position -= camFront * moveSpeed;
-        if (m_isMoveLeft)
-            m_position -= glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
-        if (m_isMoveRight)
-            m_position += glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
-
+        float moveSpeed = 5.0f*deltaTime * m_movementSpeed;
+        
+        switch (m_moveAxis) {
+            case 1:
+                m_position.x -= moveSpeed;
+                break;
+            case 2:
+                m_position.x += moveSpeed;
+                break;
+            case 3:
+                m_position.y -= moveSpeed;
+                break;
+            case 4:
+                m_position.y += moveSpeed;
+                break;
+            case 5:
+                m_position.z -= moveSpeed;
+                break;
+            case 6:
+                m_position.z += moveSpeed;
+                break;
+                
+            default:
+                break;
+        }
+        
+//        std::cout << moveSpeed << std::endl;
 //        std::cout << m_position.x <<","<< m_position.y <<","<< m_position.z << std::endl;
         
         updateViewMatrix();
+        m_moveAxis = 0;
     }
 }
 

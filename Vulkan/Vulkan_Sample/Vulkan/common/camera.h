@@ -37,10 +37,7 @@ public:
     bool m_isNeedUpdated = false;
     bool m_isFlipY = false;
     
-    bool m_isMoveLeft = false;
-    bool m_isMoveRight = false;
-    bool m_isMoveUp = false;
-    bool m_isMoveDown = false;
+    int m_moveAxis = 0; // 0.不移动, [1-6] x-,x+,y-,y+,z-,z+
     
     glm::mat4 m_viewMat;
     glm::mat4 m_projMat;
