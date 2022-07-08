@@ -2,6 +2,7 @@
 #pragma once
 
 #include "common/application.h"
+#include "common/gltfModel.h"
 #include "common/gltfLoader.h"
 
 class Pipelines : public Application
@@ -41,7 +42,7 @@ protected:
     void createDescriptorSet();
 
 protected:
-    vkglTF::Model* m_pModel;
+    GltfLoader m_gltfLoader;
     
     VkPipelineLayout m_pipelineLayout;
 //    VkPipeline m_graphicsPipeline;

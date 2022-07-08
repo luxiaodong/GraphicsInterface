@@ -3,7 +3,7 @@
 
 Pipelines::Pipelines(std::string title) : Application(title)
 {
-    m_pModel = new vkglTF::Model();
+    
 }
 
 Pipelines::~Pipelines()
@@ -45,7 +45,7 @@ void Pipelines::setEnabledFeatures()
 
 void Pipelines::clear()
 {
-    delete m_pModel;
+    m_gltfLoader.clear();
     
     vkFreeMemory(m_device, m_uniformMemory, nullptr);
     vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
@@ -63,9 +63,7 @@ void Pipelines::clear()
 
 void Pipelines::loadModel()
 {
-    const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY;
-    
-    m_pModel->loadFromFile(Tools::getModelPath() + "treasure_smooth.gltf", m_graphicsQueue, glTFLoadingFlags);
+    m_gltfLoader.loadFromFile(Tools::getModelPath() + "treasure_smooth.gltf", m_graphicsQueue);
 }
 
 void Pipelines::prepareUniform()
@@ -264,26 +262,26 @@ void Pipelines::recordRenderCommand(const VkCommandBuffer commandBuffer)
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
-    m_pModel->bindBuffers(commandBuffer);
+    m_gltfLoader.bindBuffers(commandBuffer);
     
     // phong
     viewport.width = (float)m_swapchainExtent.width/3.0;
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_phong);
-    m_pModel->draw(commandBuffer);
+    m_gltfLoader.draw(commandBuffer);
     
     // toon
     viewport.x = (float)m_swapchainExtent.width/3.0;
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     if( m_deviceFeatures.wideLines ) vkCmdSetLineWidth(commandBuffer, 2.0f);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_toon);
-    m_pModel->draw(commandBuffer);
+    m_gltfLoader.draw(commandBuffer);
     
     if(m_deviceFeatures.fillModeNonSolid)
     {
         viewport.x += (float)m_swapchainExtent.width/3.0;
         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_wireframe);
-        m_pModel->draw(commandBuffer);
+        m_gltfLoader.draw(commandBuffer);
     }
 }
