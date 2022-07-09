@@ -63,7 +63,8 @@ void Pipelines::clear()
 
 void Pipelines::loadModel()
 {
-    m_gltfLoader.loadFromFile(Tools::getModelPath() + "treasure_smooth.gltf", m_graphicsQueue);
+    m_gltfLoader.loadFromFile(Tools::getModelPath() + "triangle.gltf", m_graphicsQueue);
+//    m_gltfLoader.loadFromFile(Tools::getModelPath() + "treasure_smooth.gltf", m_graphicsQueue);
 }
 
 void Pipelines::prepareUniform()
@@ -177,7 +178,9 @@ void Pipelines::createGraphicsPipeline()
     createInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
     createInfo.pStages = shaderStages.data();
 
-    createInfo.pVertexInputState = vkglTF::Vertex::getPipelineVertexInputState({vkglTF::VertexComponent::Position, vkglTF::VertexComponent::Normal, vkglTF::VertexComponent::Color});
+//    createInfo.pVertexInputState = vkglTF::Vertex::getPipelineVertexInputState({vkglTF::VertexComponent::Position, vkglTF::VertexComponent::Normal, vkglTF::VertexComponent::Color});
+    
+    createInfo.pVertexInputState = m_gltfLoader.getPipelineVertexInputState();
     createInfo.pInputAssemblyState = &inputAssembly;
     createInfo.pTessellationState = nullptr;
     createInfo.pViewportState = &viewport;

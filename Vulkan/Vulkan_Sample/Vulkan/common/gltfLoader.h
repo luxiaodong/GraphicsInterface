@@ -3,6 +3,13 @@
 
 #include "tools.h"
 #include "gltfModel.h"
+#include "gltfNode.h"
+
+#include "vertex.h"
+#include "primitive.h"
+#include "mesh.h"
+
+#define CUSTOM_LOAD_GLTF 1
 
 class GltfLoader
 {
@@ -11,11 +18,49 @@ public:
     ~GltfLoader();
     void clear();
     void loadFromFile(std::string fileName, VkQueue transferQueue);
-    
+
 public:
+    VkPipelineVertexInputStateCreateInfo* getPipelineVertexInputState();
     void bindBuffers(VkCommandBuffer commandBuffer);
     void draw(VkCommandBuffer commandBuffer);
+
+private:
+    void load(std::string fileName);
+    void loadNodes();
+    void loadSingleNode(GltfNode* parent, const tinygltf::Node &node, uint32_t indexAtScene);
+    
+    void loadMesh(Mesh* newMesh, const tinygltf::Mesh &mesh);
+    
+    void loadImages();
+    void loadMaterials();
+    void loadAnimations();
+    void loadSkins();
+
+private:
+    void createVertexAndIndexBuffer();
+    void setVertexBindingAndAttributeDescription( const std::vector<VertexComponent> components );
+    void drawNode(VkCommandBuffer commandBuffer, GltfNode* node);
+
+private:
+    tinygltf::Model m_gltfModel;
+    
+    //两种结点组织方式
+    std::vector<GltfNode*> m_treeNodes;
+    std::vector<GltfNode*> m_linearNodes;
+    
+    //顶点数据
+    std::vector<Vertex> m_vertexData;
+    std::vector<uint32_t> m_indexData;
+
+private:
+    VkQueue m_graphicsQueue;
+    VkBuffer m_vertexBuffer;
+    VkDeviceMemory m_vertexMemory;
+    VkBuffer m_indexBuffer;
+    VkDeviceMemory m_indexMemory;
     
 public:
+#ifdef CUSTOM_LOAD_GLTF
     vkglTF::Model* m_pModel = nullptr;
+#endif
 };

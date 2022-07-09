@@ -33,6 +33,10 @@
 		B0B5D0892876AC69003A175D /* swap.c in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0882876AC69003A175D /* swap.c */; };
 		B0B5D08C2876AC95003A175D /* hashlist.c in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D08B2876AC95003A175D /* hashlist.c */; };
 		B0B5D09728783317003A175D /* gltfModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D09528783317003A175D /* gltfModel.cpp */; };
+		B0B5D09B287920AD003A175D /* gltfNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D099287920AD003A175D /* gltfNode.cpp */; };
+		B0B5D09F287944F7003A175D /* mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D09E287944F6003A175D /* mesh.cpp */; };
+		B0B5D0A328794562003A175D /* vertex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0A128794562003A175D /* vertex.cpp */; };
+		B0B5D0A728794942003A175D /* primitive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0A528794942003A175D /* primitive.cpp */; };
 		B0E13A1C2861729300D1D2B6 /* triangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0E13A1B2861729300D1D2B6 /* triangle.cpp */; };
 /* End PBXBuildFile section */
 
@@ -91,6 +95,14 @@
 		B0B5D08B2876AC95003A175D /* hashlist.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = hashlist.c; path = ../../3rdParty/ktx/lib/hashlist.c; sourceTree = "<group>"; };
 		B0B5D09528783317003A175D /* gltfModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gltfModel.cpp; sourceTree = "<group>"; };
 		B0B5D09628783317003A175D /* gltfModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gltfModel.h; sourceTree = "<group>"; };
+		B0B5D099287920AD003A175D /* gltfNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gltfNode.cpp; sourceTree = "<group>"; };
+		B0B5D09A287920AD003A175D /* gltfNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gltfNode.h; sourceTree = "<group>"; };
+		B0B5D09D287944F6003A175D /* mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mesh.h; sourceTree = "<group>"; };
+		B0B5D09E287944F6003A175D /* mesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mesh.cpp; sourceTree = "<group>"; };
+		B0B5D0A128794562003A175D /* vertex.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vertex.cpp; sourceTree = "<group>"; };
+		B0B5D0A228794562003A175D /* vertex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vertex.h; sourceTree = "<group>"; };
+		B0B5D0A528794942003A175D /* primitive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = primitive.cpp; sourceTree = "<group>"; };
+		B0B5D0A628794942003A175D /* primitive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = primitive.h; sourceTree = "<group>"; };
 		B0E13A1A2861729300D1D2B6 /* triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = triangle.h; sourceTree = "<group>"; };
 		B0E13A1B2861729300D1D2B6 /* triangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = triangle.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -178,6 +190,14 @@
 		B0B5D0162875293B003A175D /* common */ = {
 			isa = PBXGroup;
 			children = (
+				B0B5D0A528794942003A175D /* primitive.cpp */,
+				B0B5D0A628794942003A175D /* primitive.h */,
+				B0B5D0A128794562003A175D /* vertex.cpp */,
+				B0B5D0A228794562003A175D /* vertex.h */,
+				B0B5D09E287944F6003A175D /* mesh.cpp */,
+				B0B5D09D287944F6003A175D /* mesh.h */,
+				B0B5D099287920AD003A175D /* gltfNode.cpp */,
+				B0B5D09A287920AD003A175D /* gltfNode.h */,
 				B0B5D02A28753328003A175D /* gltfLoader.cpp */,
 				B0B5D02B28753328003A175D /* gltfLoader.h */,
 				B0B5D09528783317003A175D /* gltfModel.cpp */,
@@ -298,7 +318,9 @@
 				B0B5D0802876ABAF003A175D /* memstream.c in Sources */,
 				B0A47F1F282E4D6200209D51 /* main.cpp in Sources */,
 				B0B5D0202875293B003A175D /* camera.cpp in Sources */,
+				B0B5D09B287920AD003A175D /* gltfNode.cpp in Sources */,
 				B0B5D0892876AC69003A175D /* swap.c in Sources */,
+				B0B5D09F287944F7003A175D /* mesh.cpp in Sources */,
 				B0B5D0222875293B003A175D /* application.cpp in Sources */,
 				B09AEA292862A380006ED326 /* imgui_widgets.cpp in Sources */,
 				B0B5D0282875297A003A175D /* pipelines.cpp in Sources */,
@@ -308,10 +330,12 @@
 				B09AEA2D2862A380006ED326 /* imgui_tables.cpp in Sources */,
 				B0B5D02C28753328003A175D /* gltfLoader.cpp in Sources */,
 				B0B5D0862876AC3F003A175D /* checkheader.c in Sources */,
+				B0B5D0A328794562003A175D /* vertex.cpp in Sources */,
 				B0B5D07D2876AB40003A175D /* texture.c in Sources */,
 				B09AEA2C2862A380006ED326 /* imgui.cpp in Sources */,
 				B0B5D08C2876AC95003A175D /* hashlist.c in Sources */,
 				B0B5D0212875293B003A175D /* tools.cpp in Sources */,
+				B0B5D0A728794942003A175D /* primitive.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
