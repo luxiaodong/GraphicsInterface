@@ -53,12 +53,15 @@ protected:
     
     void createDepthBuffer();
     
+    void createDescriptorSetLayout(const VkDescriptorSetLayoutBinding* pBindings, uint32_t bindingCount);
+    void createDescriptorPoolAndSet(const VkDescriptorPoolSize* pPoolSizes, uint32_t poolSizeCount, uint32_t maxSets);
+    void createPipelineLayout();
+    
     void createPipelineCache();
     void createCommandPool();
     void createCommandBuffers();
     void createRenderPass();
     void createFramebuffers();
-    void createDescriptorPool(const std::vector<VkDescriptorPoolSize>& poolSizes, uint32_t maxSets);
     
     void createSemaphores();
     
@@ -105,7 +108,11 @@ protected:
     
     VkCommandPool m_commandPool;
     VkDescriptorPool m_descriptorPool;
+    VkDescriptorSetLayout m_descriptorSetLayout;
     VkPipelineCache m_pipelineCache;
+    VkPipelineLayout m_pipelineLayout;
+    VkDescriptorSet m_descriptorSet;
+    
     VkRenderPass m_renderPass;
     std::vector<VkFramebuffer> m_framebuffers;
     std::vector<VkCommandBuffer> m_commandBuffers;

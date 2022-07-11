@@ -12,10 +12,11 @@ void Triangle::init()
 {
     Application::init();
     
-    createDescriptorSetLayout();
-    createPipelineLayout();
     prepareVertex();
     prepareUniform();
+    prepareDescriptorSetLayoutAndPipelineLayout();
+    prepareDescriptorSetAndWrite();
+    
     createGraphicsPipeline();
 }
 
@@ -28,18 +29,13 @@ void Triangle::initCamera()
 
 void Triangle::clear()
 {
+    vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
+    vkFreeMemory(m_device, m_uniformMemory, nullptr);
+    vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
     vkFreeMemory(m_device, m_vertexMemory, nullptr);
     vkDestroyBuffer(m_device, m_vertexBuffer, nullptr);
     vkFreeMemory(m_device, m_indexMemory, nullptr);
     vkDestroyBuffer(m_device, m_indexBuffer, nullptr);
-    vkFreeMemory(m_device, m_uniformMemory, nullptr);
-    vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
-    
-    vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
-    vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
-    
-    vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
-    vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayout, nullptr);
     
     Application::clear();
 }
@@ -119,24 +115,23 @@ void Triangle::prepareUniform()
     mvp.viewMatrix = m_camera.m_viewMat;
     mvp.projectionMatrix = m_camera.m_projMat;
     Tools::mapMemory(m_uniformMemory, sizeof(Triangle::Uniform), &mvp);
+}
 
+void Triangle::prepareDescriptorSetLayoutAndPipelineLayout()
+{
+    VkDescriptorSetLayoutBinding binding = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
+    createDescriptorSetLayout(&binding, 1);
+    createPipelineLayout();
+}
+
+void Triangle::prepareDescriptorSetAndWrite()
+{
     VkDescriptorPoolSize poolSize = {};
     poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSize.descriptorCount = 1;
-    std::vector<VkDescriptorPoolSize> poolSizes = {poolSize};
-    createDescriptorPool(poolSizes, 1);
     
-    VkDescriptorSetAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = m_descriptorPool;
-    allocInfo.descriptorSetCount = 1;
-    allocInfo.pSetLayouts = &m_descriptorSetLayout;
-    
-    if( vkAllocateDescriptorSets(m_device, &allocInfo, &m_descriptorSet) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to allocate descriptorSets!");
-    }
-    
+    createDescriptorPoolAndSet(&poolSize, 1, 1);
+        
     VkDescriptorBufferInfo bufferInfo = {};
     bufferInfo.offset = 0;
     bufferInfo.range = sizeof(Uniform);
@@ -153,38 +148,6 @@ void Triangle::prepareUniform()
     writeSetBuffer.pBufferInfo = &bufferInfo;
     writeSetBuffer.pTexelBufferView = nullptr;
     vkUpdateDescriptorSets(m_device, 1, &writeSetBuffer, 0, nullptr);
-}
-
-void Triangle::createDescriptorSetLayout()
-{
-    VkDescriptorSetLayoutBinding binding = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
-    
-    VkDescriptorSetLayoutCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    createInfo.flags = 0;
-    createInfo.bindingCount = 1;
-    createInfo.pBindings = &binding;
-
-    if ( vkCreateDescriptorSetLayout(m_device, &createInfo, nullptr, &m_descriptorSetLayout) != VK_SUCCESS )
-    {
-        throw std::runtime_error("failed to create descriptorSetLayout!");
-    }
-}
-
-void Triangle::createPipelineLayout()
-{
-    VkPipelineLayoutCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    createInfo.flags = 0;
-    createInfo.setLayoutCount = 1;
-    createInfo.pSetLayouts = &m_descriptorSetLayout;
-    createInfo.pushConstantRangeCount = 0;
-    createInfo.pPushConstantRanges = nullptr;
-
-    if( vkCreatePipelineLayout(m_device, &createInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS )
-    {
-        throw std::runtime_error("failed to create layout!");
-    }
 }
 
 void Triangle::createGraphicsPipeline()
@@ -253,16 +216,6 @@ void Triangle::createGraphicsPipeline()
 
 void Triangle::prepareRenderData()
 {
-//    static int i = 0;
-//    i++;
-//    Triangle::Uniform mvp = {};
-//
-//    mvp.modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(1.0f*i), glm::vec3(0.0f, 0.0f, 1.0f));
-//    mvp.viewMatrix = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-//    mvp.projectionMatrix = glm::perspective(glm::radians(45.0f), m_swapchainExtent.width / (float) m_swapchainExtent.height, 0.1f, 10.0f);
-//    mvp.projectionMatrix[1][1] *= -1;
-//
-//    Tools::mapMemory(m_uniformMemory, sizeof(Triangle::Uniform), &mvp);
 }
 
 void Triangle::recordRenderCommand(const VkCommandBuffer commandBuffer)

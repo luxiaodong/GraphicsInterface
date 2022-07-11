@@ -190,6 +190,10 @@ void Application::clear()
         m_pUi = nullptr;
     }
     
+    vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
+    vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
+    vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayout, nullptr);
+    
     for(size_t i = 0; i < m_swapchainImageCount; ++i)
     {
         vkDestroySemaphore(m_device, m_renderFinishedSemaphores[i], nullptr);
@@ -456,6 +460,58 @@ void Application::createDepthBuffer()
 //    transitionImageLayout(m_depthImage, VK_FORMAT_D32_SFLOAT, , , 1);
 }
 
+void Application::createDescriptorSetLayout(const VkDescriptorSetLayoutBinding* pBindings, uint32_t bindingCount)
+{
+    VkDescriptorSetLayoutCreateInfo createInfo = Tools::getDescriptorSetLayoutCreateInfo(pBindings, bindingCount);
+    
+    if ( vkCreateDescriptorSetLayout(m_device, &createInfo, nullptr, &m_descriptorSetLayout) != VK_SUCCESS )
+    {
+        throw std::runtime_error("failed to create descriptorSetLayout!");
+    }
+}
+
+void Application::createDescriptorPoolAndSet(const VkDescriptorPoolSize* pPoolSizes, uint32_t poolSizeCount, uint32_t maxSets)
+{
+    VkDescriptorPoolCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.poolSizeCount = poolSizeCount;
+    createInfo.pPoolSizes = pPoolSizes;
+    createInfo.maxSets = maxSets;
+
+    if( vkCreateDescriptorPool(m_device, &createInfo, nullptr, &m_descriptorPool) != VK_SUCCESS )
+    {
+        throw std::runtime_error("failed to create descriptorPool!");
+    }
+    
+    VkDescriptorSetAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = m_descriptorPool;
+    allocInfo.descriptorSetCount = 1;
+    allocInfo.pSetLayouts = &m_descriptorSetLayout;
+    
+    if( vkAllocateDescriptorSets(m_device, &allocInfo, &m_descriptorSet) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to allocate descriptorSets!");
+    }
+}
+
+void Application::createPipelineLayout()
+{
+    VkPipelineLayoutCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.setLayoutCount = 1;
+    createInfo.pSetLayouts = &m_descriptorSetLayout;
+    createInfo.pushConstantRangeCount = 0;
+    createInfo.pPushConstantRanges = nullptr;
+
+    if( vkCreatePipelineLayout(m_device, &createInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS )
+    {
+        throw std::runtime_error("failed to create layout!");
+    }
+}
+
 void Application::createPipelineCache()
 {
     VkPipelineCacheCreateInfo createInfo = {};
@@ -619,21 +675,6 @@ void Application::createSemaphores()
         {
             throw std::runtime_error("failed to create semaphorses!");
         }
-    }
-}
-
-void Application::createDescriptorPool(const std::vector<VkDescriptorPoolSize>& poolSizes, uint32_t maxSets)
-{
-    VkDescriptorPoolCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    createInfo.flags = 0;
-    createInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-    createInfo.pPoolSizes = poolSizes.data();
-    createInfo.maxSets = maxSets;
-
-    if( vkCreateDescriptorPool(m_device, &createInfo, nullptr, &m_descriptorPool) != VK_SUCCESS )
-    {
-        throw std::runtime_error("failed to create descriptorPool!");
     }
 }
 

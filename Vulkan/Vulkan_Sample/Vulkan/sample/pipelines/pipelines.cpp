@@ -3,7 +3,7 @@
 
 Pipelines::Pipelines(std::string title) : Application(title)
 {
-    
+
 }
 
 Pipelines::~Pipelines()
@@ -13,13 +13,10 @@ void Pipelines::init()
 {
     Application::init();
 
-    createDescriptorSetLayout();
-    createPipelineLayout();
-    
-    loadModel();
-//    prepareVertex();
+    prepareVertex();
     prepareUniform();
-    createDescriptorSet();
+    prepareDescriptorSetLayoutAndPipelineLayout();
+    prepareDescriptorSetAndWrite();
     createGraphicsPipeline();
 }
 
@@ -45,23 +42,18 @@ void Pipelines::setEnabledFeatures()
 
 void Pipelines::clear()
 {
-    m_gltfLoader.clear();
-    
-    vkFreeMemory(m_device, m_uniformMemory, nullptr);
-    vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
-
     vkDestroyPipeline(m_device, m_phong, nullptr);
     vkDestroyPipeline(m_device, m_toon, nullptr);
     vkDestroyPipeline(m_device, m_wireframe, nullptr);
-    vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
-
-    vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
-    vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayout, nullptr);
+    
+    vkFreeMemory(m_device, m_uniformMemory, nullptr);
+    vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
+    m_gltfLoader.clear();
 
     Application::clear();
 }
 
-void Pipelines::loadModel()
+void Pipelines::prepareVertex()
 {
 //    m_gltfLoader.loadFromFile(Tools::getModelPath() + "triangle.gltf", m_graphicsQueue);
     m_gltfLoader.loadFromFile(Tools::getModelPath() + "treasure_smooth.gltf", m_graphicsQueue);
@@ -76,24 +68,19 @@ void Pipelines::prepareUniform()
                                          m_uniformBuffer, m_uniformMemory);
 }
 
-void Pipelines::createDescriptorSet()
+void Pipelines::prepareDescriptorSetLayoutAndPipelineLayout()
+{
+    VkDescriptorSetLayoutBinding binding = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
+    createDescriptorSetLayout(&binding, 1);
+    createPipelineLayout();
+}
+
+void Pipelines::prepareDescriptorSetAndWrite()
 {
     VkDescriptorPoolSize poolSize = {};
     poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSize.descriptorCount = 1;
-    std::vector<VkDescriptorPoolSize> poolSizes = {poolSize};
-    createDescriptorPool(poolSizes, 2);
-
-    VkDescriptorSetAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = m_descriptorPool;
-    allocInfo.descriptorSetCount = 1;
-    allocInfo.pSetLayouts = &m_descriptorSetLayout;
-
-    if( vkAllocateDescriptorSets(m_device, &allocInfo, &m_descriptorSet) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to allocate descriptorSets!");
-    }
+    createDescriptorPoolAndSet(&poolSize, 1, 2);
 
     VkDescriptorBufferInfo bufferInfo = {};
     bufferInfo.offset = 0;
@@ -113,36 +100,8 @@ void Pipelines::createDescriptorSet()
     vkUpdateDescriptorSets(m_device, 1, &writeSetBuffer, 0, nullptr);
 }
 
-void Pipelines::createDescriptorSetLayout()
-{
-    VkDescriptorSetLayoutBinding binding = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
-    VkDescriptorSetLayoutCreateInfo createInfo = Tools::getDescriptorSetLayoutCreateInfo(&binding, 1);
-    
-    if ( vkCreateDescriptorSetLayout(m_device, &createInfo, nullptr, &m_descriptorSetLayout) != VK_SUCCESS )
-    {
-        throw std::runtime_error("failed to create descriptorSetLayout!");
-    }
-}
-
-void Pipelines::createPipelineLayout()
-{
-    VkPipelineLayoutCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    createInfo.flags = 0;
-    createInfo.setLayoutCount = 1;
-    createInfo.pSetLayouts = &m_descriptorSetLayout;
-    createInfo.pushConstantRangeCount = 0;
-    createInfo.pPushConstantRanges = nullptr;
-
-    if( vkCreatePipelineLayout(m_device, &createInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS )
-    {
-        throw std::runtime_error("failed to create layout!");
-    }
-}
-
 void Pipelines::createGraphicsPipeline()
 {
-
 //    VkPipelineVertexInputStateCreateInfo vertexInput = {};
 //    vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 //    vertexInput.vertexBindingDescriptionCount = static_cast<uint32_t>(m_vertexInputBindDes.size());
@@ -179,7 +138,7 @@ void Pipelines::createGraphicsPipeline()
     createInfo.pStages = shaderStages.data();
 
 //    createInfo.pVertexInputState = vkglTF::Vertex::getPipelineVertexInputState({vkglTF::VertexComponent::Position, vkglTF::VertexComponent::Normal, vkglTF::VertexComponent::Color});
-    
+
     createInfo.pVertexInputState = m_gltfLoader.getPipelineVertexInputState();
     createInfo.pInputAssemblyState = &inputAssembly;
     createInfo.pTessellationState = nullptr;
@@ -190,9 +149,9 @@ void Pipelines::createGraphicsPipeline()
     createInfo.pColorBlendState = &colorBlend;
     createInfo.pDynamicState = &dynamic;
     createInfo.subpass = 0;
-    
+
     createInfo.flags = VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT;
-    
+
     // Phong shading pipeline
     VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "pipelines/phong.vert.spv");
     VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "pipelines/phong.frag.spv");
@@ -206,7 +165,7 @@ void Pipelines::createGraphicsPipeline()
 
     vkDestroyShaderModule(m_device, vertModule, nullptr);
     vkDestroyShaderModule(m_device, fragModule, nullptr);
-    
+
     // All pipelines created after the base pipeline will be derivatives
     createInfo.flags = VK_PIPELINE_CREATE_DERIVATIVE_BIT;
     // Base pipeline will be our first created pipeline
@@ -214,8 +173,8 @@ void Pipelines::createGraphicsPipeline()
     // It's only allowed to either use a handle or index for the base pipeline
     // As we use the handle, we must set the index to -1 (see section 9.5 of the specification)
     createInfo.basePipelineIndex = -1;
-    
-    
+
+
     // Toon shading pipeline
     vertModule = Tools::createShaderModule( Tools::getShaderPath() + "pipelines/toon.vert.spv");
     fragModule = Tools::createShaderModule( Tools::getShaderPath() + "pipelines/toon.frag.spv");
@@ -227,7 +186,7 @@ void Pipelines::createGraphicsPipeline()
     }
     vkDestroyShaderModule(m_device, vertModule, nullptr);
     vkDestroyShaderModule(m_device, fragModule, nullptr);
-    
+
     //wireframe shading pipeline
     if(m_deviceFeatures.fillModeNonSolid)
     {
@@ -266,20 +225,20 @@ void Pipelines::recordRenderCommand(const VkCommandBuffer commandBuffer)
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
     m_gltfLoader.bindBuffers(commandBuffer);
-    
+
     // phong
     viewport.width = (float)m_swapchainExtent.width/3.0;
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_phong);
     m_gltfLoader.draw(commandBuffer);
-    
+
     // toon
     viewport.x = (float)m_swapchainExtent.width/3.0;
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     if( m_deviceFeatures.wideLines ) vkCmdSetLineWidth(commandBuffer, 2.0f);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_toon);
     m_gltfLoader.draw(commandBuffer);
-    
+
     if(m_deviceFeatures.fillModeNonSolid)
     {
         viewport.x += (float)m_swapchainExtent.width/3.0;

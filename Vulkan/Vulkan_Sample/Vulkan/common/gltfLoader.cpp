@@ -323,7 +323,6 @@ void GltfLoader::loadMesh(Mesh* newMesh, const tinygltf::Mesh &mesh)
     }
 }
 
-
 void GltfLoader::loadImages()
 {}
 

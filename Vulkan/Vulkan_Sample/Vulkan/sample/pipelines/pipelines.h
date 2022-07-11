@@ -8,11 +8,6 @@
 class Pipelines : public Application
 {
 public:
-//    struct Vertex {
-//        float position[3];
-//        float color[3];
-//    };
-//
     struct Uniform {
         glm::mat4 projectionMatrix;
         glm::mat4 modelMatrix;
@@ -32,30 +27,20 @@ public:
     virtual void recordRenderCommand(const VkCommandBuffer commandBuffer);
 
 protected:
-    void createDescriptorSetLayout();
-    void createPipelineLayout();
-    void createGraphicsPipeline();
-//    void recordCommandBuffers();
-
-    void loadModel();
+    void prepareVertex();
     void prepareUniform();
-    void createDescriptorSet();
+    void prepareDescriptorSetLayoutAndPipelineLayout();
+    void prepareDescriptorSetAndWrite();
+    void createGraphicsPipeline();
 
 protected:
-    GltfLoader m_gltfLoader;
-    
-    VkPipelineLayout m_pipelineLayout;
-//    VkPipeline m_graphicsPipeline;
     VkPipeline m_phong;
     VkPipeline m_toon;
     VkPipeline m_wireframe;
 
-//    //顶点绑定和顶点描述
-//    std::vector<VkVertexInputBindingDescription> m_vertexInputBindDes;
-//    std::vector<VkVertexInputAttributeDescription> m_vertexInputAttrDes;
-
     VkBuffer m_uniformBuffer;
     VkDeviceMemory m_uniformMemory;
-    VkDescriptorSetLayout m_descriptorSetLayout;
-    VkDescriptorSet m_descriptorSet;
+
+private:
+    GltfLoader m_gltfLoader;
 };

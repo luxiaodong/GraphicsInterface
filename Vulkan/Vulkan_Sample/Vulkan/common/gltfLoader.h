@@ -36,10 +36,10 @@ private:
     void load(std::string fileName, uint32_t fileLoadiFlags);
     void loadNodes();
     void loadSingleNode(GltfNode* parent, const tinygltf::Node &node, uint32_t indexAtScene);
-    
+
     void loadMaterials();
     void loadMesh(Mesh* newMesh, const tinygltf::Mesh &mesh);
-    
+
     void loadImages();
     void loadAnimations();
     void loadSkins();
