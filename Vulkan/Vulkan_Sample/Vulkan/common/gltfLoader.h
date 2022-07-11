@@ -7,6 +7,7 @@
 
 #include "vertex.h"
 #include "primitive.h"
+#include "texture.h"
 #include "mesh.h"
 
 //#define USE_BUILDIN_LOAD_GLTF 1

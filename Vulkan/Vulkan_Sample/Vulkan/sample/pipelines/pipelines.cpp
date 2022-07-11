@@ -80,7 +80,7 @@ void Pipelines::prepareDescriptorSetAndWrite()
     VkDescriptorPoolSize poolSize = {};
     poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSize.descriptorCount = 1;
-    createDescriptorPoolAndSet(&poolSize, 1, 2);
+    createDescriptorPoolAndSet(&poolSize, 1, 1);
 
     VkDescriptorBufferInfo bufferInfo = {};
     bufferInfo.offset = 0;

@@ -38,6 +38,8 @@
 		B0B5D0A328794562003A175D /* vertex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0A128794562003A175D /* vertex.cpp */; };
 		B0B5D0A728794942003A175D /* primitive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0A528794942003A175D /* primitive.cpp */; };
 		B0B5D0AB2879863A003A175D /* material.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0AA2879863A003A175D /* material.cpp */; };
+		B0B5D0B0287BFCCC003A175D /* descriptorsets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0AE287BFCCC003A175D /* descriptorsets.cpp */; };
+		B0B5D0B5287C1992003A175D /* texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0B3287C1992003A175D /* texture.cpp */; };
 		B0E13A1C2861729300D1D2B6 /* triangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0E13A1B2861729300D1D2B6 /* triangle.cpp */; };
 /* End PBXBuildFile section */
 
@@ -106,6 +108,10 @@
 		B0B5D0A628794942003A175D /* primitive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = primitive.h; sourceTree = "<group>"; };
 		B0B5D0A92879863A003A175D /* material.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = material.h; sourceTree = "<group>"; };
 		B0B5D0AA2879863A003A175D /* material.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = material.cpp; sourceTree = "<group>"; };
+		B0B5D0AE287BFCCC003A175D /* descriptorsets.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = descriptorsets.cpp; sourceTree = "<group>"; };
+		B0B5D0AF287BFCCC003A175D /* descriptorsets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = descriptorsets.h; sourceTree = "<group>"; };
+		B0B5D0B3287C1992003A175D /* texture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = texture.cpp; sourceTree = "<group>"; };
+		B0B5D0B4287C1992003A175D /* texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = texture.h; sourceTree = "<group>"; };
 		B0E13A1A2861729300D1D2B6 /* triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = triangle.h; sourceTree = "<group>"; };
 		B0E13A1B2861729300D1D2B6 /* triangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = triangle.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -193,6 +199,8 @@
 		B0B5D0162875293B003A175D /* common */ = {
 			isa = PBXGroup;
 			children = (
+				B0B5D0B3287C1992003A175D /* texture.cpp */,
+				B0B5D0B4287C1992003A175D /* texture.h */,
 				B0B5D0AA2879863A003A175D /* material.cpp */,
 				B0B5D0A92879863A003A175D /* material.h */,
 				B0B5D0A528794942003A175D /* primitive.cpp */,
@@ -242,9 +250,19 @@
 			path = ../3rdParty/ktx;
 			sourceTree = "<group>";
 		};
+		B0B5D0AD287BFCCC003A175D /* descriptorsets */ = {
+			isa = PBXGroup;
+			children = (
+				B0B5D0AE287BFCCC003A175D /* descriptorsets.cpp */,
+				B0B5D0AF287BFCCC003A175D /* descriptorsets.h */,
+			);
+			path = descriptorsets;
+			sourceTree = "<group>";
+		};
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0B5D0AD287BFCCC003A175D /* descriptorsets */,
 				B0B5D0252875297A003A175D /* pipelines */,
 				B0E13A192861729300D1D2B6 /* triangle */,
 			);
@@ -254,8 +272,8 @@
 		B0E13A192861729300D1D2B6 /* triangle */ = {
 			isa = PBXGroup;
 			children = (
-				B0E13A1A2861729300D1D2B6 /* triangle.h */,
 				B0E13A1B2861729300D1D2B6 /* triangle.cpp */,
+				B0E13A1A2861729300D1D2B6 /* triangle.h */,
 			);
 			path = triangle;
 			sourceTree = "<group>";
@@ -318,6 +336,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B09AEA2F2862A380006ED326 /* imgui_draw.cpp in Sources */,
+				B0B5D0B0287BFCCC003A175D /* descriptorsets.cpp in Sources */,
 				B09AEA2E2862A380006ED326 /* imgui_demo.cpp in Sources */,
 				B0E13A1C2861729300D1D2B6 /* triangle.cpp in Sources */,
 				B0B5D0802876ABAF003A175D /* memstream.c in Sources */,
@@ -328,6 +347,7 @@
 				B0B5D09F287944F7003A175D /* mesh.cpp in Sources */,
 				B0B5D0222875293B003A175D /* application.cpp in Sources */,
 				B09AEA292862A380006ED326 /* imgui_widgets.cpp in Sources */,
+				B0B5D0B5287C1992003A175D /* texture.cpp in Sources */,
 				B0B5D0282875297A003A175D /* pipelines.cpp in Sources */,
 				B0B5D0832876ABC0003A175D /* filestream.c in Sources */,
 				B0B5D01F2875293B003A175D /* ui.cpp in Sources */,

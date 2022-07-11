@@ -332,7 +332,6 @@ void GltfLoader::loadAnimations()
 void GltfLoader::loadSkins()
 {}
 
-
 void GltfLoader::createVertexAndIndexBuffer()
 {
     VkBuffer vertexStagingBuffer;
