@@ -37,6 +37,7 @@
 		B0B5D09F287944F7003A175D /* mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D09E287944F6003A175D /* mesh.cpp */; };
 		B0B5D0A328794562003A175D /* vertex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0A128794562003A175D /* vertex.cpp */; };
 		B0B5D0A728794942003A175D /* primitive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0A528794942003A175D /* primitive.cpp */; };
+		B0B5D0AB2879863A003A175D /* material.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0AA2879863A003A175D /* material.cpp */; };
 		B0E13A1C2861729300D1D2B6 /* triangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0E13A1B2861729300D1D2B6 /* triangle.cpp */; };
 /* End PBXBuildFile section */
 
@@ -103,6 +104,8 @@
 		B0B5D0A228794562003A175D /* vertex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vertex.h; sourceTree = "<group>"; };
 		B0B5D0A528794942003A175D /* primitive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = primitive.cpp; sourceTree = "<group>"; };
 		B0B5D0A628794942003A175D /* primitive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = primitive.h; sourceTree = "<group>"; };
+		B0B5D0A92879863A003A175D /* material.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = material.h; sourceTree = "<group>"; };
+		B0B5D0AA2879863A003A175D /* material.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = material.cpp; sourceTree = "<group>"; };
 		B0E13A1A2861729300D1D2B6 /* triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = triangle.h; sourceTree = "<group>"; };
 		B0E13A1B2861729300D1D2B6 /* triangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = triangle.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -190,6 +193,8 @@
 		B0B5D0162875293B003A175D /* common */ = {
 			isa = PBXGroup;
 			children = (
+				B0B5D0AA2879863A003A175D /* material.cpp */,
+				B0B5D0A92879863A003A175D /* material.h */,
 				B0B5D0A528794942003A175D /* primitive.cpp */,
 				B0B5D0A628794942003A175D /* primitive.h */,
 				B0B5D0A128794562003A175D /* vertex.cpp */,
@@ -336,6 +341,7 @@
 				B0B5D08C2876AC95003A175D /* hashlist.c in Sources */,
 				B0B5D0212875293B003A175D /* tools.cpp in Sources */,
 				B0B5D0A728794942003A175D /* primitive.cpp in Sources */,
+				B0B5D0AB2879863A003A175D /* material.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

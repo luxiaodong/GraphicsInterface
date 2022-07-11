@@ -9,7 +9,15 @@
 #include "primitive.h"
 #include "mesh.h"
 
-#define CUSTOM_LOAD_GLTF 1
+//#define USE_BUILDIN_LOAD_GLTF 1
+
+enum GltfFileLoadFlags {
+    None = 0x00000000,
+    PreTransformVertices = 0x00000001,
+    PreMultiplyVertexColors = 0x00000002,
+    FlipY = 0x00000004,
+    DontLoadImages = 0x00000008
+};
 
 class GltfLoader
 {
@@ -25,14 +33,14 @@ public:
     void draw(VkCommandBuffer commandBuffer);
 
 private:
-    void load(std::string fileName);
+    void load(std::string fileName, uint32_t fileLoadiFlags);
     void loadNodes();
     void loadSingleNode(GltfNode* parent, const tinygltf::Node &node, uint32_t indexAtScene);
     
+    void loadMaterials();
     void loadMesh(Mesh* newMesh, const tinygltf::Mesh &mesh);
     
     void loadImages();
-    void loadMaterials();
     void loadAnimations();
     void loadSkins();
 
@@ -43,6 +51,8 @@ private:
 
 private:
     tinygltf::Model m_gltfModel;
+    
+    std::vector<Material*> m_materials;
     
     //两种结点组织方式
     std::vector<GltfNode*> m_treeNodes;
@@ -60,7 +70,7 @@ private:
     VkDeviceMemory m_indexMemory;
     
 public:
-#ifdef CUSTOM_LOAD_GLTF
+#ifdef USE_BUILDIN_LOAD_GLTF
     vkglTF::Model* m_pModel = nullptr;
 #endif
 };

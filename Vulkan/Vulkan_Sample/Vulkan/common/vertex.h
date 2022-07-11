@@ -13,9 +13,9 @@ public:
 
 public:
     glm::vec3 m_position;
-    glm::vec3 m_normal;
-    glm::vec2 m_uv;
-    glm::vec4 m_color;
+    glm::vec3 m_normal = glm::vec3(0.0f, 0.0f, 1.0f);
+    glm::vec2 m_uv = glm::vec2(0.0f);
+    glm::vec4 m_color = glm::vec4(1.0f);
 
 public:
     static void setVertexInputBindingDescription(uint32_t binding);

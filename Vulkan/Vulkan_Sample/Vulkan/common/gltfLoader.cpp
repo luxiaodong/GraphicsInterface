@@ -3,7 +3,7 @@
 
 GltfLoader::GltfLoader()
 {
-#ifdef CUSTOM_LOAD_GLTF
+#ifdef USE_BUILDIN_LOAD_GLTF
     m_pModel = new vkglTF::Model();
 #endif
 }
@@ -13,7 +13,7 @@ GltfLoader::~GltfLoader()
 
 void GltfLoader::clear()
 {
-#ifdef CUSTOM_LOAD_GLTF
+#ifdef USE_BUILDIN_LOAD_GLTF
     if(m_pModel)
     {
         delete m_pModel;
@@ -28,18 +28,19 @@ void GltfLoader::clear()
 
 void GltfLoader::loadFromFile(std::string fileName, VkQueue transferQueue)
 {
-#ifdef CUSTOM_LOAD_GLTF
+#ifdef USE_BUILDIN_LOAD_GLTF
     const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY | vkglTF::FileLoadingFlags::DontLoadImages;
     m_pModel->loadFromFile(fileName, transferQueue, glTFLoadingFlags);
 #else
     m_graphicsQueue = transferQueue;
-    load(fileName);
+    const uint32_t glTFLoadFlags = GltfFileLoadFlags::PreTransformVertices | GltfFileLoadFlags::PreMultiplyVertexColors | GltfFileLoadFlags::FlipY | GltfFileLoadFlags::DontLoadImages;
+    load(fileName, glTFLoadFlags);
 #endif
 }
 
 void GltfLoader::bindBuffers(VkCommandBuffer commandBuffer)
 {
-#ifdef CUSTOM_LOAD_GLTF
+#ifdef USE_BUILDIN_LOAD_GLTF
     m_pModel->bindBuffers(commandBuffer);
 #else
     const VkDeviceSize offsets[1] = {0};
@@ -50,7 +51,7 @@ void GltfLoader::bindBuffers(VkCommandBuffer commandBuffer)
 
 void GltfLoader::draw(VkCommandBuffer commandBuffer)
 {
-#ifdef CUSTOM_LOAD_GLTF
+#ifdef USE_BUILDIN_LOAD_GLTF
     m_pModel->draw(commandBuffer);
 #else
     for (auto& node : m_treeNodes)
@@ -62,7 +63,7 @@ void GltfLoader::draw(VkCommandBuffer commandBuffer)
 
 // --------------------------------------------------------------------------------------------------------
 
-void GltfLoader::load(std::string fileName)
+void GltfLoader::load(std::string fileName, uint32_t fileLoadFlags)
 {
     tinygltf::TinyGLTF gltfContext;
     std::string error, warning;
@@ -72,10 +73,54 @@ void GltfLoader::load(std::string fileName)
         return ;
     }
     
+    this->loadMaterials();
     this->loadNodes();
+    
+    if ((fileLoadFlags & GltfFileLoadFlags::PreTransformVertices) || (fileLoadFlags & GltfFileLoadFlags::PreMultiplyVertexColors) || (fileLoadFlags & GltfFileLoadFlags::FlipY))
+    {
+        const bool preTransform = fileLoadFlags & GltfFileLoadFlags::PreTransformVertices;
+        const bool preMultiplyColor = fileLoadFlags & GltfFileLoadFlags::PreMultiplyVertexColors;
+        const bool flipY = fileLoadFlags & GltfFileLoadFlags::FlipY;
+        
+        for(GltfNode* node : m_linearNodes)
+        {
+            if(node->m_mesh)
+            {
+                const glm::mat4 worldMatrix = node->worldMatrix();
+                for (Primitive* primitive : node->m_mesh->m_primitives)
+                {
+                    for(uint32_t i = 0; i < primitive->m_vertexCount; ++i)
+                    {
+                        Vertex& vert = m_vertexData[primitive->m_vertexOffset + i];
+                        if(preTransform)
+                        {
+                            vert.m_position = glm::vec3(worldMatrix * glm::vec4(vert.m_position, 1.0f));
+                            vert.m_normal = glm::normalize(glm::mat3(worldMatrix) * vert.m_normal);
+                        }
+                        if(flipY)
+                        {
+                            vert.m_position.y *= -1.0f;
+                            vert.m_normal.y *= -1.0f;
+                        }
+                        if(preMultiplyColor)
+                        {
+                            vert.m_color = primitive->m_material->m_baseColor * vert.m_color;
+                        }
+                    }
+                }
+            }
+        }
+    }
     
     createVertexAndIndexBuffer();
     setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal, VertexComponent::Color});
+}
+
+void GltfLoader::loadMaterials()
+{
+    Material* mat = new Material();
+    // add default material;
+    m_materials.push_back(mat);
 }
 
 void GltfLoader::loadNodes()
@@ -248,15 +293,13 @@ void GltfLoader::loadMesh(Mesh* newMesh, const tinygltf::Mesh &mesh)
         newPrimitive->m_vertexCount = vertexCount;
         newPrimitive->m_indexOffset = indexOffset;
         newPrimitive->m_indexCount = indexCount;
+        newPrimitive->m_material = m_materials.back();
         newMesh->m_primitives.push_back(newPrimitive);
     }
 }
 
 
 void GltfLoader::loadImages()
-{}
-
-void GltfLoader::loadMaterials()
 {}
 
 void GltfLoader::loadAnimations()
@@ -305,7 +348,7 @@ void GltfLoader::setVertexBindingAndAttributeDescription(const std::vector<Verte
 
 VkPipelineVertexInputStateCreateInfo* GltfLoader::getPipelineVertexInputState()
 {
-#ifdef CUSTOM_LOAD_GLTF
+#ifdef USE_BUILDIN_LOAD_GLTF
     return vkglTF::Vertex::getPipelineVertexInputState({vkglTF::VertexComponent::Position, vkglTF::VertexComponent::Normal, vkglTF::VertexComponent::Color});
 #else
     static VkPipelineVertexInputStateCreateInfo vertexInput = {};
