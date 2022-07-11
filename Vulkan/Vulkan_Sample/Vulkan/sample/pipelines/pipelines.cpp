@@ -63,8 +63,8 @@ void Pipelines::clear()
 
 void Pipelines::loadModel()
 {
-    m_gltfLoader.loadFromFile(Tools::getModelPath() + "triangle.gltf", m_graphicsQueue);
-//    m_gltfLoader.loadFromFile(Tools::getModelPath() + "treasure_smooth.gltf", m_graphicsQueue);
+//    m_gltfLoader.loadFromFile(Tools::getModelPath() + "triangle.gltf", m_graphicsQueue);
+    m_gltfLoader.loadFromFile(Tools::getModelPath() + "treasure_smooth.gltf", m_graphicsQueue);
 }
 
 void Pipelines::prepareUniform()

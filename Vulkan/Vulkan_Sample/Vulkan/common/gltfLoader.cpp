@@ -118,9 +118,27 @@ void GltfLoader::load(std::string fileName, uint32_t fileLoadFlags)
 
 void GltfLoader::loadMaterials()
 {
-    Material* mat = new Material();
+    for (tinygltf::Material &mat : m_gltfModel.materials)
+    {
+        Material* newMat = new Material();
+        if (mat.values.find("roughnessFactor") != mat.values.end())
+        {
+            newMat->m_roughness = static_cast<float>(mat.values["roughnessFactor"].Factor());
+        }
+        if (mat.values.find("metallicFactor") != mat.values.end())
+        {
+            newMat->m_metallic = static_cast<float>(mat.values["metallicFactor"].Factor());
+        }
+        if (mat.values.find("baseColorFactor") != mat.values.end())
+        {
+            newMat->m_baseColor = glm::make_vec4(mat.values["baseColorFactor"].ColorFactor().data());
+        }
+        
+        m_materials.push_back(newMat);
+    }
+    
     // add default material;
-    m_materials.push_back(mat);
+    m_materials.push_back(new Material());
 }
 
 void GltfLoader::loadNodes()
@@ -293,7 +311,14 @@ void GltfLoader::loadMesh(Mesh* newMesh, const tinygltf::Mesh &mesh)
         newPrimitive->m_vertexCount = vertexCount;
         newPrimitive->m_indexOffset = indexOffset;
         newPrimitive->m_indexCount = indexCount;
-        newPrimitive->m_material = m_materials.back();
+        if(primitive.material > - 1)
+        {
+            newPrimitive->m_material = m_materials[primitive.material];
+        }
+        else
+        {
+            newPrimitive->m_material = m_materials.back();
+        }
         newMesh->m_primitives.push_back(newPrimitive);
     }
 }
