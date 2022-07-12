@@ -130,24 +130,16 @@ void Triangle::prepareDescriptorSetAndWrite()
     poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSize.descriptorCount = 1;
     
-    createDescriptorPoolAndSet(&poolSize, 1, 1);
-        
+    createDescriptorPool(&poolSize, 1, 1);
+    createDescriptorSet(m_descriptorSet);
+
     VkDescriptorBufferInfo bufferInfo = {};
     bufferInfo.offset = 0;
     bufferInfo.range = sizeof(Uniform);
     bufferInfo.buffer = m_uniformBuffer;
-
-    VkWriteDescriptorSet writeSetBuffer = {};
-    writeSetBuffer.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writeSetBuffer.dstSet = m_descriptorSet;
-    writeSetBuffer.dstBinding = 0;
-    writeSetBuffer.dstArrayElement = 0;
-    writeSetBuffer.descriptorCount = 1;
-    writeSetBuffer.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    writeSetBuffer.pImageInfo = nullptr;
-    writeSetBuffer.pBufferInfo = &bufferInfo;
-    writeSetBuffer.pTexelBufferView = nullptr;
-    vkUpdateDescriptorSets(m_device, 1, &writeSetBuffer, 0, nullptr);
+    
+    VkWriteDescriptorSet write = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
+    vkUpdateDescriptorSets(m_device, 1, &write, 0, nullptr);
 }
 
 void Triangle::createGraphicsPipeline()

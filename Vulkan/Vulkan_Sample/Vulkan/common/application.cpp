@@ -455,7 +455,6 @@ void Application::createDepthBuffer()
     VkCommandBuffer cmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
     Tools::setImageLayout(cmd, m_depthImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
     Tools::flushCommandBuffer(cmd, m_graphicsQueue, true);
-    
 
 //    transitionImageLayout(m_depthImage, VK_FORMAT_D32_SFLOAT, , , 1);
 }
@@ -470,7 +469,7 @@ void Application::createDescriptorSetLayout(const VkDescriptorSetLayoutBinding* 
     }
 }
 
-void Application::createDescriptorPoolAndSet(const VkDescriptorPoolSize* pPoolSizes, uint32_t poolSizeCount, uint32_t maxSets)
+void Application::createDescriptorPool(const VkDescriptorPoolSize* pPoolSizes, uint32_t poolSizeCount, uint32_t maxSets)
 {
     VkDescriptorPoolCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -483,14 +482,17 @@ void Application::createDescriptorPoolAndSet(const VkDescriptorPoolSize* pPoolSi
     {
         throw std::runtime_error("failed to create descriptorPool!");
     }
-    
+}
+
+void Application::createDescriptorSet(VkDescriptorSet& descriptorSet)
+{
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = m_descriptorPool;
     allocInfo.descriptorSetCount = 1;
     allocInfo.pSetLayouts = &m_descriptorSetLayout;
-    
-    if( vkAllocateDescriptorSets(m_device, &allocInfo, &m_descriptorSet) != VK_SUCCESS)
+
+    if( vkAllocateDescriptorSets(m_device, &allocInfo, &descriptorSet) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to allocate descriptorSets!");
     }

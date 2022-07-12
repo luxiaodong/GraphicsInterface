@@ -36,6 +36,7 @@ protected:
     void createGraphicsPipeline();
 
 protected:
+    VkDescriptorSet m_descriptorSet;
     VkPipeline m_graphicsPipeline;
     //顶点绑定和顶点描述
     std::vector<VkVertexInputBindingDescription> m_vertexInputBindDes;

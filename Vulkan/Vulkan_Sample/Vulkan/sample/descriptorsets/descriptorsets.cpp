@@ -21,7 +21,7 @@ void Descriptorsets::init()
 
 void Descriptorsets::initCamera()
 {
-    m_camera.setTranslation(glm::vec3(0.0f, 0.0f, -25.0f));
+    m_camera.setTranslation(glm::vec3(0.0f, 0.0f, -20.0f));
     m_camera.setRotation(glm::vec3(0.0f));
     m_camera.setPerspective(60.0f, (float)m_width / (float)m_height, 0.1f, 512.0f);
 }
@@ -37,13 +37,17 @@ void Descriptorsets::setEnabledFeatures()
 void Descriptorsets::clear()
 {
     vkDestroyPipeline(m_device, m_pipeline, nullptr);
-    vkFreeMemory(m_device, m_uniformMemory, nullptr);
-    vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
 
-    if(m_cube.pTextrue)
+    for(int i = 0; i < 2; ++i)
     {
-        m_cube.pTextrue->clear();
-        delete m_cube.pTextrue;
+        vkFreeMemory(m_device, m_cube[i].uniformMemory, nullptr);
+        vkDestroyBuffer(m_device, m_cube[i].uniformBuffer, nullptr);
+        
+        if(m_cube[i].pTextrue)
+        {
+            m_cube[i].pTextrue->clear();
+            delete m_cube[i].pTextrue;
+        }
     }
     
     m_gltfLoader.clear();
@@ -55,15 +59,20 @@ void Descriptorsets::prepareVertex()
     m_gltfLoader.loadFromFile(Tools::getModelPath() + "cube.gltf", m_graphicsQueue);
     m_gltfLoader.createVertexAndIndexBuffer();
     m_gltfLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal, VertexComponent::UV, VertexComponent::Color});
-    m_cube.pTextrue = Texture::loadTextrue2D(Tools::getTexturePath() +  "crate01_color_height_rgba.ktx", m_graphicsQueue);
+    m_cube[0].pTextrue = Texture::loadTextrue2D(Tools::getTexturePath() +  "crate01_color_height_rgba.ktx", m_graphicsQueue);
+    m_cube[1].pTextrue = Texture::loadTextrue2D(Tools::getTexturePath() +  "crate02_color_height_rgba.ktx", m_graphicsQueue);
 }
 
 void Descriptorsets::prepareUniform()
 {
     VkDeviceSize uniformSize = sizeof(Descriptorsets::Uniform);
-    Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                         m_uniformBuffer, m_uniformMemory);
+    
+    for(int i = 0; i < 2; ++i)
+    {
+        Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                            m_cube[i].uniformBuffer, m_cube[i].uniformMemory);
+    }
 }
 
 void Descriptorsets::prepareDescriptorSetLayoutAndPipelineLayout()
@@ -79,22 +88,27 @@ void Descriptorsets::prepareDescriptorSetAndWrite()
 {
     std::array<VkDescriptorPoolSize, 2> poolSizes;
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = 1;
+    poolSizes[0].descriptorCount = 2;
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = 1;
-    createDescriptorPoolAndSet(poolSizes.data(), static_cast<uint32_t>(poolSizes.size()), 1);
-    
-    VkDescriptorBufferInfo bufferInfo = {};
-    bufferInfo.offset = 0;
-    bufferInfo.range = sizeof(Descriptorsets::Uniform);
-    bufferInfo.buffer = m_uniformBuffer;
-    
-    VkDescriptorImageInfo imageInfo = m_cube.pTextrue->getDescriptorImageInfo();
-    
-    std::array<VkWriteDescriptorSet, 2> writes = {};
-    writes[0] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
-    writes[1] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo);
-    vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
+    poolSizes[1].descriptorCount = 2;
+    createDescriptorPool(poolSizes.data(), static_cast<uint32_t>(poolSizes.size()), 2);
+
+    for(int i = 0; i < 2; ++i)
+    {
+        createDescriptorSet(m_cube[i].descriptorSet);
+        
+        VkDescriptorBufferInfo bufferInfo = {};
+        bufferInfo.offset = 0;
+        bufferInfo.range = sizeof(Descriptorsets::Uniform);
+        bufferInfo.buffer = m_cube[i].uniformBuffer;
+        
+        VkDescriptorImageInfo imageInfo = m_cube[i].pTextrue->getDescriptorImageInfo();
+        
+        std::array<VkWriteDescriptorSet, 2> writes = {};
+        writes[0] = Tools::getWriteDescriptorSet(m_cube[i].descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
+        writes[1] = Tools::getWriteDescriptorSet(m_cube[i].descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo);
+        vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
+    }
 }
 
 void Descriptorsets::createGraphicsPipeline()
@@ -154,22 +168,21 @@ void Descriptorsets::createGraphicsPipeline()
 
 void Descriptorsets::prepareRenderData()
 {
-    m_cube.rotation.x = 3.5;
-//    if(m_cube.rotation.x > 360.0f)
-//    {
-//        m_cube.rotation.x -= 360.0f;
-//    }
-
-    m_cube.matrix.modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
-    m_cube.matrix.viewMatrix = m_camera.m_viewMat;
-    m_cube.matrix.projectionMatrix = m_camera.m_projMat;
-
-    m_cube.matrix.modelMatrix = glm::rotate(m_cube.matrix.modelMatrix, glm::radians(m_cube.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    m_cube.matrix.modelMatrix = glm::rotate(m_cube.matrix.modelMatrix, glm::radians(m_cube.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    m_cube.matrix.modelMatrix = glm::rotate(m_cube.matrix.modelMatrix, glm::radians(m_cube.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-    m_cube.matrix.modelMatrix = glm::scale(m_cube.matrix.modelMatrix, glm::vec3(0.2f));
+    m_cube[0].rotation = glm::vec3(3.5f, 0.0f, 0.0f);
+    m_cube[1].rotation = glm::vec3(0.0f, 5.0f, 0.0f);
+    m_cube[0].matrix.modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
+    m_cube[1].matrix.modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3( 1.5f, 0.5f, 0.0f));
     
-    Tools::mapMemory(m_uniformMemory, sizeof(Descriptorsets::Uniform), &m_cube.matrix);
+    for(int i = 0; i < 2; ++i)
+    {
+        m_cube[i].matrix.viewMatrix = m_camera.m_viewMat;
+        m_cube[i].matrix.projectionMatrix = m_camera.m_projMat;
+        m_cube[i].matrix.modelMatrix = glm::rotate(m_cube[i].matrix.modelMatrix, glm::radians(m_cube[i].rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+        m_cube[i].matrix.modelMatrix = glm::rotate(m_cube[i].matrix.modelMatrix, glm::radians(m_cube[i].rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+        m_cube[i].matrix.modelMatrix = glm::rotate(m_cube[i].matrix.modelMatrix, glm::radians(m_cube[i].rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+        m_cube[i].matrix.modelMatrix = glm::scale(m_cube[i].matrix.modelMatrix, glm::vec3(0.2f));
+        Tools::mapMemory(m_cube[i].uniformMemory, sizeof(Descriptorsets::Uniform), &m_cube[i].matrix);
+    }
 }
 
 void Descriptorsets::recordRenderCommand(const VkCommandBuffer commandBuffer)
@@ -181,10 +194,13 @@ void Descriptorsets::recordRenderCommand(const VkCommandBuffer commandBuffer)
     
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
     m_gltfLoader.bindBuffers(commandBuffer);
-    
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
-    m_gltfLoader.draw(commandBuffer);
+    
+    for(int i=0; i<2; ++i)
+    {
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_cube[i].descriptorSet, 0, nullptr);
+        m_gltfLoader.draw(commandBuffer);
+    }
 }
 

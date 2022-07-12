@@ -34,6 +34,7 @@ protected:
     void createGraphicsPipeline();
 
 protected:
+    VkDescriptorSet m_descriptorSet;
     VkPipeline m_phong;
     VkPipeline m_toon;
     VkPipeline m_wireframe;

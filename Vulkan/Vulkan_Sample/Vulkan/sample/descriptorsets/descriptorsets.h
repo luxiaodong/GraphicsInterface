@@ -16,11 +16,11 @@ public:
     struct Cube
     {
         Uniform matrix;
-        VkBuffer m_uniformBuffer;
-        VkDeviceMemory m_uniformMemory;
-        VkDescriptorSet descriptorSet;
         glm::vec3 rotation;
         Texture* pTextrue = nullptr;
+        VkBuffer uniformBuffer;
+        VkDeviceMemory uniformMemory;
+        VkDescriptorSet descriptorSet;
     };
 
     Descriptorsets(std::string title);
@@ -42,11 +42,8 @@ protected:
     void createGraphicsPipeline();
     
 private:
-    Cube m_cube;
-    
+    Cube m_cube[2];
     VkPipeline m_pipeline;
-    VkBuffer m_uniformBuffer;
-    VkDeviceMemory m_uniformMemory;
         
 private:
     GltfLoader m_gltfLoader;
