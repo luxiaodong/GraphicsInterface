@@ -8,17 +8,37 @@ Texture::Texture()
 Texture::~Texture()
 {}
 
-Texture* Texture::loadTextrue2D(std::string fileName, VkQueue transferQueue, VkFormat format)
+VkDescriptorImageInfo Texture::getDescriptorImageInfo()
+{
+    VkDescriptorImageInfo imageInfo = {};
+    imageInfo.imageLayout = m_imageLayout;
+    imageInfo.imageView = m_imageView;
+    imageInfo.sampler = m_sampler;
+    return imageInfo;
+}
+
+void Texture::clear()
+{
+    vkDestroySampler(Tools::m_device, m_sampler, nullptr);
+    vkDestroyImageView(Tools::m_device, m_imageView, nullptr);
+    vkDestroyImage(Tools::m_device, m_image, nullptr);
+    vkFreeMemory(Tools::m_device, m_imageMemory, nullptr);
+}
+
+Texture* Texture::loadTextrue2D(std::string fileName, VkQueue transferQueue, VkFormat format, VkImageLayout imageLayout)
 {
     Texture* newTexture = new Texture();
     assert(Tools::isFileExists(fileName));
     ktxTexture* ktxTexture;
     ktxResult result = ktxTexture_CreateFromNamedFile(fileName.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTexture);
     assert(result == KTX_SUCCESS);
-    
+
+    newTexture->m_fromat = format;
+    newTexture->m_imageLayout = imageLayout;
     newTexture->m_width = ktxTexture->baseWidth;
     newTexture->m_height = ktxTexture->baseHeight;
     newTexture->m_mipLevels = ktxTexture->numLevels;
+    newTexture->m_mipLevels = 1;
     newTexture->m_layerCount = ktxTexture->numLayers;
     ktx_size_t ktxTextureSize = ktxTexture_GetSize(ktxTexture);
     ktx_uint8_t* ktxTextureData = ktxTexture_GetData(ktxTexture);
@@ -78,9 +98,13 @@ Texture* Texture::loadTextrue2D(std::string fileName, VkQueue transferQueue, VkF
                          VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
 
     Tools::flushCommandBuffer(cmd, transferQueue, true);
-    vkFreeMemory(m_device, stagingMemory, nullptr);
-    vkDestroyBuffer(m_device, stagingBuffer, nullptr);
     
+    ktxTexture_Destroy(ktxTexture);
+    vkFreeMemory(Tools::m_device, stagingMemory, nullptr);
+    vkDestroyBuffer(Tools::m_device, stagingBuffer, nullptr);
+    
+    Tools::createImageView(newTexture->m_image, format, VK_IMAGE_ASPECT_COLOR_BIT, newTexture->m_mipLevels, newTexture->m_imageView);
+    Tools::createTextureSampler(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, newTexture->m_mipLevels, newTexture->m_sampler);
     return newTexture;
 }
 

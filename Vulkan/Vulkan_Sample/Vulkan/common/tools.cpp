@@ -15,6 +15,11 @@ std::string Tools::getModelPath()
     return "assets/models/";
 }
 
+std::string Tools::getTexturePath()
+{
+    return "assets/textures/";
+}
+
 bool Tools::isFileExists(const std::string &filename)
 {
     std::ifstream f(filename.c_str());
@@ -258,7 +263,7 @@ void Tools::createTextureSampler(VkFilter filter, VkSamplerAddressMode addressMo
     createInfo.anisotropyEnable = VK_FALSE;
     createInfo.maxAnisotropy = 1.0f;
     createInfo.compareEnable = VK_FALSE;
-    createInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+    createInfo.compareOp = VK_COMPARE_OP_NEVER;
     createInfo.minLod = 0;
     createInfo.maxLod = maxLod;
     createInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK; //寻址模式是 VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER 时设置

@@ -23,6 +23,17 @@ void GltfLoader::clear()
     vkDestroyBuffer(Tools::m_device, m_vertexBuffer, nullptr);
     vkFreeMemory(Tools::m_device, m_indexMemory, nullptr);
     vkDestroyBuffer(Tools::m_device, m_indexBuffer, nullptr);
+    
+    for(Material* mat : m_materials)
+    {
+        delete mat;
+    }
+    
+    for(GltfNode* node : m_linearNodes)
+    {
+        delete node;
+    }
+    
 #endif
 }
 
@@ -111,9 +122,6 @@ void GltfLoader::load(std::string fileName, uint32_t fileLoadFlags)
             }
         }
     }
-    
-    createVertexAndIndexBuffer();
-    setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal, VertexComponent::Color});
 }
 
 void GltfLoader::loadMaterials()
@@ -334,6 +342,8 @@ void GltfLoader::loadSkins()
 
 void GltfLoader::createVertexAndIndexBuffer()
 {
+#ifdef USE_BUILDIN_LOAD_GLTF
+#else
     VkBuffer vertexStagingBuffer;
     VkBuffer indexStagingBuffer;
     VkDeviceMemory vertexStagingMemory;
@@ -361,18 +371,23 @@ void GltfLoader::createVertexAndIndexBuffer()
     vkFreeMemory(Tools::m_device, vertexStagingMemory, nullptr);
     vkDestroyBuffer(Tools::m_device, indexStagingBuffer, nullptr);
     vkFreeMemory(Tools::m_device, indexStagingMemory, nullptr);
+#endif
 }
 
 void GltfLoader::setVertexBindingAndAttributeDescription(const std::vector<VertexComponent> components)
 {
+#ifdef USE_BUILDIN_LOAD_GLTF
+#else
     Vertex::setVertexInputBindingDescription(0);
     Vertex::setVertexInputAttributeDescription(0,components);
+#endif
 }
 
 VkPipelineVertexInputStateCreateInfo* GltfLoader::getPipelineVertexInputState()
 {
 #ifdef USE_BUILDIN_LOAD_GLTF
-    return vkglTF::Vertex::getPipelineVertexInputState({vkglTF::VertexComponent::Position, vkglTF::VertexComponent::Normal, vkglTF::VertexComponent::Color});
+//    return vkglTF::Vertex::getPipelineVertexInputState({vkglTF::VertexComponent::Position, vkglTF::VertexComponent::Normal, vkglTF::VertexComponent::Color});
+    return vkglTF::Vertex::getPipelineVertexInputState({vkglTF::VertexComponent::Position, vkglTF::VertexComponent::Normal, vkglTF::VertexComponent::UV, vkglTF::VertexComponent::Color});
 #else
     static VkPipelineVertexInputStateCreateInfo vertexInput = {};
     vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

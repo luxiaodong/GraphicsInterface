@@ -57,6 +57,8 @@ void Pipelines::prepareVertex()
 {
 //    m_gltfLoader.loadFromFile(Tools::getModelPath() + "triangle.gltf", m_graphicsQueue);
     m_gltfLoader.loadFromFile(Tools::getModelPath() + "treasure_smooth.gltf", m_graphicsQueue);
+    m_gltfLoader.createVertexAndIndexBuffer();
+    m_gltfLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal, VertexComponent::Color});
 }
 
 void Pipelines::prepareUniform()

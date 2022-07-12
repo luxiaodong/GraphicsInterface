@@ -31,6 +31,8 @@ public:
 public:
     VkPipelineVertexInputStateCreateInfo* getPipelineVertexInputState();
     void bindBuffers(VkCommandBuffer commandBuffer);
+    void createVertexAndIndexBuffer();
+    void setVertexBindingAndAttributeDescription(const std::vector<VertexComponent> components);
     void draw(VkCommandBuffer commandBuffer);
 
 private:
@@ -46,8 +48,6 @@ private:
     void loadSkins();
 
 private:
-    void createVertexAndIndexBuffer();
-    void setVertexBindingAndAttributeDescription( const std::vector<VertexComponent> components );
     void drawNode(VkCommandBuffer commandBuffer, GltfNode* node);
 
 private:

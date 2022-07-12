@@ -43,6 +43,7 @@ class Tools
 public:
     static std::string getShaderPath();
     static std::string getModelPath();
+    static std::string getTexturePath();
     static bool isFileExists(const std::string &filename);
     static std::vector<char> readFile(const std::string& filename);
     

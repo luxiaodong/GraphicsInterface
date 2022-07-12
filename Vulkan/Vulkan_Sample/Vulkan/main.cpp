@@ -6,8 +6,8 @@
 int main(int argc, const char * argv[])
 {
 //    Triangle app("triangle");
-    Pipelines app("pipeline");
-//    Descriptorsets descriptorsets("descriptorsets");
+//    Pipelines app("pipeline");
+    Descriptorsets app("descriptorsets");
     try {
         app.run();
     } catch (const std::exception& e) {
