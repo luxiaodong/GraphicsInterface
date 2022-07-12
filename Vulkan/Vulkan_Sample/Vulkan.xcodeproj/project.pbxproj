@@ -40,6 +40,7 @@
 		B0B5D0AB2879863A003A175D /* material.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0AA2879863A003A175D /* material.cpp */; };
 		B0B5D0B0287BFCCC003A175D /* descriptorsets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0AE287BFCCC003A175D /* descriptorsets.cpp */; };
 		B0B5D0B5287C1992003A175D /* texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0B3287C1992003A175D /* texture.cpp */; };
+		B0B5D0BA287D50A3003A175D /* dynamicuniformbuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0B8287D50A3003A175D /* dynamicuniformbuffer.cpp */; };
 		B0E13A1C2861729300D1D2B6 /* triangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0E13A1B2861729300D1D2B6 /* triangle.cpp */; };
 /* End PBXBuildFile section */
 
@@ -112,6 +113,8 @@
 		B0B5D0AF287BFCCC003A175D /* descriptorsets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = descriptorsets.h; sourceTree = "<group>"; };
 		B0B5D0B3287C1992003A175D /* texture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = texture.cpp; sourceTree = "<group>"; };
 		B0B5D0B4287C1992003A175D /* texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = texture.h; sourceTree = "<group>"; };
+		B0B5D0B8287D50A3003A175D /* dynamicuniformbuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dynamicuniformbuffer.cpp; sourceTree = "<group>"; };
+		B0B5D0B9287D50A3003A175D /* dynamicuniformbuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dynamicuniformbuffer.h; sourceTree = "<group>"; };
 		B0E13A1A2861729300D1D2B6 /* triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = triangle.h; sourceTree = "<group>"; };
 		B0E13A1B2861729300D1D2B6 /* triangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = triangle.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -259,9 +262,19 @@
 			path = descriptorsets;
 			sourceTree = "<group>";
 		};
+		B0B5D0B7287D50A3003A175D /* dynamicuniformbuffer */ = {
+			isa = PBXGroup;
+			children = (
+				B0B5D0B8287D50A3003A175D /* dynamicuniformbuffer.cpp */,
+				B0B5D0B9287D50A3003A175D /* dynamicuniformbuffer.h */,
+			);
+			path = dynamicuniformbuffer;
+			sourceTree = "<group>";
+		};
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0B5D0B7287D50A3003A175D /* dynamicuniformbuffer */,
 				B0B5D0AD287BFCCC003A175D /* descriptorsets */,
 				B0B5D0252875297A003A175D /* pipelines */,
 				B0E13A192861729300D1D2B6 /* triangle */,
@@ -351,6 +364,7 @@
 				B0B5D0282875297A003A175D /* pipelines.cpp in Sources */,
 				B0B5D0832876ABC0003A175D /* filestream.c in Sources */,
 				B0B5D01F2875293B003A175D /* ui.cpp in Sources */,
+				B0B5D0BA287D50A3003A175D /* dynamicuniformbuffer.cpp in Sources */,
 				B0B5D09728783317003A175D /* gltfModel.cpp in Sources */,
 				B09AEA2D2862A380006ED326 /* imgui_tables.cpp in Sources */,
 				B0B5D02C28753328003A175D /* gltfLoader.cpp in Sources */,
