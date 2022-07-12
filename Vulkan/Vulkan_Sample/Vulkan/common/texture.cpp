@@ -38,7 +38,7 @@ Texture* Texture::loadTextrue2D(std::string fileName, VkQueue transferQueue, VkF
     newTexture->m_width = ktxTexture->baseWidth;
     newTexture->m_height = ktxTexture->baseHeight;
     newTexture->m_mipLevels = ktxTexture->numLevels;
-    newTexture->m_mipLevels = 1;
+//    newTexture->m_mipLevels = 2;
     newTexture->m_layerCount = ktxTexture->numLayers;
     ktx_size_t ktxTextureSize = ktxTexture_GetSize(ktxTexture);
     ktx_uint8_t* ktxTextureData = ktxTexture_GetData(ktxTexture);
@@ -55,7 +55,7 @@ Texture* Texture::loadTextrue2D(std::string fileName, VkQueue transferQueue, VkF
                                          stagingBuffer, stagingMemory);
     Tools::mapMemory(stagingMemory, ktxTextureSize, ktxTextureData);
     
-    Tools::createImageAndMemoryThenBind(format, newTexture->m_width, newTexture->m_height, 1,
+    Tools::createImageAndMemoryThenBind(format, newTexture->m_width, newTexture->m_height, newTexture->m_mipLevels,
                                         VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                                         VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                         newTexture->m_image, newTexture->m_imageMemory);
@@ -82,22 +82,24 @@ Texture* Texture::loadTextrue2D(std::string fileName, VkQueue transferQueue, VkF
     subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     subresourceRange.baseMipLevel = 0;
     subresourceRange.levelCount = newTexture->m_mipLevels;
+    subresourceRange.baseArrayLayer = 0;
     subresourceRange.layerCount = 1;
     
     VkCommandBuffer cmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
     
     Tools::setImageLayout(cmd, newTexture->m_image, VK_IMAGE_LAYOUT_UNDEFINED,
-                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_PIPELINE_STAGE_HOST_BIT,
-                          VK_PIPELINE_STAGE_TRANSFER_BIT, subresourceRange);
+                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                          VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, subresourceRange);
 
     vkCmdCopyBufferToImage(cmd, stagingBuffer, newTexture->m_image,
                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(bufferCopyRegions.size()), bufferCopyRegions.data());
 
     Tools::setImageLayout(cmd, newTexture->m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_TRANSFER_BIT,
-                         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
+                          newTexture->m_imageLayout, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                          VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, subresourceRange);
 
     Tools::flushCommandBuffer(cmd, transferQueue, true);
+//    vkDeviceWaitIdle(Tools::m_device);
     
     ktxTexture_Destroy(ktxTexture);
     vkFreeMemory(Tools::m_device, stagingMemory, nullptr);
