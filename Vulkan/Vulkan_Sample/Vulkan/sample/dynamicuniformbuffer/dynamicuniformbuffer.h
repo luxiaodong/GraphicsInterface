@@ -3,7 +3,7 @@
 
 #include "common/application.h"
 
-#define OBJECT_INSTANCES 1
+#define OBJECT_INSTANCES 125
 
 class DynamicUniformBuffer : public Application
 {
