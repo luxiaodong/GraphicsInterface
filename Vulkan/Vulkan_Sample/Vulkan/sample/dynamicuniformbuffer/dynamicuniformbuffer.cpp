@@ -83,6 +83,8 @@ void DynamicUniformBuffer::prepareVertex()
     m_vertexInputAttrDes.clear();
     m_vertexInputAttrDes.push_back(Tools::getVertexInputAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)));
     m_vertexInputAttrDes.push_back(Tools::getVertexInputAttributeDescription(0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)));
+    
+    m_indexCount = static_cast<uint32_t>(indices.size());
 }
 
 void DynamicUniformBuffer::dynamicAlignment()
@@ -148,7 +150,6 @@ void DynamicUniformBuffer::prepareUniform()
                                          m_modelBuffer, m_modelMemory);
 
     Tools::mapMemory(m_modelMemory, totalSize, m_pModelMatrix);
-    
     free(m_pModelMatrix);
 }
 
@@ -174,13 +175,13 @@ void DynamicUniformBuffer::prepareDescriptorSetAndWrite()
     
     VkDescriptorBufferInfo bufferInfo = {};
     bufferInfo.offset = 0;
-    bufferInfo.range = sizeof(Uniform);
+    bufferInfo.range = VK_WHOLE_SIZE;
     bufferInfo.buffer = m_uniformBuffer;
     
     VkDescriptorBufferInfo bufferInfo2 = {};
-    bufferInfo.offset = 0;
-    bufferInfo.range = OBJECT_INSTANCES * m_matrixAlignment;
-    bufferInfo.buffer = m_modelBuffer;
+    bufferInfo2.offset = 0;
+    bufferInfo2.range = m_matrixAlignment;
+    bufferInfo2.buffer = m_modelBuffer;
     
     std::array<VkWriteDescriptorSet, 2> writes = {};
     writes[0] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
@@ -190,8 +191,8 @@ void DynamicUniformBuffer::prepareDescriptorSetAndWrite()
 
 void DynamicUniformBuffer::createGraphicsPipeline()
 {
-    VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "dynamicuniformbuffer/base.vert.spv");
-    VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "dynamicuniformbuffer/base.vert.spv");
+    VkShaderModule vertModule = Tools::createShaderModule(Tools::getShaderPath() + "dynamicuniformbuffer/base.vert.spv");
+    VkShaderModule fragModule = Tools::createShaderModule(Tools::getShaderPath() + "dynamicuniformbuffer/base.frag.spv");
     
     VkPipelineShaderStageCreateInfo vertShader = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
     VkPipelineShaderStageCreateInfo fragShader = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -221,7 +222,7 @@ void DynamicUniformBuffer::createGraphicsPipeline()
     VkPipelineDynamicStateCreateInfo dynamic = Tools::getPipelineDynamicStateCreateInfo(dynamicStates);
     VkPipelineRasterizationStateCreateInfo rasterization = Tools::getPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
     VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
-    VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_FALSE, VK_FALSE, VK_COMPARE_OP_ALWAYS);
+    VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment = Tools::getPipelineColorBlendAttachmentState(VK_FALSE, VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
     VkPipelineColorBlendStateCreateInfo colorBlend = Tools::getPipelineColorBlendStateCreateInfo(1, &colorBlendAttachment);
@@ -275,8 +276,7 @@ void DynamicUniformBuffer::recordRenderCommand(const VkCommandBuffer commandBuff
     {
         uint32_t dynamicOffset = i * static_cast<uint32_t>(m_matrixAlignment);
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 1, &dynamicOffset);
+        vkCmdDrawIndexed(commandBuffer, m_indexCount, 1, 0, 0, 0);
     }
-    
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 }
 

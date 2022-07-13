@@ -3,7 +3,7 @@
 
 #include "common/application.h"
 
-#define OBJECT_INSTANCES 125
+#define OBJECT_INSTANCES 1
 
 class DynamicUniformBuffer : public Application
 {
@@ -51,10 +51,10 @@ protected:
     VkDeviceMemory m_vertexMemory;
     VkBuffer m_indexBuffer;
     VkDeviceMemory m_indexMemory;
+    uint32_t m_indexCount;
     
     VkBuffer m_uniformBuffer;
     VkDeviceMemory m_uniformMemory;
-    
     VkBuffer m_modelBuffer;
     VkDeviceMemory m_modelMemory;
     
