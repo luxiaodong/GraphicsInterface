@@ -41,6 +41,7 @@
 		B0B5D0B0287BFCCC003A175D /* descriptorsets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0AE287BFCCC003A175D /* descriptorsets.cpp */; };
 		B0B5D0B5287C1992003A175D /* texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0B3287C1992003A175D /* texture.cpp */; };
 		B0B5D0BA287D50A3003A175D /* dynamicuniformbuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0B8287D50A3003A175D /* dynamicuniformbuffer.cpp */; };
+		B0B5D0C0287EBB26003A175D /* pushconstants.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0BE287EBB26003A175D /* pushconstants.cpp */; };
 		B0E13A1C2861729300D1D2B6 /* triangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0E13A1B2861729300D1D2B6 /* triangle.cpp */; };
 /* End PBXBuildFile section */
 
@@ -115,6 +116,8 @@
 		B0B5D0B4287C1992003A175D /* texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = texture.h; sourceTree = "<group>"; };
 		B0B5D0B8287D50A3003A175D /* dynamicuniformbuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dynamicuniformbuffer.cpp; sourceTree = "<group>"; };
 		B0B5D0B9287D50A3003A175D /* dynamicuniformbuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dynamicuniformbuffer.h; sourceTree = "<group>"; };
+		B0B5D0BE287EBB26003A175D /* pushconstants.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pushconstants.cpp; sourceTree = "<group>"; };
+		B0B5D0BF287EBB26003A175D /* pushconstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pushconstants.h; sourceTree = "<group>"; };
 		B0E13A1A2861729300D1D2B6 /* triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = triangle.h; sourceTree = "<group>"; };
 		B0E13A1B2861729300D1D2B6 /* triangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = triangle.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -271,9 +274,19 @@
 			path = dynamicuniformbuffer;
 			sourceTree = "<group>";
 		};
+		B0B5D0BD287EBB26003A175D /* pushconstants */ = {
+			isa = PBXGroup;
+			children = (
+				B0B5D0BE287EBB26003A175D /* pushconstants.cpp */,
+				B0B5D0BF287EBB26003A175D /* pushconstants.h */,
+			);
+			path = pushconstants;
+			sourceTree = "<group>";
+		};
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0B5D0BD287EBB26003A175D /* pushconstants */,
 				B0B5D0B7287D50A3003A175D /* dynamicuniformbuffer */,
 				B0B5D0AD287BFCCC003A175D /* descriptorsets */,
 				B0B5D0252875297A003A175D /* pipelines */,
@@ -356,6 +369,7 @@
 				B0A47F1F282E4D6200209D51 /* main.cpp in Sources */,
 				B0B5D0202875293B003A175D /* camera.cpp in Sources */,
 				B0B5D09B287920AD003A175D /* gltfNode.cpp in Sources */,
+				B0B5D0C0287EBB26003A175D /* pushconstants.cpp in Sources */,
 				B0B5D0892876AC69003A175D /* swap.c in Sources */,
 				B0B5D09F287944F7003A175D /* mesh.cpp in Sources */,
 				B0B5D0222875293B003A175D /* application.cpp in Sources */,

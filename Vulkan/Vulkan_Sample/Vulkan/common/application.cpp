@@ -498,15 +498,15 @@ void Application::createDescriptorSet(VkDescriptorSet& descriptorSet)
     }
 }
 
-void Application::createPipelineLayout()
+void Application::createPipelineLayout(const VkPushConstantRange* pPushConstantRange, uint32_t pushConstantRangeCount)
 {
     VkPipelineLayoutCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     createInfo.flags = 0;
     createInfo.setLayoutCount = 1;
     createInfo.pSetLayouts = &m_descriptorSetLayout;
-    createInfo.pushConstantRangeCount = 0;
-    createInfo.pPushConstantRanges = nullptr;
+    createInfo.pushConstantRangeCount = pushConstantRangeCount;
+    createInfo.pPushConstantRanges = pPushConstantRange;
 
     if( vkCreatePipelineLayout(m_device, &createInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS )
     {

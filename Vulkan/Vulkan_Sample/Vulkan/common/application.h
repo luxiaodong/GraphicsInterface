@@ -56,7 +56,7 @@ protected:
     void createDescriptorSetLayout(const VkDescriptorSetLayoutBinding* pBindings, uint32_t bindingCount);
     void createDescriptorPool(const VkDescriptorPoolSize* pPoolSizes, uint32_t poolSizeCount, uint32_t maxSets);
     void createDescriptorSet(VkDescriptorSet& descriptorSet);
-    void createPipelineLayout();
+    void createPipelineLayout(const VkPushConstantRange* pPushConstantRange = nullptr, uint32_t pushConstantRangeCount = 0);
     
     void createPipelineCache();
     void createCommandPool();
