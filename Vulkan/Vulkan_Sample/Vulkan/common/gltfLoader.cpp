@@ -154,8 +154,8 @@ void GltfLoader::loadNodes()
     const tinygltf::Scene &scene = m_gltfModel.scenes[m_gltfModel.defaultScene > -1 ? m_gltfModel.defaultScene : 0];
     
     //单个场景下索引断言
-    assert(scene.nodes[0] == 0);
-    assert(scene.nodes[scene.nodes.size() - 1] == scene.nodes.size() - 1);
+//    assert(scene.nodes[0] == 0);
+//    assert(scene.nodes[scene.nodes.size() - 1] == scene.nodes.size() - 1);
     
     for (size_t i = 0; i < scene.nodes.size(); i++)
     {

@@ -4,6 +4,7 @@
 #include "sample/descriptorsets/descriptorsets.h"
 #include "sample/dynamicuniformbuffer/dynamicuniformbuffer.h"
 #include "sample/pushconstants/pushconstants.h"
+#include "sample/specializationconstants/specializationconstants.h"
 
 int main(int argc, const char * argv[])
 {
@@ -11,7 +12,9 @@ int main(int argc, const char * argv[])
 //    Pipelines app("pipeline");
 //    Descriptorsets app("descriptorsets");
 //    DynamicUniformBuffer app("dynamicuniformbuffer");
-    PushConstants app("pushconstants");
+//    PushConstants app("pushconstants");
+    SpecializationConstants app("specializationconstants");
+    
     try {
         app.run();
     } catch (const std::exception& e) {
