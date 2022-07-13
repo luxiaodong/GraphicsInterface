@@ -3,7 +3,7 @@
 
 #include "common/application.h"
 
-#define OBJECT_INSTANCES 1
+#define OBJECT_INSTANCES 4
 
 class DynamicUniformBuffer : public Application
 {
@@ -18,6 +18,11 @@ public:
         glm::mat4 projectionMatrix;
 //        glm::mat4 modelMatrix;
         glm::mat4 viewMatrix;
+    };
+
+    struct UniformDynamic
+    {
+        unsigned char *pModelMatrix = nullptr;
     };
     
     DynamicUniformBuffer(std::string title);
@@ -58,6 +63,7 @@ protected:
     VkBuffer m_modelBuffer;
     VkDeviceMemory m_modelMemory;
     
-    void* m_pModelMatrix = nullptr; //指向模型矩阵
+//    UniformDynamic m_m;
+
     size_t m_matrixAlignment;
 };

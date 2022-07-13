@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <ctime>
 #include <random>
+#include <malloc/_malloc.h>
 
 DynamicUniformBuffer::DynamicUniformBuffer(std::string title) : Application(title)
 {
@@ -105,52 +106,31 @@ void DynamicUniformBuffer::prepareUniform()
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                          m_uniformBuffer, m_uniformMemory);
 
-    DynamicUniformBuffer::Uniform mvp = {};
-    mvp.viewMatrix = m_camera.m_viewMat;
-    mvp.projectionMatrix = m_camera.m_projMat;
-    Tools::mapMemory(m_uniformMemory, sizeof(DynamicUniformBuffer::Uniform), &mvp);
+    DynamicUniformBuffer::Uniform vp = {};
+    vp.viewMatrix = m_camera.m_viewMat;
+    vp.projectionMatrix = m_camera.m_projMat;
+    Tools::mapMemory(m_uniformMemory, sizeof(DynamicUniformBuffer::Uniform), &vp);
     
     dynamicAlignment();
-    
     size_t totalSize = OBJECT_INSTANCES * m_matrixAlignment;
-    m_pModelMatrix = malloc(totalSize);
     
-    std::default_random_engine rndEngine((unsigned)time(nullptr));
-    std::normal_distribution<float> rndDist(-1.0f, 1.0f);
+    DynamicUniformBuffer::UniformDynamic m = {};
+    m.pModelMatrix = (unsigned char*)aligned_alloc(m_matrixAlignment, totalSize);
     
-    // Dynamic ubo with per-object model matrices indexed by offsets in the command buffer
-    uint32_t dim = static_cast<uint32_t>(pow(OBJECT_INSTANCES, (1.0f / 3.0f)));
-    glm::vec3 offset(5.0f);
-
-    for (uint32_t x = 0; x < dim; x++)
+    glm::mat4 idMat(1.0);
+    for (uint32_t i = 0; i < OBJECT_INSTANCES; i++)
     {
-        for (uint32_t y = 0; y < dim; y++)
-        {
-            for (uint32_t z = 0; z < dim; z++)
-            {
-                uint32_t index = x * dim * dim + y * dim + z;
-                // Aligned offset
-                glm::mat4* modelMat = (glm::mat4*)(((uint64_t)m_pModelMatrix + (index * m_matrixAlignment)));
-
-                // Update rotations
-                glm::vec3 rotations = glm::vec3(rndDist(rndEngine), rndDist(rndEngine), rndDist(rndEngine)) * 2.0f * (float)M_PI;
-
-                // Update matrices
-                glm::vec3 pos = glm::vec3(-((dim * offset.x) / 2.0f) + offset.x / 2.0f + x * offset.x, -((dim * offset.y) / 2.0f) + offset.y / 2.0f + y * offset.y, -((dim * offset.z) / 2.0f) + offset.z / 2.0f + z * offset.z);
-                *modelMat = glm::translate(glm::mat4(1.0f), pos);
-                *modelMat = glm::rotate(*modelMat, rotations.x, glm::vec3(1.0f, 1.0f, 0.0f));
-                *modelMat = glm::rotate(*modelMat, rotations.y, glm::vec3(0.0f, 1.0f, 0.0f));
-                *modelMat = glm::rotate(*modelMat, rotations.z, glm::vec3(0.0f, 0.0f, 1.0f));
-            }
-        }
+        unsigned char* p  =  m.pModelMatrix + (i*m_matrixAlignment);
+        memcpy(p, &idMat, m_matrixAlignment);
     }
     
     Tools::createBufferAndMemoryThenBind(totalSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                          m_modelBuffer, m_modelMemory);
 
-    Tools::mapMemory(m_modelMemory, totalSize, m_pModelMatrix);
-    free(m_pModelMatrix);
+    Tools::mapMemory(m_modelMemory, totalSize, m.pModelMatrix);
+    free(m.pModelMatrix);
+//    m_m = m;
 }
 
 void DynamicUniformBuffer::prepareDescriptorSetLayoutAndPipelineLayout()
@@ -222,7 +202,7 @@ void DynamicUniformBuffer::createGraphicsPipeline()
     VkPipelineDynamicStateCreateInfo dynamic = Tools::getPipelineDynamicStateCreateInfo(dynamicStates);
     VkPipelineRasterizationStateCreateInfo rasterization = Tools::getPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
     VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
-    VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
+    VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_FALSE, VK_FALSE, VK_COMPARE_OP_LESS_OR_EQUAL);
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment = Tools::getPipelineColorBlendAttachmentState(VK_FALSE, VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
     VkPipelineColorBlendStateCreateInfo colorBlend = Tools::getPipelineColorBlendStateCreateInfo(1, &colorBlendAttachment);
@@ -275,8 +255,40 @@ void DynamicUniformBuffer::recordRenderCommand(const VkCommandBuffer commandBuff
     for (uint32_t i = 0; i < OBJECT_INSTANCES; i++)
     {
         uint32_t dynamicOffset = i * static_cast<uint32_t>(m_matrixAlignment);
+        
+//        unsigned char* p  = m_m.pModelMatrix + (i*m_matrixAlignment);
+//        glm::mat4* pMat = (glm::mat4*)p;
+        
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 1, &dynamicOffset);
         vkCmdDrawIndexed(commandBuffer, m_indexCount, 1, 0, 0, 0);
     }
 }
 
+//    std::default_random_engine rndEngine((unsigned)time(nullptr));
+//    std::normal_distribution<float> rndDist(-1.0f, 1.0f);
+//     Dynamic ubo with per-object model matrices indexed by offsets in the command buffer
+//    uint32_t dim = static_cast<uint32_t>(pow(OBJECT_INSTANCES, (1.0f / 3.0f)));
+//    glm::vec3 offset(5.0f);
+//
+//    for (uint32_t x = 0; x < dim; x++)
+//    {
+//        for (uint32_t y = 0; y < dim; y++)
+//        {
+//            for (uint32_t z = 0; z < dim; z++)
+//            {
+//                uint32_t index = x * dim * dim + y * dim + z;
+//                // Aligned offset
+//                glm::mat4* modelMat = (glm::mat4*)(((uint64_t)m_pModelMatrix + (index * m_matrixAlignment)));
+//
+//                // Update rotations
+//                glm::vec3 rotations = glm::vec3(rndDist(rndEngine), rndDist(rndEngine), rndDist(rndEngine)) * 2.0f * (float)M_PI;
+//
+//                // Update matrices
+//                glm::vec3 pos = glm::vec3(-((dim * offset.x) / 2.0f) + offset.x / 2.0f + x * offset.x, -((dim * offset.y) / 2.0f) + offset.y / 2.0f + y * offset.y, -((dim * offset.z) / 2.0f) + offset.z / 2.0f + z * offset.z);
+//                *modelMat = glm::translate(glm::mat4(1.0f), pos);
+//                *modelMat = glm::rotate(*modelMat, rotations.x, glm::vec3(1.0f, 1.0f, 0.0f));
+//                *modelMat = glm::rotate(*modelMat, rotations.y, glm::vec3(0.0f, 1.0f, 0.0f));
+//                *modelMat = glm::rotate(*modelMat, rotations.z, glm::vec3(0.0f, 0.0f, 1.0f));
+//            }
+//        }
+//    }
