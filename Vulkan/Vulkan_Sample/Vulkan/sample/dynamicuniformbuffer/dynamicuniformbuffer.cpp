@@ -67,16 +67,44 @@ void DynamicUniformBuffer::prepareVertex()
     VkDeviceSize vertexSize = vertices.size() * sizeof(Vertex);
     VkDeviceSize indexSize = indices.size() * sizeof(uint32_t);
     
-    Tools::createBufferAndMemoryThenBind(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+    VkBuffer vertexStageBuffer;
+    VkDeviceMemory vertexStageMemory;
+    Tools::createBufferAndMemoryThenBind(vertexSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                         m_vertexBuffer, m_vertexMemory);
-    Tools::mapMemory(m_vertexMemory, vertexSize, vertices.data());
+                                         vertexStageBuffer, vertexStageMemory);
+    Tools::mapMemory(vertexStageMemory, vertexSize, vertices.data());
+    Tools::createBufferAndMemoryThenBind(vertexSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                                         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_vertexBuffer, m_vertexMemory);
     
-    Tools::createBufferAndMemoryThenBind(indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+    VkBuffer indexStageBuffer;
+    VkDeviceMemory indexStageMemory;
+    Tools::createBufferAndMemoryThenBind(indexSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                         m_indexBuffer, m_indexMemory);
-    Tools::mapMemory(m_vertexMemory, indexSize, indices.data());
+                                         indexStageBuffer, indexStageMemory);
+    Tools::mapMemory(indexStageMemory, indexSize, indices.data());
+    Tools::createBufferAndMemoryThenBind(indexSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                                         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_indexBuffer, m_indexMemory);
     
+    VkCommandBuffer cmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+    
+    VkBufferCopy vertexCopy = {};
+    vertexCopy.srcOffset = 0;
+    vertexCopy.dstOffset = 0;
+    vertexCopy.size = vertexSize;
+    vkCmdCopyBuffer(cmd, vertexStageBuffer, m_vertexBuffer, 1, &vertexCopy);
+    
+    VkBufferCopy indexCopy = {};
+    indexCopy.srcOffset = 0;
+    indexCopy.dstOffset = 0;
+    indexCopy.size = indexSize;
+    vkCmdCopyBuffer(cmd, indexStageBuffer, m_indexBuffer, 1, &indexCopy);
+    
+    Tools::flushCommandBuffer(cmd, m_graphicsQueue, true);
+    
+    vkFreeMemory(m_device, vertexStageMemory, nullptr);
+    vkDestroyBuffer(m_device, vertexStageBuffer, nullptr);
+    vkFreeMemory(m_device, indexStageMemory, nullptr);
+    vkDestroyBuffer(m_device, indexStageBuffer, nullptr);
     
     m_vertexInputBindDes.clear();
     m_vertexInputBindDes.push_back(Tools::getVertexInputBindingDescription(0, sizeof(Vertex)));
@@ -84,7 +112,7 @@ void DynamicUniformBuffer::prepareVertex()
     m_vertexInputAttrDes.clear();
     m_vertexInputAttrDes.push_back(Tools::getVertexInputAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)));
     m_vertexInputAttrDes.push_back(Tools::getVertexInputAttributeDescription(0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)));
-    
+
     m_indexCount = static_cast<uint32_t>(indices.size());
 }
 
@@ -202,7 +230,7 @@ void DynamicUniformBuffer::createGraphicsPipeline()
     VkPipelineDynamicStateCreateInfo dynamic = Tools::getPipelineDynamicStateCreateInfo(dynamicStates);
     VkPipelineRasterizationStateCreateInfo rasterization = Tools::getPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
     VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
-    VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_FALSE, VK_FALSE, VK_COMPARE_OP_LESS_OR_EQUAL);
+    VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment = Tools::getPipelineColorBlendAttachmentState(VK_FALSE, VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
     VkPipelineColorBlendStateCreateInfo colorBlend = Tools::getPipelineColorBlendStateCreateInfo(1, &colorBlendAttachment);

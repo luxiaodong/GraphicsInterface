@@ -3,12 +3,11 @@
 
 #include "common/application.h"
 
-#define OBJECT_INSTANCES 4
+#define OBJECT_INSTANCES 1
 
 class DynamicUniformBuffer : public Application
 {
 public:
-    
     struct Vertex {
         float position[3];
         float color[3];
