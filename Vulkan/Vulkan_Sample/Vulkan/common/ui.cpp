@@ -280,7 +280,7 @@ void Ui::updateUI(uint32_t lastFPS)
     ImGui::Render();
 }
 
-bool Ui::prepareRenderData()
+bool Ui::updateRenderData()
 {
     bool rtn = false;
     ImDrawData* imDrawData = ImGui::GetDrawData();

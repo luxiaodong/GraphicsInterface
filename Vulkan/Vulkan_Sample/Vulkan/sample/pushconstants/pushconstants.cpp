@@ -156,7 +156,7 @@ void PushConstants::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
 }
 
-void PushConstants::prepareRenderData()
+void PushConstants::updateRenderData()
 {
 }
 

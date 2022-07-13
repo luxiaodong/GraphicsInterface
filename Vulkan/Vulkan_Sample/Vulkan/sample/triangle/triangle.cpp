@@ -206,7 +206,7 @@ void Triangle::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
 }
 
-void Triangle::prepareRenderData()
+void Triangle::updateRenderData()
 {
 }
 

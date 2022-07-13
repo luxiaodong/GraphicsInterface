@@ -166,7 +166,7 @@ void Descriptorsets::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
 }
 
-void Descriptorsets::prepareRenderData()
+void Descriptorsets::updateRenderData()
 {
     m_cube[0].rotation = glm::vec3(3.5f, 0.0f, 0.0f);
     m_cube[1].rotation = glm::vec3(0.0f, 5.0f, 0.0f);

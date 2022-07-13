@@ -292,7 +292,7 @@ void DynamicUniformBuffer::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
 }
 
-void DynamicUniformBuffer::prepareRenderData()
+void DynamicUniformBuffer::updateRenderData()
 {
 }
 

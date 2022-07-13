@@ -32,7 +32,7 @@ public:
     void loop();
     void logic();
     void render();
-    virtual void prepareRenderData() = 0;
+    virtual void updateRenderData() = 0;
     
     void beginRenderCommandAndPass(const VkCommandBuffer commandBuffer, int frameBufferIndex);
     virtual void recordRenderCommand(const VkCommandBuffer commandBuffer) = 0;

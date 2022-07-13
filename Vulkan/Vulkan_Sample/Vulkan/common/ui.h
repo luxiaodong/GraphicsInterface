@@ -21,7 +21,7 @@ public:
 public:
     void recordRenderCommand(const VkCommandBuffer commandBuffer);
     void updateUI(uint32_t lastFPS);
-    bool prepareRenderData();
+    bool updateRenderData();
     
 protected:
     void createDescriptorSetLayout();

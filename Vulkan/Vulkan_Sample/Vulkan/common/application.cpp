@@ -118,16 +118,16 @@ void Application::logic()
     }
 }
 
-void Application::prepareRenderData()
+void Application::updateRenderData()
 {}
 
 void Application::render()
 {
-    prepareRenderData();
+    updateRenderData();
     
     if(m_pUi)
     {
-        m_pUi->prepareRenderData();
+        m_pUi->updateRenderData();
     }
     
     //fence需要手动重置为未发出的信号

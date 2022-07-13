@@ -198,7 +198,7 @@ void Pipelines::createGraphicsPipeline()
     }
 }
 
-void Pipelines::prepareRenderData()
+void Pipelines::updateRenderData()
 {
     Pipelines::Uniform mvp = {};
     mvp.modelMatrix = m_camera.m_viewMat;

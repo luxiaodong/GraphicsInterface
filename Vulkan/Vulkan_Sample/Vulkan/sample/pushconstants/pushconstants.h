@@ -26,7 +26,7 @@ public:
     virtual void initCamera();
     virtual void clear();
     
-    virtual void prepareRenderData();
+    virtual void updateRenderData();
     virtual void recordRenderCommand(const VkCommandBuffer commandBuffer);
     
 protected:
