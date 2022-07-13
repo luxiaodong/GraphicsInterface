@@ -61,8 +61,6 @@ protected:
     VkDeviceMemory m_uniformMemory;
     VkBuffer m_modelBuffer;
     VkDeviceMemory m_modelMemory;
-    
-//    UniformDynamic m_m;
 
     size_t m_matrixAlignment;
 };

@@ -67,6 +67,16 @@ void DynamicUniformBuffer::prepareVertex()
     VkDeviceSize vertexSize = vertices.size() * sizeof(Vertex);
     VkDeviceSize indexSize = indices.size() * sizeof(uint32_t);
     
+//    Tools::createBufferAndMemoryThenBind(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+//                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+//                                         m_vertexBuffer, m_vertexMemory);
+//    Tools::mapMemory(m_vertexMemory, vertexSize, vertices.data());
+//
+//    Tools::createBufferAndMemoryThenBind(indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+//                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+//                                         m_indexBuffer, m_indexMemory);
+//    Tools::mapMemory(m_vertexMemory, indexSize, indices.data());
+
     VkBuffer vertexStageBuffer;
     VkDeviceMemory vertexStageMemory;
     Tools::createBufferAndMemoryThenBind(vertexSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -75,7 +85,7 @@ void DynamicUniformBuffer::prepareVertex()
     Tools::mapMemory(vertexStageMemory, vertexSize, vertices.data());
     Tools::createBufferAndMemoryThenBind(vertexSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                                          VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_vertexBuffer, m_vertexMemory);
-    
+
     VkBuffer indexStageBuffer;
     VkDeviceMemory indexStageMemory;
     Tools::createBufferAndMemoryThenBind(indexSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -84,23 +94,23 @@ void DynamicUniformBuffer::prepareVertex()
     Tools::mapMemory(indexStageMemory, indexSize, indices.data());
     Tools::createBufferAndMemoryThenBind(indexSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
                                          VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_indexBuffer, m_indexMemory);
-    
+
     VkCommandBuffer cmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-    
+
     VkBufferCopy vertexCopy = {};
     vertexCopy.srcOffset = 0;
     vertexCopy.dstOffset = 0;
     vertexCopy.size = vertexSize;
     vkCmdCopyBuffer(cmd, vertexStageBuffer, m_vertexBuffer, 1, &vertexCopy);
-    
+
     VkBufferCopy indexCopy = {};
     indexCopy.srcOffset = 0;
     indexCopy.dstOffset = 0;
     indexCopy.size = indexSize;
     vkCmdCopyBuffer(cmd, indexStageBuffer, m_indexBuffer, 1, &indexCopy);
-    
+
     Tools::flushCommandBuffer(cmd, m_graphicsQueue, true);
-    
+
     vkFreeMemory(m_device, vertexStageMemory, nullptr);
     vkDestroyBuffer(m_device, vertexStageBuffer, nullptr);
     vkFreeMemory(m_device, indexStageMemory, nullptr);
@@ -174,16 +184,12 @@ void DynamicUniformBuffer::prepareUniform()
         }
     }
 
-
-    
-    
     Tools::createBufferAndMemoryThenBind(totalSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                          m_modelBuffer, m_modelMemory);
 
     Tools::mapMemory(m_modelMemory, totalSize, m.pModelMatrix);
     free(m.pModelMatrix);
-//    m_m = m;
 }
 
 void DynamicUniformBuffer::prepareDescriptorSetLayoutAndPipelineLayout()
