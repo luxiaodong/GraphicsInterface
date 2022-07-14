@@ -55,7 +55,7 @@ public:
     
     static uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
     static void createBufferAndMemoryThenBind(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags, VkBuffer &buffer, VkDeviceMemory& memory);
-    static void createImageAndMemoryThenBind(VkFormat format, uint32_t width, uint32_t height, uint32_t lodLevels, uint32_t layerCount, VkSampleCountFlagBits sampleFlag, VkImageUsageFlags usage, VkImageTiling tiling, VkMemoryPropertyFlags flags, VkImage &image, VkDeviceMemory &imageMemory);
+    static void createImageAndMemoryThenBind(VkFormat format, uint32_t width, uint32_t height, uint32_t lodLevels, uint32_t layerCount, VkSampleCountFlagBits sampleFlag, VkImageUsageFlags usage, VkImageTiling tiling, VkMemoryPropertyFlags propertyFlags, VkImage &image, VkDeviceMemory &imageMemory, VkImageCreateFlags createFlags = 0);
     static void createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t levelCount, uint32_t layerCount, VkImageView &imageView, VkImageViewType viewType = VK_IMAGE_VIEW_TYPE_2D);
     static void mapMemory(VkDeviceMemory &memory, VkDeviceSize size, void* srcAddress, VkDeviceSize offset = 0);
     static VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level, bool begin, uint32_t count = 1);

@@ -95,11 +95,11 @@ void Tools::createBufferAndMemoryThenBind(VkDeviceSize size, VkBufferUsageFlags 
     vkBindBufferMemory(m_device, buffer, memory, 0);
 }
 
-void Tools::createImageAndMemoryThenBind(VkFormat format, uint32_t width, uint32_t height, uint32_t lodLevels, uint32_t layerCount, VkSampleCountFlagBits sampleFlag, VkImageUsageFlags usage, VkImageTiling tiling, VkMemoryPropertyFlags flags, VkImage &image, VkDeviceMemory &imageMemory)
+void Tools::createImageAndMemoryThenBind(VkFormat format, uint32_t width, uint32_t height, uint32_t lodLevels, uint32_t layerCount, VkSampleCountFlagBits sampleFlag, VkImageUsageFlags usage, VkImageTiling tiling, VkMemoryPropertyFlags propertyFlags, VkImage &image, VkDeviceMemory &imageMemory, VkImageCreateFlags createFlags)
 {
     VkImageCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    createInfo.flags = 0;
+    createInfo.flags = createFlags;
     createInfo.imageType = VK_IMAGE_TYPE_2D;
     createInfo.format = format;
     createInfo.extent.width = width;
@@ -126,7 +126,7 @@ void Tools::createImageAndMemoryThenBind(VkFormat format, uint32_t width, uint32
     VkMemoryAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, flags);
+    allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, propertyFlags);
 
     if( vkAllocateMemory(m_device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
     {

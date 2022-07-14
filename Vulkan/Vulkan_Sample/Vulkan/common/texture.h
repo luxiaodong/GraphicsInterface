@@ -6,7 +6,7 @@
 #include <ktx.h>
 #include <ktxvulkan.h>
 
-enum TextureCopyRegion { Nothing, MipLevel, Layer};
+enum TextureCopyRegion { Nothing, MipLevel, Layer, Cube};
 
 class Texture
 {

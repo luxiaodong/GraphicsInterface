@@ -46,6 +46,7 @@ void TextureMapping::clear()
     vkDestroyBuffer(m_device, m_indexBuffer, nullptr);
     
     m_pTexture->clear();
+    delete m_pTexture;
     Application::clear();
 }
 

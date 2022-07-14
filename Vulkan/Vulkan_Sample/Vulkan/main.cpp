@@ -7,6 +7,7 @@
 #include "sample/specializationconstants/specializationconstants.h"
 #include "sample/texturemapping/texturemapping.h"
 #include "sample/texturearray/texturearray.h"
+#include "sample/texturecubemapping/texturecubemapping.h"
 
 int main(int argc, const char * argv[])
 {
@@ -17,7 +18,9 @@ int main(int argc, const char * argv[])
 //    PushConstants app("pushconstants");
 //    SpecializationConstants app("specializationconstants");
 //    TextureMapping app("texturemapping");
-    TextureArray app("texturearray");
+//    TextureArray app("texturearray");
+    TextureCubeMapping app("texturecubemapping");
+    
     try {
         app.run();
     } catch (const std::exception& e) {
