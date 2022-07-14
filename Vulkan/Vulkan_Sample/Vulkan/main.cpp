@@ -5,6 +5,7 @@
 #include "sample/dynamicuniformbuffer/dynamicuniformbuffer.h"
 #include "sample/pushconstants/pushconstants.h"
 #include "sample/specializationconstants/specializationconstants.h"
+#include "sample/texturemapping/texturemapping.h"
 
 int main(int argc, const char * argv[])
 {
@@ -13,7 +14,8 @@ int main(int argc, const char * argv[])
 //    Descriptorsets app("descriptorsets");
 //    DynamicUniformBuffer app("dynamicuniformbuffer");
 //    PushConstants app("pushconstants");
-    SpecializationConstants app("specializationconstants");
+//    SpecializationConstants app("specializationconstants");
+    TextureMapping app("texturemapping");
     
     try {
         app.run();

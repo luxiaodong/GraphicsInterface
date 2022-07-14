@@ -1,14 +1,14 @@
 
-#include "triangle.h"
+#include "texturemapping.h"
 
-Triangle::Triangle(std::string title) : Application(title)
+TextureMapping::TextureMapping(std::string title) : Application(title)
 {
 }
 
-Triangle::~Triangle()
+TextureMapping::~TextureMapping()
 {}
 
-void Triangle::init()
+void TextureMapping::init()
 {
     Application::init();
     
@@ -20,14 +20,14 @@ void Triangle::init()
     createGraphicsPipeline();
 }
 
-void Triangle::initCamera()
+void TextureMapping::initCamera()
 {
     m_camera.setPosition(glm::vec3(0.0f, 0.0f, -2.5f));
     m_camera.setRotation(glm::vec3(0.0f));
     m_camera.setPerspective(60.0f, (float)m_width / (float)m_height, 1.0f, 256.0f);
 }
 
-void Triangle::clear()
+void TextureMapping::clear()
 {
     vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     vkFreeMemory(m_device, m_uniformMemory, nullptr);
@@ -40,16 +40,18 @@ void Triangle::clear()
     Application::clear();
 }
 
-void Triangle::prepareVertex()
+void TextureMapping::prepareVertex()
 {
     std::vector<Vertex> vertexs =
     {
-        { {  1.0f,  1.0f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
-        { { -1.0f,  1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
-        { {  0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
+        { {  1.0f,  1.0f, 0.0f }, { 1.0f, 1.0f },{ 0.0f, 0.0f, 1.0f } },
+        { { -1.0f,  1.0f, 0.0f }, { 0.0f, 1.0f },{ 0.0f, 0.0f, 1.0f } },
+        { { -1.0f, -1.0f, 0.0f }, { 0.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } },
+        { {  1.0f, -1.0f, 0.0f }, { 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } }
     };
 
-    std::vector<uint32_t> indexs = { 0, 1, 2 };
+    // Setup indices
+    std::vector<uint32_t> indexs = { 0,1,2, 2,3,0 };
     
     m_vertexInputBindDes.clear();
     m_vertexInputBindDes.push_back(Tools::getVertexInputBindingDescription(0, sizeof(Vertex)));
@@ -102,7 +104,7 @@ void Triangle::prepareVertex()
     vkDestroyBuffer(m_device, indexStageBuffer, nullptr);
 }
 
-void Triangle::prepareUniform()
+void TextureMapping::prepareUniform()
 {
     VkDeviceSize uniformSize = sizeof(Uniform);
     
@@ -117,14 +119,14 @@ void Triangle::prepareUniform()
     Tools::mapMemory(m_uniformMemory, sizeof(Uniform), &mvp);
 }
 
-void Triangle::prepareDescriptorSetLayoutAndPipelineLayout()
+void TextureMapping::prepareDescriptorSetLayoutAndPipelineLayout()
 {
     VkDescriptorSetLayoutBinding binding = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
     createDescriptorSetLayout(&binding, 1);
     createPipelineLayout();
 }
 
-void Triangle::prepareDescriptorSetAndWrite()
+void TextureMapping::prepareDescriptorSetAndWrite()
 {
     VkDescriptorPoolSize poolSize = {};
     poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -142,7 +144,7 @@ void Triangle::prepareDescriptorSetAndWrite()
     vkUpdateDescriptorSets(m_device, 1, &write, 0, nullptr);
 }
 
-void Triangle::createGraphicsPipeline()
+void TextureMapping::createGraphicsPipeline()
 {
     VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "triangle/triangle.vert.spv");
     VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "triangle/triangle.frag.spv");
@@ -206,11 +208,11 @@ void Triangle::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
 }
 
-void Triangle::updateRenderData()
+void TextureMapping::updateRenderData()
 {
 }
 
-void Triangle::recordRenderCommand(const VkCommandBuffer commandBuffer)
+void TextureMapping::recordRenderCommand(const VkCommandBuffer commandBuffer)
 {
     VkViewport viewport = Tools::getViewport(0, 0, m_swapchainExtent.width, m_swapchainExtent.height);
     VkRect2D scissor;
@@ -220,11 +222,11 @@ void Triangle::recordRenderCommand(const VkCommandBuffer commandBuffer)
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
+    
     VkDeviceSize offset = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_vertexBuffer, &offset);
     vkCmdBindIndexBuffer(commandBuffer, m_indexBuffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
-    vkCmdDrawIndexed(commandBuffer, 3, 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, 6, 1, 0, 0, 0);
 }
 
