@@ -49,6 +49,8 @@ public:
     
     static VkPhysicalDevice m_physicalDevice;
     static VkDevice m_device;
+    static VkPhysicalDeviceFeatures m_deviceEnabledFeatures;
+    static VkPhysicalDeviceProperties m_deviceProperties;
     static VkCommandPool m_commandPool;
     
     static uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);

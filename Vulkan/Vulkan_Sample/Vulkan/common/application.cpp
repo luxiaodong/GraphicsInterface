@@ -59,6 +59,8 @@ void Application::init()
     
     createLogicDeivce();
     Tools::m_device = m_device;
+    Tools::m_deviceEnabledFeatures = m_deviceEnabledFeatures;
+    Tools::m_deviceProperties = m_deviceProperties;
     createCommandPool();
     Tools::m_commandPool = m_commandPool;
     

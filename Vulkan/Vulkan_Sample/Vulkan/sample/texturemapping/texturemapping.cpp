@@ -27,6 +27,14 @@ void TextureMapping::initCamera()
     m_camera.setPerspective(60.0f, (float)m_width / (float)m_height, 1.0f, 256.0f);
 }
 
+void TextureMapping::setEnabledFeatures()
+{
+    if(m_deviceFeatures.samplerAnisotropy)
+    {
+        m_deviceEnabledFeatures.samplerAnisotropy = VK_TRUE;
+    }
+}
+
 void TextureMapping::clear()
 {
     vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);

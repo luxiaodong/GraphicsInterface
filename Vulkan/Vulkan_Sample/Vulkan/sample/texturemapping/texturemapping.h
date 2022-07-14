@@ -26,6 +26,7 @@ public:
     
     virtual void init();
     virtual void initCamera();
+    virtual void setEnabledFeatures();
     virtual void clear();
     
     virtual void updateRenderData();

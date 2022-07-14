@@ -4,6 +4,8 @@
 VkPhysicalDevice Tools::m_physicalDevice = VK_NULL_HANDLE;
 VkDevice Tools::m_device = VK_NULL_HANDLE;
 VkCommandPool Tools::m_commandPool = VK_NULL_HANDLE;
+VkPhysicalDeviceFeatures Tools::m_deviceEnabledFeatures = {};
+VkPhysicalDeviceProperties Tools::m_deviceProperties = {};
 
 std::string Tools::getShaderPath()
 {
@@ -260,8 +262,18 @@ void Tools::createTextureSampler(VkFilter filter, VkSamplerAddressMode addressMo
     createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     createInfo.mipLodBias = 0.0f;
-    createInfo.anisotropyEnable = VK_FALSE;
-    createInfo.maxAnisotropy = 1.0f;
+    
+    if(m_deviceEnabledFeatures.samplerAnisotropy == VK_TRUE)
+    {
+        createInfo.anisotropyEnable = VK_TRUE;
+        createInfo.maxAnisotropy = m_deviceProperties.limits.maxSamplerAnisotropy;
+    }
+    else
+    {
+        createInfo.anisotropyEnable = VK_FALSE;
+        createInfo.maxAnisotropy = 1.0f;
+    }
+    
     createInfo.compareEnable = VK_FALSE;
     createInfo.compareOp = VK_COMPARE_OP_NEVER;
     createInfo.minLod = 0;
