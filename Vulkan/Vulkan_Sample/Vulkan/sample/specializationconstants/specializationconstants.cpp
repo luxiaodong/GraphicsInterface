@@ -128,7 +128,7 @@ void SpecializationConstants::prepareSpecializationInfo()
     // Map entry for the lighting model to be used by the fragment shader
     m_specializationMapEntries[0].constantID = 0;
     m_specializationMapEntries[0].size = sizeof(m_specializationData.lightingModel);
-    m_specializationMapEntries[0].offset = 0;
+    m_specializationMapEntries[0].offset = offsetof(SpecializationData, lightingModel);
 
     // Map entry for the toon shader parameter
     m_specializationMapEntries[1].constantID = 1;
@@ -192,7 +192,7 @@ void SpecializationConstants::createGraphicsPipeline()
     
     prepareSpecializationInfo();
     // Specialization info is assigned is part of the shader stage (modul) and must be set after creating the module and before creating the pipeline
-    fragShader.pSpecializationInfo = &m_specializationInfo;
+    shaderStages[1].pSpecializationInfo = &m_specializationInfo;
 
     m_specializationData.lightingModel = 0;
     if( vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_phong) != VK_SUCCESS )
@@ -245,7 +245,7 @@ void SpecializationConstants::recordRenderCommand(const VkCommandBuffer commandB
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_toon);
     m_gltfLoader.draw(commandBuffer);
 
-    //textured
+    // textured
     viewport.x += (float)m_swapchainExtent.width/3.0;
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_textured);
