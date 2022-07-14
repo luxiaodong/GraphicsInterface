@@ -1,14 +1,14 @@
 
-#include "texturemapping.h"
+#include "texturearray.h"
 
-TextureMapping::TextureMapping(std::string title) : Application(title)
+TextureArray::TextureArray(std::string title) : Application(title)
 {
 }
 
-TextureMapping::~TextureMapping()
+TextureArray::~TextureArray()
 {}
 
-void TextureMapping::init()
+void TextureArray::init()
 {
     Application::init();
     
@@ -20,22 +20,14 @@ void TextureMapping::init()
     createGraphicsPipeline();
 }
 
-void TextureMapping::initCamera()
+void TextureArray::initCamera()
 {
-    m_camera.setPosition(glm::vec3(0.0f, 0.0f, -2.5f));
-    m_camera.setRotation(glm::vec3(0.0f, 15.0f, 0.0f));
-    m_camera.setPerspective(60.0f, (float)m_width / (float)m_height, 1.0f, 256.0f);
+    m_camera.setPosition(glm::vec3(0.0f, 0.0f, -7.5f));
+    m_camera.setRotation(glm::vec3(-35.0f, 0.0f, 0.0f));
+    m_camera.setPerspective(45.0f, (float)m_width / (float)m_height, 1.0f, 256.0f);
 }
 
-void TextureMapping::setEnabledFeatures()
-{
-    if(m_deviceFeatures.samplerAnisotropy)
-    {
-        m_deviceEnabledFeatures.samplerAnisotropy = VK_TRUE;
-    }
-}
-
-void TextureMapping::clear()
+void TextureArray::clear()
 {
     vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     vkFreeMemory(m_device, m_uniformMemory, nullptr);
@@ -46,20 +38,51 @@ void TextureMapping::clear()
     vkDestroyBuffer(m_device, m_indexBuffer, nullptr);
     
     m_pTexture->clear();
+    delete m_pTexture;
+    delete[] m_pInstanceData;
     Application::clear();
 }
 
-void TextureMapping::prepareVertex()
+void TextureArray::prepareVertex()
 {
     std::vector<Vertex> vertexs =
     {
-        { {  1.0f,  1.0f, 0.0f }, { 1.0f, 1.0f },{ 0.0f, 0.0f, 1.0f } },
-        { { -1.0f,  1.0f, 0.0f }, { 0.0f, 1.0f },{ 0.0f, 0.0f, 1.0f } },
-        { { -1.0f, -1.0f, 0.0f }, { 0.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } },
-        { {  1.0f, -1.0f, 0.0f }, { 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } }
-    };
+        { { -1.0f, -1.0f,  1.0f }, { 0.0f, 0.0f } },
+        { {  1.0f, -1.0f,  1.0f }, { 1.0f, 0.0f } },
+        { {  1.0f,  1.0f,  1.0f }, { 1.0f, 1.0f } },
+        { { -1.0f,  1.0f,  1.0f }, { 0.0f, 1.0f } },
 
-    std::vector<uint32_t> indexs = { 0,1,2, 2,3,0 };
+        { {  1.0f,  1.0f,  1.0f }, { 0.0f, 0.0f } },
+        { {  1.0f,  1.0f, -1.0f }, { 1.0f, 0.0f } },
+        { {  1.0f, -1.0f, -1.0f }, { 1.0f, 1.0f } },
+        { {  1.0f, -1.0f,  1.0f }, { 0.0f, 1.0f } },
+
+        { { -1.0f, -1.0f, -1.0f }, { 0.0f, 0.0f } },
+        { {  1.0f, -1.0f, -1.0f }, { 1.0f, 0.0f } },
+        { {  1.0f,  1.0f, -1.0f }, { 1.0f, 1.0f } },
+        { { -1.0f,  1.0f, -1.0f }, { 0.0f, 1.0f } },
+
+        { { -1.0f, -1.0f, -1.0f }, { 0.0f, 0.0f } },
+        { { -1.0f, -1.0f,  1.0f }, { 1.0f, 0.0f } },
+        { { -1.0f,  1.0f,  1.0f }, { 1.0f, 1.0f } },
+        { { -1.0f,  1.0f, -1.0f }, { 0.0f, 1.0f } },
+
+        { {  1.0f,  1.0f,  1.0f }, { 0.0f, 0.0f } },
+        { { -1.0f,  1.0f,  1.0f }, { 1.0f, 0.0f } },
+        { { -1.0f,  1.0f, -1.0f }, { 1.0f, 1.0f } },
+        { {  1.0f,  1.0f, -1.0f }, { 0.0f, 1.0f } },
+
+        { { -1.0f, -1.0f, -1.0f }, { 0.0f, 0.0f } },
+        { {  1.0f, -1.0f, -1.0f }, { 1.0f, 0.0f } },
+        { {  1.0f, -1.0f,  1.0f }, { 1.0f, 1.0f } },
+        { { -1.0f, -1.0f,  1.0f }, { 0.0f, 1.0f } },
+    };
+    
+    std::vector<uint32_t> indexs = {
+        0,1,2, 0,2,3, 4,5,6,  4,6,7, 8,9,10, 8,10,11, 12,13,14, 12,14,15, 16,17,18, 16,18,19, 20,21,22, 20,22,23
+    };
+    
+    m_indexCount = static_cast<uint32_t>(indexs.size());
     
     m_vertexInputBindDes.clear();
     m_vertexInputBindDes.push_back(Tools::getVertexInputBindingDescription(0, sizeof(Vertex)));
@@ -67,7 +90,6 @@ void TextureMapping::prepareVertex()
     m_vertexInputAttrDes.clear();
     m_vertexInputAttrDes.push_back(Tools::getVertexInputAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)));
     m_vertexInputAttrDes.push_back(Tools::getVertexInputAttributeDescription(0, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)));
-    m_vertexInputAttrDes.push_back(Tools::getVertexInputAttributeDescription(0, 2, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)));
 
     VkDeviceSize vertexSize = vertexs.size() * sizeof(Vertex);
     VkDeviceSize indexSize = indexs.size() * sizeof(uint32_t);
@@ -112,26 +134,40 @@ void TextureMapping::prepareVertex()
     vkFreeMemory(m_device, indexStageMemory, nullptr);
     vkDestroyBuffer(m_device, indexStageBuffer, nullptr);
     
-    m_pTexture = Texture::loadTextrue2D(Tools::getTexturePath() +  "metalplate01_rgba.ktx", m_graphicsQueue);
+    m_pTexture = Texture::loadTextrue2D(Tools::getTexturePath() +  "texturearray_rgba.ktx", m_graphicsQueue, VK_FORMAT_R8G8B8A8_UNORM, TextureCopyRegion::Layer);
 }
 
-void TextureMapping::prepareUniform()
+void TextureArray::prepareUniform()
 {
     VkDeviceSize uniformSize = sizeof(Uniform);
-    
-    Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+    VkDeviceSize instanceSize = sizeof(InstanceData) * m_pTexture->m_layerCount;
+    VkDeviceSize totalSize = uniformSize + instanceSize;
+
+    Tools::createBufferAndMemoryThenBind(totalSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                          m_uniformBuffer, m_uniformMemory);
 
     Uniform mvp = {};
     mvp.projectionMatrix = m_camera.m_projMat;
     mvp.viewMatrix = m_camera.m_viewMat;
-    mvp.viewPos = m_camera.m_viewPos;
-    mvp.lodBias = 0.0f;
     Tools::mapMemory(m_uniformMemory, sizeof(Uniform), &mvp);
+    m_pInstanceData = new InstanceData[m_pTexture->m_layerCount];
+    
+    // Array indices and model matrices are fixed
+    float offset = -1.5f;
+    float center = (m_pTexture->m_layerCount * offset) / 2.0f - (offset * 0.5f);
+    for (uint32_t i = 0; i < m_pTexture->m_layerCount; i++)
+    {
+        // Instance model matrix
+        m_pInstanceData[i].model = glm::translate(glm::mat4(1.0f), glm::vec3(i * offset - center, 0.0f, 0.0f));
+        m_pInstanceData[i].model = glm::scale(m_pInstanceData[i].model, glm::vec3(0.5f));
+        // Instance texture array index
+        m_pInstanceData[i].arrayIndex.x = (float)i;
+    }
+    Tools::mapMemory(m_uniformMemory, sizeof(Uniform), m_pInstanceData, uniformSize);
 }
 
-void TextureMapping::prepareDescriptorSetLayoutAndPipelineLayout()
+void TextureArray::prepareDescriptorSetLayoutAndPipelineLayout()
 {
     std::array<VkDescriptorSetLayoutBinding, 2> bindings;
     bindings[0] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
@@ -140,7 +176,7 @@ void TextureMapping::prepareDescriptorSetLayoutAndPipelineLayout()
     createPipelineLayout();
 }
 
-void TextureMapping::prepareDescriptorSetAndWrite()
+void TextureArray::prepareDescriptorSetAndWrite()
 {
     std::array<VkDescriptorPoolSize, 2> poolSizes;
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -163,10 +199,10 @@ void TextureMapping::prepareDescriptorSetAndWrite()
     vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
 }
 
-void TextureMapping::createGraphicsPipeline()
+void TextureArray::createGraphicsPipeline()
 {
-    VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "texture/texture.vert.spv");
-    VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "texture/texture.frag.spv");
+    VkShaderModule vertModule = Tools::createShaderModule(Tools::getShaderPath() + "texturearray/instancing.vert.spv");
+    VkShaderModule fragModule = Tools::createShaderModule(Tools::getShaderPath() + "texturearray/instancing.frag.spv");
     
     VkPipelineShaderStageCreateInfo vertShader = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
     VkPipelineShaderStageCreateInfo fragShader = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -227,11 +263,11 @@ void TextureMapping::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
 }
 
-void TextureMapping::updateRenderData()
+void TextureArray::updateRenderData()
 {
 }
 
-void TextureMapping::recordRenderCommand(const VkCommandBuffer commandBuffer)
+void TextureArray::recordRenderCommand(const VkCommandBuffer commandBuffer)
 {
     VkViewport viewport = Tools::getViewport(0, 0, m_swapchainExtent.width, m_swapchainExtent.height);
     VkRect2D scissor;
@@ -246,6 +282,6 @@ void TextureMapping::recordRenderCommand(const VkCommandBuffer commandBuffer)
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_vertexBuffer, &offset);
     vkCmdBindIndexBuffer(commandBuffer, m_indexBuffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
-    vkCmdDrawIndexed(commandBuffer, 6, 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, m_indexCount, m_pTexture->m_layerCount, 0, 0, 0);
 }
 

@@ -95,7 +95,7 @@ void Tools::createBufferAndMemoryThenBind(VkDeviceSize size, VkBufferUsageFlags 
     vkBindBufferMemory(m_device, buffer, memory, 0);
 }
 
-void Tools::createImageAndMemoryThenBind(VkFormat format, uint32_t width, uint32_t height, uint32_t lodLevels, VkSampleCountFlagBits sampleFlag, VkImageUsageFlags usage, VkImageTiling tiling, VkMemoryPropertyFlags flags, VkImage &image, VkDeviceMemory &imageMemory)
+void Tools::createImageAndMemoryThenBind(VkFormat format, uint32_t width, uint32_t height, uint32_t lodLevels, uint32_t layerCount, VkSampleCountFlagBits sampleFlag, VkImageUsageFlags usage, VkImageTiling tiling, VkMemoryPropertyFlags flags, VkImage &image, VkDeviceMemory &imageMemory)
 {
     VkImageCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -106,7 +106,7 @@ void Tools::createImageAndMemoryThenBind(VkFormat format, uint32_t width, uint32
     createInfo.extent.height = height;
     createInfo.extent.depth = 1.0f;
     createInfo.mipLevels = lodLevels;
-    createInfo.arrayLayers = 1;
+    createInfo.arrayLayers = layerCount;
     createInfo.samples = sampleFlag;
     createInfo.tiling = tiling;
     createInfo.usage = usage;
@@ -155,19 +155,19 @@ uint32_t Tools::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags proper
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-void Tools::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t LodLevel, VkImageView &imageView)
+void Tools::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t levelCount, uint32_t layerCount, VkImageView &imageView, VkImageViewType viewType)
 {
     VkImageViewCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     createInfo.flags = 0;
     createInfo.image = image;
-    createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    createInfo.viewType = viewType;
     createInfo.format = format;
     createInfo.subresourceRange.aspectMask = aspectFlags;
     createInfo.subresourceRange.baseMipLevel = 0;
-    createInfo.subresourceRange.levelCount = LodLevel;
+    createInfo.subresourceRange.levelCount = levelCount;
     createInfo.subresourceRange.baseArrayLayer = 0;
-    createInfo.subresourceRange.layerCount = 1;
+    createInfo.subresourceRange.layerCount = layerCount;
 
     if( vkCreateImageView(m_device, &createInfo, nullptr, &imageView) != VK_SUCCESS )
     {
@@ -175,10 +175,10 @@ void Tools::createImageView(VkImage image, VkFormat format, VkImageAspectFlags a
     }
 }
 
-void Tools::mapMemory(VkDeviceMemory &memory, VkDeviceSize size, void* srcAddress)
+void Tools::mapMemory(VkDeviceMemory &memory, VkDeviceSize size, void* srcAddress, VkDeviceSize offset)
 {
     void* dstAddress;
-    vkMapMemory(m_device, memory, 0, size, 0, &dstAddress);
+    vkMapMemory(m_device, memory, offset, size, 0, &dstAddress);
     memcpy(dstAddress, srcAddress, size);
     vkUnmapMemory(m_device, memory);
 }

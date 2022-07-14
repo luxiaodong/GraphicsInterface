@@ -79,13 +79,13 @@ void Ui::prepareResources()
 
     Tools::mapMemory(stagingMemory, ttfSize, fontData);
     
-    Tools::createImageAndMemoryThenBind(VK_FORMAT_R8G8B8A8_UNORM, texWidth, texHeight, 1,
+    Tools::createImageAndMemoryThenBind(VK_FORMAT_R8G8B8A8_UNORM, texWidth, texHeight, 1, 1,
                                         VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                                         VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                         m_fontImage, m_fontMemory);
     
     Tools::createImageView(m_fontImage, VK_FORMAT_R8G8B8A8_UNORM,
-                           VK_IMAGE_ASPECT_COLOR_BIT, 1, m_fontImageView);
+                           VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, m_fontImageView);
     
     VkCommandBuffer cmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
     

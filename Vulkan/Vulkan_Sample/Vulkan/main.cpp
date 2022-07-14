@@ -6,6 +6,7 @@
 #include "sample/pushconstants/pushconstants.h"
 #include "sample/specializationconstants/specializationconstants.h"
 #include "sample/texturemapping/texturemapping.h"
+#include "sample/texturearray/texturearray.h"
 
 int main(int argc, const char * argv[])
 {
@@ -15,8 +16,8 @@ int main(int argc, const char * argv[])
 //    DynamicUniformBuffer app("dynamicuniformbuffer");
 //    PushConstants app("pushconstants");
 //    SpecializationConstants app("specializationconstants");
-    TextureMapping app("texturemapping");
-    
+//    TextureMapping app("texturemapping");
+    TextureArray app("texturearray");
     try {
         app.run();
     } catch (const std::exception& e) {

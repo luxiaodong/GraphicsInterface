@@ -68,7 +68,6 @@ protected:
     
 protected:
     void initUi();
-    VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t LodLevel);
     QueueFamilyIndices findQueueFamilyIndices();
     
 protected:

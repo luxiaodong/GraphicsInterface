@@ -6,6 +6,8 @@
 #include <ktx.h>
 #include <ktxvulkan.h>
 
+enum TextureCopyRegion { Nothing, MipLevel, Layer};
+
 class Texture
 {
 public:
@@ -13,7 +15,7 @@ public:
     ~Texture();
     
 public:
-    static Texture* loadTextrue2D(std::string fileName, VkQueue transferQueue, VkFormat format = VK_FORMAT_R8G8B8A8_UNORM, VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    static Texture* loadTextrue2D(std::string fileName, VkQueue transferQueue, VkFormat format = VK_FORMAT_R8G8B8A8_UNORM, TextureCopyRegion copyRegion = TextureCopyRegion::MipLevel, VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     
     void clear();
     VkDescriptorImageInfo getDescriptorImageInfo();

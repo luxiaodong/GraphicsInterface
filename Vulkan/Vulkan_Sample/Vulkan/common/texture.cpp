@@ -25,7 +25,7 @@ void Texture::clear()
     vkFreeMemory(Tools::m_device, m_imageMemory, nullptr);
 }
 
-Texture* Texture::loadTextrue2D(std::string fileName, VkQueue transferQueue, VkFormat format, VkImageLayout imageLayout)
+Texture* Texture::loadTextrue2D(std::string fileName, VkQueue transferQueue, VkFormat format, TextureCopyRegion copyRegion, VkImageLayout imageLayout)
 {
     Texture* newTexture = new Texture();
     assert(Tools::isFileExists(fileName));
@@ -38,10 +38,23 @@ Texture* Texture::loadTextrue2D(std::string fileName, VkQueue transferQueue, VkF
     newTexture->m_width = ktxTexture->baseWidth;
     newTexture->m_height = ktxTexture->baseHeight;
     newTexture->m_mipLevels = ktxTexture->numLevels;
-//    newTexture->m_mipLevels = 2;
     newTexture->m_layerCount = ktxTexture->numLayers;
     ktx_size_t ktxTextureSize = ktxTexture_GetSize(ktxTexture);
     ktx_uint8_t* ktxTextureData = ktxTexture_GetData(ktxTexture);
+    
+    if(copyRegion == TextureCopyRegion::Nothing)
+    {
+        newTexture->m_mipLevels = 1;
+        newTexture->m_layerCount = 1;
+    }
+    else if(copyRegion == TextureCopyRegion::MipLevel)
+    {
+        newTexture->m_layerCount = 1;
+    }
+    else if(copyRegion == TextureCopyRegion::Layer)
+    {
+        newTexture->m_mipLevels = 1;
+    }
     
     // Get device properties for the requested texture format
     VkFormatProperties formatProperties;
@@ -55,27 +68,68 @@ Texture* Texture::loadTextrue2D(std::string fileName, VkQueue transferQueue, VkF
                                          stagingBuffer, stagingMemory);
     Tools::mapMemory(stagingMemory, ktxTextureSize, ktxTextureData);
     
-    Tools::createImageAndMemoryThenBind(format, newTexture->m_width, newTexture->m_height, newTexture->m_mipLevels,
+    Tools::createImageAndMemoryThenBind(format, newTexture->m_width, newTexture->m_height, newTexture->m_mipLevels, newTexture->m_layerCount,
                                         VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                                         VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                         newTexture->m_image, newTexture->m_imageMemory);
     
     std::vector<VkBufferImageCopy> bufferCopyRegions;
-    for (uint32_t i = 0; i < newTexture->m_mipLevels; i++)
+    if(copyRegion == TextureCopyRegion::Nothing)
     {
         ktx_size_t offset;
-        KTX_error_code result = ktxTexture_GetImageOffset(ktxTexture, i, 0, 0, &offset);
-        assert(result == KTX_SUCCESS);
+        KTX_error_code ret = ktxTexture_GetImageOffset(ktxTexture, 0, 0, 0, &offset);
+        assert(ret == KTX_SUCCESS);
+        // Setup a buffer image copy structure for the current array layer
         VkBufferImageCopy bufferCopyRegion = {};
         bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        bufferCopyRegion.imageSubresource.mipLevel = i;
+        bufferCopyRegion.imageSubresource.mipLevel = 0;
         bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
         bufferCopyRegion.imageSubresource.layerCount = 1;
-        bufferCopyRegion.imageExtent.width = std::max(1u, ktxTexture->baseWidth >> i);
-        bufferCopyRegion.imageExtent.height = std::max(1u, ktxTexture->baseHeight >> i);
+        bufferCopyRegion.imageExtent.width = ktxTexture->baseWidth;
+        bufferCopyRegion.imageExtent.height = ktxTexture->baseHeight;
         bufferCopyRegion.imageExtent.depth = 1;
         bufferCopyRegion.bufferOffset = offset;
         bufferCopyRegions.push_back(bufferCopyRegion);
+    }
+    else if(copyRegion == TextureCopyRegion::MipLevel)
+    {
+        for (uint32_t level = 0; level < newTexture->m_mipLevels; level++)
+        {
+            ktx_size_t offset;
+            KTX_error_code result = ktxTexture_GetImageOffset(ktxTexture, level, 0, 0, &offset);
+            assert(result == KTX_SUCCESS);
+            VkBufferImageCopy bufferCopyRegion = {};
+            bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            bufferCopyRegion.imageSubresource.mipLevel = level;
+            bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
+            bufferCopyRegion.imageSubresource.layerCount = 1;
+            bufferCopyRegion.imageExtent.width = std::max(1u, ktxTexture->baseWidth >> level);
+            bufferCopyRegion.imageExtent.height = std::max(1u, ktxTexture->baseHeight >> level);
+            bufferCopyRegion.imageExtent.depth = 1;
+            bufferCopyRegion.bufferOffset = offset;
+            bufferCopyRegions.push_back(bufferCopyRegion);
+        }
+    }
+    else if(copyRegion == TextureCopyRegion::Layer)
+    {
+        for (uint32_t layer = 0; layer < newTexture->m_layerCount; layer++)
+        {
+            // Calculate offset into staging buffer for the current array layer
+            ktx_size_t offset;
+            KTX_error_code ret = ktxTexture_GetImageOffset(ktxTexture, 0, layer, 0, &offset);
+            assert(ret == KTX_SUCCESS);
+            // Setup a buffer image copy structure for the current array layer
+            VkBufferImageCopy bufferCopyRegion = {};
+            bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            bufferCopyRegion.imageSubresource.mipLevel = 0;
+            bufferCopyRegion.imageSubresource.baseArrayLayer = layer;
+            bufferCopyRegion.imageSubresource.layerCount = 1;
+            bufferCopyRegion.imageExtent.width = ktxTexture->baseWidth;
+            bufferCopyRegion.imageExtent.height = ktxTexture->baseHeight;
+            bufferCopyRegion.imageExtent.depth = 1;
+            bufferCopyRegion.bufferOffset = offset;
+            bufferCopyRegions.push_back(bufferCopyRegion);
+        }
     }
     
     VkImageSubresourceRange subresourceRange = {};
@@ -83,7 +137,7 @@ Texture* Texture::loadTextrue2D(std::string fileName, VkQueue transferQueue, VkF
     subresourceRange.baseMipLevel = 0;
     subresourceRange.levelCount = newTexture->m_mipLevels;
     subresourceRange.baseArrayLayer = 0;
-    subresourceRange.layerCount = 1;
+    subresourceRange.layerCount = newTexture->m_layerCount;
     
     VkCommandBuffer cmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
     
@@ -104,8 +158,14 @@ Texture* Texture::loadTextrue2D(std::string fileName, VkQueue transferQueue, VkF
     ktxTexture_Destroy(ktxTexture);
     vkFreeMemory(Tools::m_device, stagingMemory, nullptr);
     vkDestroyBuffer(Tools::m_device, stagingBuffer, nullptr);
+
+    VkImageViewType viewType = VK_IMAGE_VIEW_TYPE_2D;
+    if(copyRegion == TextureCopyRegion::Layer)
+    {
+        viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+    }
     
-    Tools::createImageView(newTexture->m_image, format, VK_IMAGE_ASPECT_COLOR_BIT, newTexture->m_mipLevels, newTexture->m_imageView);
+    Tools::createImageView(newTexture->m_image, format, VK_IMAGE_ASPECT_COLOR_BIT, newTexture->m_mipLevels, newTexture->m_layerCount, newTexture->m_imageView, viewType);
     Tools::createTextureSampler(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, newTexture->m_mipLevels, newTexture->m_sampler);
     return newTexture;
 }

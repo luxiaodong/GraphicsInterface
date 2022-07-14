@@ -107,10 +107,7 @@ void SpecializationConstants::prepareDescriptorSetAndWrite()
     bufferInfo.range = VK_WHOLE_SIZE;
     bufferInfo.buffer = m_uniformBuffer;
     
-    VkDescriptorImageInfo imageInfo = {};
-    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    imageInfo.imageView = m_colorMap->m_imageView;
-    imageInfo.sampler = m_colorMap->m_sampler;
+    VkDescriptorImageInfo imageInfo = m_colorMap->getDescriptorImageInfo();
 
     std::array<VkWriteDescriptorSet, 2> writes = {};
     writes[0] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
