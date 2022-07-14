@@ -150,7 +150,7 @@ void TextureArray::prepareUniform()
     Uniform mvp = {};
     mvp.projectionMatrix = m_camera.m_projMat;
     mvp.viewMatrix = m_camera.m_viewMat;
-    Tools::mapMemory(m_uniformMemory, sizeof(Uniform), &mvp);
+    Tools::mapMemory(m_uniformMemory, uniformSize, &mvp);
     m_pInstanceData = new InstanceData[m_pTexture->m_layerCount];
     
     // Array indices and model matrices are fixed
@@ -164,7 +164,7 @@ void TextureArray::prepareUniform()
         // Instance texture array index
         m_pInstanceData[i].arrayIndex.x = (float)i;
     }
-    Tools::mapMemory(m_uniformMemory, sizeof(Uniform), m_pInstanceData, uniformSize);
+    Tools::mapMemory(m_uniformMemory, instanceSize, m_pInstanceData, uniformSize);
 }
 
 void TextureArray::prepareDescriptorSetLayoutAndPipelineLayout()
