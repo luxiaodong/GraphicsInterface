@@ -2,6 +2,7 @@
 #pragma once
 
 #include "common/application.h"
+#include "common/texture.h"
 
 class TextureMapping : public Application
 {
@@ -15,8 +16,9 @@ public:
     
     struct Uniform {
         glm::mat4 projectionMatrix;
-        glm::mat4 modelMatrix;
         glm::mat4 viewMatrix;
+        glm::vec4 viewPos;
+        float lodBias;
     };
     
     TextureMapping(std::string title);
@@ -49,4 +51,6 @@ protected:
     VkDeviceMemory m_indexMemory;
     VkBuffer m_uniformBuffer;
     VkDeviceMemory m_uniformMemory;
+    
+    Texture* m_pTexture = nullptr;
 };

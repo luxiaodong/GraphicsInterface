@@ -23,7 +23,7 @@ void TextureMapping::init()
 void TextureMapping::initCamera()
 {
     m_camera.setPosition(glm::vec3(0.0f, 0.0f, -2.5f));
-    m_camera.setRotation(glm::vec3(0.0f));
+    m_camera.setRotation(glm::vec3(0.0f, 15.0f, 0.0f));
     m_camera.setPerspective(60.0f, (float)m_width / (float)m_height, 1.0f, 256.0f);
 }
 
@@ -37,6 +37,7 @@ void TextureMapping::clear()
     vkFreeMemory(m_device, m_indexMemory, nullptr);
     vkDestroyBuffer(m_device, m_indexBuffer, nullptr);
     
+    m_pTexture->clear();
     Application::clear();
 }
 
@@ -50,7 +51,6 @@ void TextureMapping::prepareVertex()
         { {  1.0f, -1.0f, 0.0f }, { 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } }
     };
 
-    // Setup indices
     std::vector<uint32_t> indexs = { 0,1,2, 2,3,0 };
     
     m_vertexInputBindDes.clear();
@@ -58,7 +58,8 @@ void TextureMapping::prepareVertex()
     
     m_vertexInputAttrDes.clear();
     m_vertexInputAttrDes.push_back(Tools::getVertexInputAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)));
-    m_vertexInputAttrDes.push_back(Tools::getVertexInputAttributeDescription(0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)));
+    m_vertexInputAttrDes.push_back(Tools::getVertexInputAttributeDescription(0, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)));
+    m_vertexInputAttrDes.push_back(Tools::getVertexInputAttributeDescription(0, 2, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)));
 
     VkDeviceSize vertexSize = vertexs.size() * sizeof(Vertex);
     VkDeviceSize indexSize = indexs.size() * sizeof(uint32_t);
@@ -102,6 +103,8 @@ void TextureMapping::prepareVertex()
     vkDestroyBuffer(m_device, vertexStageBuffer, nullptr);
     vkFreeMemory(m_device, indexStageMemory, nullptr);
     vkDestroyBuffer(m_device, indexStageBuffer, nullptr);
+    
+    m_pTexture = Texture::loadTextrue2D(Tools::getTexturePath() +  "metalplate01_rgba.ktx", m_graphicsQueue);
 }
 
 void TextureMapping::prepareUniform()
@@ -113,41 +116,52 @@ void TextureMapping::prepareUniform()
                                          m_uniformBuffer, m_uniformMemory);
 
     Uniform mvp = {};
-    mvp.modelMatrix = glm::mat4(1.0f);
-    mvp.viewMatrix = m_camera.m_viewMat;
     mvp.projectionMatrix = m_camera.m_projMat;
+    mvp.viewMatrix = m_camera.m_viewMat;
+    mvp.viewPos = m_camera.m_viewPos;
+    mvp.lodBias = 0.0f;
     Tools::mapMemory(m_uniformMemory, sizeof(Uniform), &mvp);
 }
 
 void TextureMapping::prepareDescriptorSetLayoutAndPipelineLayout()
 {
-    VkDescriptorSetLayoutBinding binding = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
-    createDescriptorSetLayout(&binding, 1);
+    std::array<VkDescriptorSetLayoutBinding, 2> bindings;
+    bindings[0] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
+    bindings[1] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
+    createDescriptorSetLayout(bindings.data(), static_cast<uint32_t>(bindings.size()));
     createPipelineLayout();
 }
 
 void TextureMapping::prepareDescriptorSetAndWrite()
 {
-    VkDescriptorPoolSize poolSize = {};
-    poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSize.descriptorCount = 1;
-    
-    createDescriptorPool(&poolSize, 1, 1);
+    std::array<VkDescriptorPoolSize, 2> poolSizes;
+    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSizes[0].descriptorCount = 1;
+    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    poolSizes[1].descriptorCount = 1;
+    createDescriptorPool(poolSizes.data(), static_cast<uint32_t>(poolSizes.size()), 1);
     createDescriptorSet(m_descriptorSet);
 
     VkDescriptorBufferInfo bufferInfo = {};
     bufferInfo.offset = 0;
-    bufferInfo.range = sizeof(Uniform);
+    bufferInfo.range = VK_WHOLE_SIZE;
     bufferInfo.buffer = m_uniformBuffer;
     
-    VkWriteDescriptorSet write = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
-    vkUpdateDescriptorSets(m_device, 1, &write, 0, nullptr);
+    VkDescriptorImageInfo imageInfo = {};
+    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    imageInfo.imageView = m_pTexture->m_imageView;
+    imageInfo.sampler = m_pTexture->m_sampler;
+
+    std::array<VkWriteDescriptorSet, 2> writes = {};
+    writes[0] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
+    writes[1] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo);
+    vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
 }
 
 void TextureMapping::createGraphicsPipeline()
 {
-    VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "triangle/triangle.vert.spv");
-    VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "triangle/triangle.frag.spv");
+    VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "texture/texture.vert.spv");
+    VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "texture/texture.frag.spv");
     
     VkPipelineShaderStageCreateInfo vertShader = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
     VkPipelineShaderStageCreateInfo fragShader = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -177,7 +191,7 @@ void TextureMapping::createGraphicsPipeline()
     VkPipelineDynamicStateCreateInfo dynamic = Tools::getPipelineDynamicStateCreateInfo(dynamicStates);
     VkPipelineRasterizationStateCreateInfo rasterization = Tools::getPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
     VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
-    VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_FALSE, VK_FALSE, VK_COMPARE_OP_ALWAYS);
+    VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment = Tools::getPipelineColorBlendAttachmentState(VK_FALSE, VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
     VkPipelineColorBlendStateCreateInfo colorBlend = Tools::getPipelineColorBlendStateCreateInfo(1, &colorBlendAttachment);
