@@ -95,16 +95,16 @@ void Tools::createBufferAndMemoryThenBind(VkDeviceSize size, VkBufferUsageFlags 
     vkBindBufferMemory(m_device, buffer, memory, 0);
 }
 
-void Tools::createImageAndMemoryThenBind(VkFormat format, uint32_t width, uint32_t height, uint32_t lodLevels, uint32_t layerCount, VkSampleCountFlagBits sampleFlag, VkImageUsageFlags usage, VkImageTiling tiling, VkMemoryPropertyFlags propertyFlags, VkImage &image, VkDeviceMemory &imageMemory, VkImageCreateFlags createFlags)
+void Tools::createImageAndMemoryThenBind(VkFormat format, uint32_t width, uint32_t height, uint32_t lodLevels, uint32_t layerCount, VkSampleCountFlagBits sampleFlag, VkImageUsageFlags usage, VkImageTiling tiling, VkMemoryPropertyFlags propertyFlags, VkImage &image, VkDeviceMemory &imageMemory, VkImageCreateFlags createFlags, uint32_t depth, VkImageType imageType)
 {
     VkImageCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     createInfo.flags = createFlags;
-    createInfo.imageType = VK_IMAGE_TYPE_2D;
+    createInfo.imageType = imageType;
     createInfo.format = format;
     createInfo.extent.width = width;
     createInfo.extent.height = height;
-    createInfo.extent.depth = 1.0f;
+    createInfo.extent.depth = depth;
     createInfo.mipLevels = lodLevels;
     createInfo.arrayLayers = layerCount;
     createInfo.samples = sampleFlag;
@@ -255,12 +255,12 @@ void Tools::createTextureSampler(VkFilter filter, VkSamplerAddressMode addressMo
     VkSamplerCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     createInfo.flags = 0;
-    createInfo.magFilter = VK_FILTER_LINEAR;
-    createInfo.minFilter = VK_FILTER_LINEAR;
+    createInfo.magFilter = filter;
+    createInfo.minFilter = filter;
     createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    createInfo.addressModeU = addressMode;
+    createInfo.addressModeV = addressMode;
+    createInfo.addressModeW = addressMode;
     createInfo.mipLodBias = 0.0f;
     
     if(m_deviceEnabledFeatures.samplerAnisotropy == VK_TRUE)
