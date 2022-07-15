@@ -29,10 +29,19 @@ void TextureCubemapArray::initCamera()
 
 void TextureCubemapArray::setEnabledFeatures()
 {
-//    if(m_deviceFeatures.samplerAnisotropy)
-//    {
-//        m_deviceEnabledFeatures.samplerAnisotropy = VK_TRUE;
-//    }
+    if(m_deviceFeatures.imageCubeArray)
+    {
+        m_deviceEnabledFeatures.imageCubeArray = VK_TRUE;
+    }
+    else
+    {
+        throw std::runtime_error("deivce does not support cube map arrays!");
+    }
+    
+    if(m_deviceFeatures.samplerAnisotropy)
+    {
+        m_deviceEnabledFeatures.samplerAnisotropy = VK_TRUE;
+    }
 }
 
 void TextureCubemapArray::clear()
@@ -57,7 +66,7 @@ void TextureCubemapArray::prepareVertex()
     m_skyboxLoader.loadFromFile(Tools::getModelPath() + "cube.gltf", m_graphicsQueue);
     m_skyboxLoader.createVertexAndIndexBuffer();
     m_skyboxLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal});
-    m_pTexture = Texture::loadTextrue2D(Tools::getTexturePath() +  "cubemap_yokohama_rgba.ktx", m_graphicsQueue, VK_FORMAT_R8G8B8A8_UNORM, TextureCopyRegion::Cube);
+    m_pTexture = Texture::loadTextrue2D(Tools::getTexturePath() +  "cubemap_array.ktx", m_graphicsQueue, VK_FORMAT_R8G8B8A8_UNORM, TextureCopyRegion::CubeArry);
     
     std::vector<std::string> filenames = { "sphere.gltf", "teapot.gltf", "torusknot.gltf", "venus.gltf" };
     m_objectLoader.loadFromFile(Tools::getModelPath() + filenames[0], m_graphicsQueue);
@@ -69,34 +78,24 @@ void TextureCubemapArray::prepareUniform()
 {
     // skybox
     VkDeviceSize uniformSize = sizeof(Uniform);
-    Tools::createBufferAndMemoryThenBind(offsetof(Uniform, invViewMatrix), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+    Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                          m_skyboxUniformBuffer, m_skyboxUniformMemory);
 
     Uniform mvp = {};
     mvp.projectionMatrix = m_camera.m_projMat;
-    mvp.viewMatrix = m_camera.m_viewMat;
-    mvp.invViewMatrix = glm::inverse(m_camera.m_viewMat);
+    mvp.viewMatrix = glm::rotate(m_camera.m_viewMat, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+//    mvp.invViewMatrix = glm::inverse(m_camera.m_viewMat);
+    mvp.invViewMatrix = glm::inverse(mvp.viewMatrix);
     mvp.lodBias = 0.0f;
-    Tools::mapMemory(m_skyboxUniformMemory, offsetof(Uniform, invViewMatrix), &mvp);
+    mvp.cubeMapIndex = 1;
+    Tools::mapMemory(m_skyboxUniformMemory, uniformSize, &mvp);
     
     // object
     Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                          m_objectUniformBuffer, m_objectUniformMemory);
     Tools::mapMemory(m_objectUniformMemory, uniformSize, &mvp);
-    
-    // 3D object
-//    uboVS.projection = camera.matrices.perspective;
-//    uboVS.modelView = camera.matrices.view;
-//    uboVS.inverseModelview = glm::inverse(camera.matrices.view);
-//    memcpy(uniformBuffers.object.mapped, &uboVS, sizeof(uboVS));
-//    // Skybox
-//    uboVS.modelView = camera.matrices.view;
-//    // Cancel out translation
-//    uboVS.modelView[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-//    memcpy(uniformBuffers.skybox.mapped, &uboVS, sizeof(uboVS));
-    
 }
 
 void TextureCubemapArray::prepareDescriptorSetLayoutAndPipelineLayout()
@@ -181,8 +180,8 @@ void TextureCubemapArray::createGraphicsPipeline()
     createInfo.pDynamicState = &dynamic;
     createInfo.subpass = 0;
     
-    VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "texturecubemap/skybox.vert.spv");
-    VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "texturecubemap/skybox.frag.spv");
+    VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "texturecubemaparray/skybox.vert.spv");
+    VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "texturecubemaparray/skybox.frag.spv");
     shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
     shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
     
@@ -195,8 +194,8 @@ void TextureCubemapArray::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
     
     //object
-    vertModule = Tools::createShaderModule( Tools::getShaderPath() + "texturecubemap/reflect.vert.spv");
-    fragModule = Tools::createShaderModule( Tools::getShaderPath() + "texturecubemap/reflect.frag.spv");
+    vertModule = Tools::createShaderModule( Tools::getShaderPath() + "texturecubemaparray/reflect.vert.spv");
+    fragModule = Tools::createShaderModule( Tools::getShaderPath() + "texturecubemaparray/reflect.frag.spv");
     shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
     shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
     createInfo.pVertexInputState = m_objectLoader.getPipelineVertexInputState();

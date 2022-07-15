@@ -60,6 +60,10 @@ Texture* Texture::loadTextrue2D(std::string fileName, VkQueue transferQueue, VkF
 //        newTexture->m_mipLevels = 1;
         newTexture->m_layerCount = 6;
     }
+    else if(copyRegion == TextureCopyRegion::CubeArry)
+    {
+        
+    }
     
     // Get device properties for the requested texture format
     VkFormatProperties formatProperties;
@@ -74,12 +78,19 @@ Texture* Texture::loadTextrue2D(std::string fileName, VkQueue transferQueue, VkF
     Tools::mapMemory(stagingMemory, ktxTextureSize, ktxTextureData);
     
     VkImageCreateFlags flags = 0;
+    uint32_t layerCount = newTexture->m_layerCount;
+    
     if(copyRegion == TextureCopyRegion::Cube)
     {
         flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
     }
+    else if(copyRegion == TextureCopyRegion::CubeArry)
+    {
+        layerCount = 6 * newTexture->m_layerCount;
+        flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+    }
     
-    Tools::createImageAndMemoryThenBind(format, newTexture->m_width, newTexture->m_height, newTexture->m_mipLevels, newTexture->m_layerCount,
+    Tools::createImageAndMemoryThenBind(format, newTexture->m_width, newTexture->m_height, newTexture->m_mipLevels, layerCount,
                                         VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                                         VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                         newTexture->m_image, newTexture->m_imageMemory, flags);
@@ -165,16 +176,41 @@ Texture* Texture::loadTextrue2D(std::string fileName, VkQueue transferQueue, VkF
             }
         }
     }
+    else if(copyRegion == TextureCopyRegion::CubeArry)
+    {
+        for (uint32_t face = 0; face < 6; face++)
+        {
+            for (uint32_t layer = 0; layer < ktxTexture->numLayers; layer++)
+            {
+                for (uint32_t level = 0; level < ktxTexture->numLevels; level++)
+                {
+                    ktx_size_t offset;
+                    KTX_error_code ret = ktxTexture_GetImageOffset(ktxTexture, level, layer, face, &offset);
+                    assert(ret == KTX_SUCCESS);
+                    VkBufferImageCopy bufferCopyRegion = {};
+                    bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                    bufferCopyRegion.imageSubresource.mipLevel = level;
+                    bufferCopyRegion.imageSubresource.baseArrayLayer = layer * 6 + face;
+                    bufferCopyRegion.imageSubresource.layerCount = 1;
+                    bufferCopyRegion.imageExtent.width = ktxTexture->baseWidth >> level;
+                    bufferCopyRegion.imageExtent.height = ktxTexture->baseHeight >> level;
+                    bufferCopyRegion.imageExtent.depth = 1;
+                    bufferCopyRegion.bufferOffset = offset;
+                    bufferCopyRegions.push_back(bufferCopyRegion);
+                }
+            }
+        }
+    }
     
     VkImageSubresourceRange subresourceRange = {};
     subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     subresourceRange.baseMipLevel = 0;
     subresourceRange.levelCount = newTexture->m_mipLevels;
     subresourceRange.baseArrayLayer = 0;
-    subresourceRange.layerCount = newTexture->m_layerCount;
+    subresourceRange.layerCount = layerCount;
     
     VkCommandBuffer cmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-    
+
     Tools::setImageLayout(cmd, newTexture->m_image, VK_IMAGE_LAYOUT_UNDEFINED,
                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                           VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, subresourceRange);
@@ -202,8 +238,12 @@ Texture* Texture::loadTextrue2D(std::string fileName, VkQueue transferQueue, VkF
     {
         viewType = VK_IMAGE_VIEW_TYPE_CUBE;
     }
+    else if(copyRegion == TextureCopyRegion::CubeArry)
+    {
+        viewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+    }
     
-    Tools::createImageView(newTexture->m_image, format, VK_IMAGE_ASPECT_COLOR_BIT, newTexture->m_mipLevels, newTexture->m_layerCount, newTexture->m_imageView, viewType);
+    Tools::createImageView(newTexture->m_image, format, VK_IMAGE_ASPECT_COLOR_BIT, newTexture->m_mipLevels, layerCount, newTexture->m_imageView, viewType);
     Tools::createTextureSampler(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, newTexture->m_mipLevels, newTexture->m_sampler);
     return newTexture;
 }

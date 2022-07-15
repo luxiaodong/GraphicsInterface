@@ -7,12 +7,13 @@
 
 class TextureCubemapArray : public Application
 {
-public:    
+public:
     struct Uniform {
         glm::mat4 projectionMatrix;
         glm::mat4 viewMatrix;
         glm::mat4 invViewMatrix;
         float lodBias;
+        int cubeMapIndex = 1;
     };
     
     TextureCubemapArray(std::string title);
