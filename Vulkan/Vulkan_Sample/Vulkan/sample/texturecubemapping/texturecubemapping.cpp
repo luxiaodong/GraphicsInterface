@@ -102,7 +102,7 @@ void TextureCubeMapping::prepareUniform()
 void TextureCubeMapping::prepareDescriptorSetLayoutAndPipelineLayout()
 {
     std::array<VkDescriptorSetLayoutBinding, 2> bindings;
-    bindings[0] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
+    bindings[0] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0);
     bindings[1] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
     createDescriptorSetLayout(bindings.data(), static_cast<uint32_t>(bindings.size()));
     createPipelineLayout();
