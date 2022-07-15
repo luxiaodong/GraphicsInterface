@@ -8,7 +8,7 @@ class PerlinNoise
 public:
     PerlinNoise();
     float fade(float t);
-    float lerp(float a, float b, float t);
+    float lerp(float t, float a, float b);
     float grad(int hash, float x, float y, float z);
     float noise(float x, float y, float z);
     

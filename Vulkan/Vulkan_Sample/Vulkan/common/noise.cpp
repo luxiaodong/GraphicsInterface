@@ -23,7 +23,7 @@ float PerlinNoise::fade(float t)
     return t*t*t*(t*(t*6.0f - 15.0f) + 10.0f);
 }
 
-float PerlinNoise::lerp(float a, float b, float t)
+float PerlinNoise::lerp(float t, float a, float b)
 {
     return a + t * (b - a);
 }
@@ -71,7 +71,7 @@ float PerlinNoise::noise(float x, float y, float z)
 FractalNoise::FractalNoise(const PerlinNoise& perlinNoise)
 {
     m_perlinNoise = perlinNoise;
-    m_octaves = 6;
+    m_octaves = 8;
     m_persistence = 0.5f;
 }
 

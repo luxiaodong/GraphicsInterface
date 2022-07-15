@@ -224,6 +224,15 @@ void Texture3Dim::createGraphicsPipeline()
 
 void Texture3Dim::updateRenderData()
 {
+    static float frame = 1;
+    Uniform mvp = {};
+    mvp.projectionMatrix = m_camera.m_projMat;
+    mvp.viewMatrix = m_camera.m_viewMat;
+    mvp.viewPos = m_camera.m_viewPos;
+    mvp.depth = abs( frame - 1.0f );
+    Tools::mapMemory(m_uniformMemory, sizeof(Uniform), &mvp);
+    frame += 0.001;
+    if(frame > 2.0) frame -= 2.0f;
 }
 
 void Texture3Dim::recordRenderCommand(const VkCommandBuffer commandBuffer)
