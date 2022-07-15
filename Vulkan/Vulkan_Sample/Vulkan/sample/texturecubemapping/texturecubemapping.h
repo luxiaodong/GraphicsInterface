@@ -41,7 +41,8 @@ protected:
     void createGraphicsPipeline();
 
 protected:
-    VkDescriptorSet m_descriptorSet;
+    VkDescriptorSet m_skyboxDescriptorSet;
+    VkDescriptorSet m_objectDescriptorSet;
     
     VkPipeline m_skyboxPipeline;
     VkPipeline m_objectPipeline;

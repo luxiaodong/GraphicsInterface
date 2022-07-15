@@ -195,6 +195,10 @@ Texture* Texture::loadTextrue2D(std::string fileName, VkQueue transferQueue, VkF
     {
         viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
     }
+    else if(copyRegion == TextureCopyRegion::Cube)
+    {
+        viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+    }
     
     Tools::createImageView(newTexture->m_image, format, VK_IMAGE_ASPECT_COLOR_BIT, newTexture->m_mipLevels, newTexture->m_layerCount, newTexture->m_imageView, viewType);
     Tools::createTextureSampler(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, newTexture->m_mipLevels, newTexture->m_sampler);

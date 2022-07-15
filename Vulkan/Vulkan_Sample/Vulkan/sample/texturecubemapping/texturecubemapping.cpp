@@ -37,14 +37,14 @@ void TextureCubeMapping::setEnabledFeatures()
 
 void TextureCubeMapping::clear()
 {
-    vkDestroyPipeline(m_device, m_objectPipeline, nullptr);
+//    vkDestroyPipeline(m_device, m_objectPipeline, nullptr);
     vkDestroyPipeline(m_device, m_skyboxPipeline, nullptr);
 
     vkFreeMemory(m_device, m_uniformMemory, nullptr);
     vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
     
-    m_objectLoader.clear();
     m_skyboxLoader.clear();
+//    m_objectLoader.clear();
     m_pTexture->clear();
     delete m_pTexture;
     Application::clear();
@@ -52,16 +52,15 @@ void TextureCubeMapping::clear()
 
 void TextureCubeMapping::prepareVertex()
 {
-    std::vector<std::string> filenames = { "sphere.gltf", "teapot.gltf", "torusknot.gltf", "venus.gltf" };
-    m_objectLoader.loadFromFile(Tools::getModelPath() + filenames[0], m_graphicsQueue);
-    m_objectLoader.createVertexAndIndexBuffer();
-    m_objectLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal, VertexComponent::UV, VertexComponent::Color});
-
     m_skyboxLoader.loadFromFile(Tools::getModelPath() + "cube.gltf", m_graphicsQueue);
     m_skyboxLoader.createVertexAndIndexBuffer();
-    m_skyboxLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal, VertexComponent::UV, VertexComponent::Color});
+    m_skyboxLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal});
+    m_pTexture = Texture::loadTextrue2D(Tools::getTexturePath() +  "cubemap_yokohama_rgba.ktx", m_graphicsQueue, VK_FORMAT_R8G8B8A8_UNORM, TextureCopyRegion::Cube);
     
-    m_pTexture = Texture::loadTextrue2D(Tools::getTexturePath() +  "cubemap_yokohama_rgba.ktx", m_graphicsQueue);
+//    std::vector<std::string> filenames = { "sphere.gltf", "teapot.gltf", "torusknot.gltf", "venus.gltf" };
+//    m_objectLoader.loadFromFile(Tools::getModelPath() + filenames[0], m_graphicsQueue);
+//    m_objectLoader.createVertexAndIndexBuffer();
+//    m_objectLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal, VertexComponent::UV, VertexComponent::Color});
 }
 
 void TextureCubeMapping::prepareUniform()
@@ -97,7 +96,7 @@ void TextureCubeMapping::prepareDescriptorSetAndWrite()
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     poolSizes[1].descriptorCount = 1;
     createDescriptorPool(poolSizes.data(), static_cast<uint32_t>(poolSizes.size()), 1);
-    createDescriptorSet(m_descriptorSet);
+    createDescriptorSet(m_skyboxDescriptorSet);
 
     VkDescriptorBufferInfo bufferInfo = {};
     bufferInfo.offset = 0;
@@ -107,8 +106,8 @@ void TextureCubeMapping::prepareDescriptorSetAndWrite()
     VkDescriptorImageInfo imageInfo = m_pTexture->getDescriptorImageInfo();
 
     std::array<VkWriteDescriptorSet, 2> writes = {};
-    writes[0] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
-    writes[1] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo);
+    writes[0] = Tools::getWriteDescriptorSet(m_skyboxDescriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
+    writes[1] = Tools::getWriteDescriptorSet(m_skyboxDescriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo);
     vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
 }
 
@@ -159,6 +158,8 @@ void TextureCubeMapping::createGraphicsPipeline()
     VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "texturecubemap/skybox.frag.spv");
     shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
     shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
+    
+    rasterization.cullMode = VK_CULL_MODE_FRONT_BIT;
     if( vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_skyboxPipeline) != VK_SUCCESS )
     {
         throw std::runtime_error("failed to create graphics pipeline!");
@@ -166,17 +167,17 @@ void TextureCubeMapping::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, vertModule, nullptr);
     vkDestroyShaderModule(m_device, fragModule, nullptr);
     
-    vertModule = Tools::createShaderModule( Tools::getShaderPath() + "texturecubemap/reflect.vert.spv");
-    fragModule = Tools::createShaderModule( Tools::getShaderPath() + "texturecubemap/reflect.frag.spv");
-    shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
-    shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
-    createInfo.pVertexInputState = m_objectLoader.getPipelineVertexInputState();
-    if( vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_objectPipeline) != VK_SUCCESS )
-    {
-        throw std::runtime_error("failed to create graphics pipeline!");
-    }
-    vkDestroyShaderModule(m_device, vertModule, nullptr);
-    vkDestroyShaderModule(m_device, fragModule, nullptr);
+//    vertModule = Tools::createShaderModule( Tools::getShaderPath() + "texturecubemap/reflect.vert.spv");
+//    fragModule = Tools::createShaderModule( Tools::getShaderPath() + "texturecubemap/reflect.frag.spv");
+//    shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
+//    shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
+//    createInfo.pVertexInputState = m_objectLoader.getPipelineVertexInputState();
+//    if( vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_objectPipeline) != VK_SUCCESS )
+//    {
+//        throw std::runtime_error("failed to create graphics pipeline!");
+//    }
+//    vkDestroyShaderModule(m_device, vertModule, nullptr);
+//    vkDestroyShaderModule(m_device, fragModule, nullptr);
 }
 
 void TextureCubeMapping::updateRenderData()
@@ -190,12 +191,15 @@ void TextureCubeMapping::recordRenderCommand(const VkCommandBuffer commandBuffer
     scissor.offset = {0, 0};
     scissor.extent = m_swapchainExtent;
     
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_objectPipeline);
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-    
-    m_objectLoader.bindBuffers(commandBuffer);
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
-    m_objectLoader.draw(commandBuffer);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_skyboxPipeline);
+    m_skyboxLoader.bindBuffers(commandBuffer);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_skyboxDescriptorSet, 0, nullptr);
+    m_skyboxLoader.draw(commandBuffer);
+
+//    m_objectLoader.bindBuffers(commandBuffer);
+//    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_objectDescriptorSet, 0, nullptr);
+//    m_objectLoader.draw(commandBuffer);
 }
 
