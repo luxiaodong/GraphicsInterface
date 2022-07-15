@@ -10,6 +10,7 @@
 #include "sample/texturecubemapping/texturecubemapping.h"
 #include "sample/texturecubemaparray/texturecubemaparray.h"
 #include "sample/texture3d/texture3d.h"
+#include "sample/inputattachments/inputattachments.h"
 
 int main(int argc, const char * argv[])
 {
@@ -23,7 +24,9 @@ int main(int argc, const char * argv[])
 //    TextureArray app("texturearray");
 //    TextureCubeMapping app("texturecubemapping");
 //    TextureCubemapArray app("texturecubemaparray");
-    Texture3Dim app("texture3d");
+//    Texture3Dim app("texture3d");
+    
+    InputAttachments app("inputattachments");
     
     try {
         app.run();
