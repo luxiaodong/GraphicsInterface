@@ -8,6 +8,7 @@
 #include "sample/texturemapping/texturemapping.h"
 #include "sample/texturearray/texturearray.h"
 #include "sample/texturecubemapping/texturecubemapping.h"
+#include "sample/texturecubemaparray/texturecubemaparray.h"
 
 int main(int argc, const char * argv[])
 {
@@ -19,7 +20,8 @@ int main(int argc, const char * argv[])
 //    SpecializationConstants app("specializationconstants");
 //    TextureMapping app("texturemapping");
 //    TextureArray app("texturearray");
-    TextureCubeMapping app("texturecubemapping");
+//    TextureCubeMapping app("texturecubemapping");
+    TextureCubemapArray app("texturecubemaparray");
     
     try {
         app.run();

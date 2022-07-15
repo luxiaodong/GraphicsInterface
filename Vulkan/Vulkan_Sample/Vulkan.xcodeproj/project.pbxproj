@@ -46,6 +46,7 @@
 		B0B5D0CA287FC9EC003A175D /* texturemapping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0C8287FC9EC003A175D /* texturemapping.cpp */; };
 		B0B5D0CF287FEC3F003A175D /* texturearray.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0CD287FEC3F003A175D /* texturearray.cpp */; };
 		B0B5D0D428801610003A175D /* texturecubemapping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0D328801610003A175D /* texturecubemapping.cpp */; };
+		B0B5D0D92881110B003A175D /* texturecubemaparray.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0D82881110B003A175D /* texturecubemaparray.cpp */; };
 		B0E13A1C2861729300D1D2B6 /* triangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0E13A1B2861729300D1D2B6 /* triangle.cpp */; };
 /* End PBXBuildFile section */
 
@@ -130,6 +131,8 @@
 		B0B5D0CE287FEC3F003A175D /* texturearray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = texturearray.h; sourceTree = "<group>"; };
 		B0B5D0D228801610003A175D /* texturecubemapping.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = texturecubemapping.h; sourceTree = "<group>"; };
 		B0B5D0D328801610003A175D /* texturecubemapping.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = texturecubemapping.cpp; sourceTree = "<group>"; };
+		B0B5D0D72881110B003A175D /* texturecubemaparray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = texturecubemaparray.h; sourceTree = "<group>"; };
+		B0B5D0D82881110B003A175D /* texturecubemaparray.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = texturecubemaparray.cpp; sourceTree = "<group>"; };
 		B0E13A1A2861729300D1D2B6 /* triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = triangle.h; sourceTree = "<group>"; };
 		B0E13A1B2861729300D1D2B6 /* triangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = triangle.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -331,9 +334,19 @@
 			path = texturecubemapping;
 			sourceTree = "<group>";
 		};
+		B0B5D0D62881110B003A175D /* texturecubemaparray */ = {
+			isa = PBXGroup;
+			children = (
+				B0B5D0D72881110B003A175D /* texturecubemaparray.h */,
+				B0B5D0D82881110B003A175D /* texturecubemaparray.cpp */,
+			);
+			path = texturecubemaparray;
+			sourceTree = "<group>";
+		};
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0B5D0D62881110B003A175D /* texturecubemaparray */,
 				B0B5D0D128801610003A175D /* texturecubemapping */,
 				B0B5D0CC287FEC3F003A175D /* texturearray */,
 				B0B5D0C7287FC9EC003A175D /* texturemapping */,
@@ -416,6 +429,7 @@
 				B09AEA2F2862A380006ED326 /* imgui_draw.cpp in Sources */,
 				B0B5D0B0287BFCCC003A175D /* descriptorsets.cpp in Sources */,
 				B0B5D0D428801610003A175D /* texturecubemapping.cpp in Sources */,
+				B0B5D0D92881110B003A175D /* texturecubemaparray.cpp in Sources */,
 				B09AEA2E2862A380006ED326 /* imgui_demo.cpp in Sources */,
 				B0E13A1C2861729300D1D2B6 /* triangle.cpp in Sources */,
 				B0B5D0802876ABAF003A175D /* memstream.c in Sources */,

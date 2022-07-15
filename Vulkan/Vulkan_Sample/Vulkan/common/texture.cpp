@@ -57,7 +57,7 @@ Texture* Texture::loadTextrue2D(std::string fileName, VkQueue transferQueue, VkF
     }
     else if(copyRegion == TextureCopyRegion::Cube)
     {
-        newTexture->m_mipLevels = 1;
+//        newTexture->m_mipLevels = 1;
         newTexture->m_layerCount = 6;
     }
     
@@ -146,20 +146,23 @@ Texture* Texture::loadTextrue2D(std::string fileName, VkQueue transferQueue, VkF
     {
         for (uint32_t face = 0; face < 6; face++)
         {
-            // Calculate offset into staging buffer for the current array layer
-            ktx_size_t offset;
-            KTX_error_code ret = ktxTexture_GetImageOffset(ktxTexture, 0, 0, face, &offset);
-            assert(ret == KTX_SUCCESS);
-            VkBufferImageCopy bufferCopyRegion = {};
-            bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            bufferCopyRegion.imageSubresource.mipLevel = 0;
-            bufferCopyRegion.imageSubresource.baseArrayLayer = face;
-            bufferCopyRegion.imageSubresource.layerCount = 1;
-            bufferCopyRegion.imageExtent.width = ktxTexture->baseWidth;
-            bufferCopyRegion.imageExtent.height = ktxTexture->baseHeight;
-            bufferCopyRegion.imageExtent.depth = 1;
-            bufferCopyRegion.bufferOffset = offset;
-            bufferCopyRegions.push_back(bufferCopyRegion);
+            for (uint32_t level = 0; level < newTexture->m_mipLevels; level++)
+            {
+                // Calculate offset into staging buffer for the current mip level and face
+                ktx_size_t offset;
+                KTX_error_code ret = ktxTexture_GetImageOffset(ktxTexture, level, 0, face, &offset);
+                assert(ret == KTX_SUCCESS);
+                VkBufferImageCopy bufferCopyRegion = {};
+                bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                bufferCopyRegion.imageSubresource.mipLevel = level;
+                bufferCopyRegion.imageSubresource.baseArrayLayer = face;
+                bufferCopyRegion.imageSubresource.layerCount = 1;
+                bufferCopyRegion.imageExtent.width = ktxTexture->baseWidth >> level;
+                bufferCopyRegion.imageExtent.height = ktxTexture->baseHeight >> level;
+                bufferCopyRegion.imageExtent.depth = 1;
+                bufferCopyRegion.bufferOffset = offset;
+                bufferCopyRegions.push_back(bufferCopyRegion);
+            }
         }
     }
     
