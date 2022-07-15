@@ -18,7 +18,7 @@ public:
     struct Uniform {
         glm::mat4 projectionMatrix;
         glm::mat4 viewMatrix;
-        glm::vec4 viewPos;
+        glm::mat4 invViewMatrix;
         float lodBias;
     };
     
@@ -47,8 +47,10 @@ protected:
     VkPipeline m_skyboxPipeline;
     VkPipeline m_objectPipeline;
     
-    VkBuffer m_uniformBuffer;
-    VkDeviceMemory m_uniformMemory;
+    VkBuffer m_skyboxUniformBuffer;
+    VkDeviceMemory m_skyboxUniformMemory;
+    VkBuffer m_objectUniformBuffer;
+    VkDeviceMemory m_objectUniformMemory;
     
     Texture* m_pTexture = nullptr;
 private:
