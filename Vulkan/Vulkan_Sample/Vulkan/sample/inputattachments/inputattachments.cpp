@@ -29,8 +29,11 @@ void InputAttachments::initCamera()
 
 void InputAttachments::clear()
 {
-    vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     vkDestroyPipeline(m_device, m_readPipeline, nullptr);
+    vkDestroyPipelineLayout(m_device, m_readPipelineLayout, nullptr);
+    vkDestroyDescriptorSetLayout(m_device, m_readDescriptorSetLayout, nullptr);
+    
+    vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     vkFreeMemory(m_device, m_uniformMemory, nullptr);
     vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
     vkFreeMemory(m_device, m_paramsMemory, nullptr);
@@ -65,7 +68,6 @@ void InputAttachments::prepareUniform()
     mvp.projectionMatrix = m_camera.m_projMat;
     Tools::mapMemory(m_uniformMemory, uniformSize, &mvp);
     
-    
     VkDeviceSize paramsSize = sizeof(Params);
     Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -75,7 +77,7 @@ void InputAttachments::prepareUniform()
     param.brightnessContrast = glm::vec2(0.5f, 1.8f);
     param.range = glm::vec2(0.6f, 1.0f);
     param.attachmentIndex = 1;
-    Tools::mapMemory(m_paramsMemory, paramsSize, &mvp);
+    Tools::mapMemory(m_paramsMemory, paramsSize, &param);
 }
 
 void InputAttachments::createOtherBuffer()
@@ -350,31 +352,31 @@ void InputAttachments::createRenderPass()
     subpassDescription[1].preserveAttachmentCount = 0;
     subpassDescription[1].pPreserveAttachments = nullptr;
     
-    VkSubpassDependency dependencies[3] = {};
-    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-    dependencies[0].dstSubpass = 0;
-    dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-    dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-    dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+    VkSubpassDependency dependencies[1] = {};
+//    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+//    dependencies[0].dstSubpass = 0;
+//    dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+//    dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+//    dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+//    dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+//    dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
     // This dependency transitions the input attachment from color attachment to shader read
-    dependencies[1].srcSubpass = 0;
-    dependencies[1].dstSubpass = 1;
-    dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+    dependencies[0].srcSubpass = 0;
+    dependencies[0].dstSubpass = 1;
+    dependencies[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependencies[0].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    dependencies[0].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependencies[0].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-    dependencies[2].srcSubpass = 0;
-    dependencies[2].dstSubpass = VK_SUBPASS_EXTERNAL;
-    dependencies[2].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependencies[2].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-    dependencies[2].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    dependencies[2].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-    dependencies[2].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+//    dependencies[2].srcSubpass = 0;
+//    dependencies[2].dstSubpass = VK_SUBPASS_EXTERNAL;
+//    dependencies[2].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+//    dependencies[2].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+//    dependencies[2].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+//    dependencies[2].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+//    dependencies[2].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
     
     VkRenderPassCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -383,7 +385,7 @@ void InputAttachments::createRenderPass()
     createInfo.pAttachments = m_attachmentDescriptions.data();
     createInfo.subpassCount = 2;
     createInfo.pSubpasses = subpassDescription;
-    createInfo.dependencyCount = 3;
+    createInfo.dependencyCount = 1;
     createInfo.pDependencies = dependencies;
     
     if( vkCreateRenderPass(m_device, &createInfo, nullptr, &m_renderPass) != VK_SUCCESS )
