@@ -35,6 +35,13 @@ protected:
     void prepareDescriptorSetLayoutAndPipelineLayout();
     void prepareDescriptorSetAndWrite();
     void createGraphicsPipeline();
+    
+protected:
+    virtual void createOtherBuffer();
+    virtual void createAttachmentDescription();
+    virtual void createRenderPass();
+    virtual std::vector<VkImageView> getAttachmentsImageViews(size_t i);
+    virtual std::vector<VkClearValue> getClearValue();
 
 protected:
     VkPipeline m_graphicsPipeline;
@@ -44,10 +51,15 @@ protected:
     VkBuffer m_paramsBuffer;
     VkDeviceMemory m_paramsMemory;
     
+    //color, imageview
+    VkImage m_colorImage;
+    VkDeviceMemory m_colorMemory;
+    VkImageView m_colorImageView;
+    
     //read.
     VkPipeline m_readPipeline;
     VkPipelineLayout m_readPipelineLayout;
-    std::vector<VkDescriptorSet> m_readDescriptorSet;
+    VkDescriptorSet m_readDescriptorSet;
     VkDescriptorSetLayout m_readDescriptorSetLayout;
     
 private:

@@ -52,6 +52,7 @@ protected:
     void createSwapchainImageView();
     
     void createDepthBuffer();
+    virtual void createOtherBuffer();
     
     void createDescriptorSetLayout(const VkDescriptorSetLayoutBinding* pBindings, uint32_t bindingCount);
     void createDescriptorPool(const VkDescriptorPoolSize* pPoolSizes, uint32_t poolSizeCount, uint32_t maxSets);
@@ -61,10 +62,13 @@ protected:
     void createPipelineCache();
     void createCommandPool();
     void createCommandBuffers();
-    void createRenderPass();
+    virtual void createAttachmentDescription();
+    virtual void createRenderPass();
     void createFramebuffers();
-    
     void createSemaphores();
+    
+    virtual std::vector<VkImageView> getAttachmentsImageViews(size_t i);
+    virtual std::vector<VkClearValue> getClearValue();
     
 protected:
     void initUi();
@@ -112,7 +116,9 @@ protected:
     VkPipelineCache m_pipelineCache;
     VkPipelineLayout m_pipelineLayout;
     
+    std::vector<VkAttachmentDescription> m_attachmentDescriptions;
     VkRenderPass m_renderPass;
+    
     std::vector<VkFramebuffer> m_framebuffers;
     std::vector<VkCommandBuffer> m_commandBuffers;
     

@@ -351,6 +351,21 @@ VkWriteDescriptorSet Tools::getWriteDescriptorSet(VkDescriptorSet descriptorSet,
     return writeDescriptorSet;
 }
 
+VkAttachmentDescription Tools::getAttachmentDescription(VkFormat format, VkSampleCountFlagBits samples, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp, VkAttachmentLoadOp stencilLoadOp, VkAttachmentStoreOp stencilStoreOp, VkImageLayout initialLayout, VkImageLayout finalLayout)
+{
+    VkAttachmentDescription attachmentDescription = {};
+    attachmentDescription.flags = 0;
+    attachmentDescription.format = format;
+    attachmentDescription.samples = samples;
+    attachmentDescription.loadOp = loadOp;
+    attachmentDescription.storeOp = storeOp;
+    attachmentDescription.stencilLoadOp = stencilLoadOp;
+    attachmentDescription.stencilStoreOp = stencilStoreOp;
+    attachmentDescription.initialLayout = initialLayout;
+    attachmentDescription.finalLayout = finalLayout;
+    return attachmentDescription;
+}
+
 VkPipelineShaderStageCreateInfo Tools::getPipelineShaderStageCreateInfo(VkShaderModule module, VkShaderStageFlagBits stage)
 {
     VkPipelineShaderStageCreateInfo createInfo = {};
