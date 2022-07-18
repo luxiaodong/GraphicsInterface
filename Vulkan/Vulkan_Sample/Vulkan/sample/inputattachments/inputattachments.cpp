@@ -127,15 +127,15 @@ void InputAttachments::prepareDescriptorSetLayoutAndPipelineLayout()
 
 void InputAttachments::prepareDescriptorSetAndWrite()
 {
-    VkDescriptorPoolSize poolSizes[3] = {};
+    VkDescriptorPoolSize poolSizes[2] = {};
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[0].descriptorCount = 2;
-    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+//    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+//    poolSizes[1].descriptorCount = 2;
+    poolSizes[1].type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
     poolSizes[1].descriptorCount = 2;
-    poolSizes[2].type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-    poolSizes[2].descriptorCount = 2;
     
-    createDescriptorPool(poolSizes, 3, 2);
+    createDescriptorPool(poolSizes, 2, 2);
     createDescriptorSet(m_descriptorSet);
     
     VkDescriptorSetAllocateInfo allocInfo = {};
