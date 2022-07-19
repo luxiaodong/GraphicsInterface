@@ -11,6 +11,7 @@
 #include "sample/texturecubemaparray/texturecubemaparray.h"
 #include "sample/texture3d/texture3d.h"
 #include "sample/inputattachments/inputattachments.h"
+#include "sample/subpasses/subpasses.h"
 
 int main(int argc, const char * argv[])
 {
@@ -25,8 +26,8 @@ int main(int argc, const char * argv[])
 //    TextureCubeMapping app("texturecubemapping");
 //    TextureCubemapArray app("texturecubemaparray");
 //    Texture3Dim app("texture3d");
-    
-    InputAttachments app("inputattachments");
+//    InputAttachments app("inputattachments");
+    SubPasses app("subpasses");
     
     try {
         app.run();

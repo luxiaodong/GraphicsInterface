@@ -82,7 +82,7 @@ public:
     static VkPipelineRasterizationStateCreateInfo getPipelineRasterizationStateCreateInfo(VkPolygonMode polygonMode, VkCullModeFlagBits cullMode, VkFrontFace frontFace);
     static VkPipelineMultisampleStateCreateInfo getPipelineMultisampleStateCreateInfo(VkSampleCountFlagBits sampleCount);
     static VkPipelineDepthStencilStateCreateInfo getPipelineDepthStencilStateCreateInfo(VkBool32 depthTest, VkBool32 depthWrite, VkCompareOp compareOp);
-    static VkPipelineColorBlendAttachmentState getPipelineColorBlendAttachmentState(VkBool32 blend, VkColorComponentFlags colorComponent);
+    static VkPipelineColorBlendAttachmentState getPipelineColorBlendAttachmentState(VkBool32 blend, VkColorComponentFlags colorComponent = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
     static VkPipelineColorBlendStateCreateInfo getPipelineColorBlendStateCreateInfo(uint32_t count, VkPipelineColorBlendAttachmentState* pColorBlendAttachment);
     static VkPipelineColorBlendStateCreateInfo getPipelineColorBlendStateCreateInfo(std::vector<VkPipelineColorBlendAttachmentState>& colorBlendAttachment);
     

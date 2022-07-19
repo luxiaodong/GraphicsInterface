@@ -496,7 +496,7 @@ VkPipelineColorBlendAttachmentState Tools::getPipelineColorBlendAttachmentState(
     state.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
     state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
     state.alphaBlendOp = VK_BLEND_OP_ADD;
-    state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
     state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
     return state;
 }

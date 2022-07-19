@@ -503,6 +503,22 @@ void Application::createDescriptorSet(VkDescriptorSet& descriptorSet)
     {
         throw std::runtime_error("failed to allocate descriptorSets!");
     }
+    
+//    createDescriptorSet(&m_descriptorSetLayout, 1, descriptorSet);
+}
+
+void Application::createDescriptorSet(const VkDescriptorSetLayout* pSetLayout, uint32_t descriptorSetCount, VkDescriptorSet& descriptorSet)
+{
+    VkDescriptorSetAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = m_descriptorPool;
+    allocInfo.descriptorSetCount = descriptorSetCount;
+    allocInfo.pSetLayouts = pSetLayout;
+
+    if( vkAllocateDescriptorSets(m_device, &allocInfo, &descriptorSet) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to allocate descriptorSets!");
+    }
 }
 
 void Application::createPipelineLayout(const VkPushConstantRange* pPushConstantRange, uint32_t pushConstantRangeCount)
@@ -516,6 +532,22 @@ void Application::createPipelineLayout(const VkPushConstantRange* pPushConstantR
     createInfo.pPushConstantRanges = pPushConstantRange;
 
     if( vkCreatePipelineLayout(m_device, &createInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS )
+    {
+        throw std::runtime_error("failed to create layout!");
+    }
+}
+
+void Application::createPipelineLayout(const VkDescriptorSetLayout* pSetLayout, uint32_t setLayoutCount, VkPipelineLayout& pipelineLayout)
+{
+    VkPipelineLayoutCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.setLayoutCount = setLayoutCount;
+    createInfo.pSetLayouts = pSetLayout;
+    createInfo.pushConstantRangeCount = 0;
+    createInfo.pPushConstantRanges = nullptr;
+
+    if( vkCreatePipelineLayout(m_device, &createInfo, nullptr, &pipelineLayout) != VK_SUCCESS )
     {
         throw std::runtime_error("failed to create layout!");
     }
