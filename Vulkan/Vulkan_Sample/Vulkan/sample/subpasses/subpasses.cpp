@@ -24,6 +24,7 @@ void SubPasses::init()
 
 void SubPasses::initCamera()
 {
+    m_camera.m_isFirstPersion = true;
     m_camera.setPosition(glm::vec3(-3.2f, 1.0f, 5.9f));
     m_camera.setRotation(glm::vec3(0.5f, 210.05f, 0.0f));
     m_camera.setPerspective(60.0f, (float)m_width / (float)m_height, 1.0f, 256.0f);
@@ -410,6 +411,7 @@ void SubPasses::recordRenderCommand(const VkCommandBuffer commandBuffer)
     
     // pass 3
     vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
+    m_transparentLoader.bindBuffers(commandBuffer);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_transparentPipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_transparentDescriptorSet, 0, NULL);
     m_transparentLoader.draw(commandBuffer);

@@ -51,8 +51,14 @@ void Camera::updateViewMatrix()
     }
     transM = glm::translate(glm::mat4(1.0f), translation);
 
-    m_viewMat = transM * rotM;
-//    m_viewMat = rotM * transM;
+    if (m_isFirstPersion)
+    {
+        m_viewMat = rotM * transM;
+    }
+    else
+    {
+        m_viewMat = transM * rotM;
+    }
 
     m_viewPos = glm::vec4(m_position, 0.0f) * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
     m_isNeedUpdated = true;

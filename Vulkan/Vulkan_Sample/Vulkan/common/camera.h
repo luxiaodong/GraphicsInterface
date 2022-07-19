@@ -34,6 +34,7 @@ public:
     float m_rotationSpeed = 1.0f;
     float m_movementSpeed = 1.0f;
     
+    bool m_isFirstPersion = false;
     bool m_isNeedUpdated = false;
     bool m_isFlipY = false;
     
