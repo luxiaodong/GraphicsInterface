@@ -53,6 +53,7 @@ protected:
     
     void createDepthBuffer();
     virtual void createOtherBuffer();
+    virtual void createOtherRenderPass(const VkCommandBuffer& commandBuffer);
     
     void createDescriptorSetLayout(const VkDescriptorSetLayoutBinding* pBindings, uint32_t bindingCount);
     void createDescriptorPool(const VkDescriptorPoolSize* pPoolSizes, uint32_t poolSizeCount, uint32_t maxSets);

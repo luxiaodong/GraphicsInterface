@@ -711,6 +711,10 @@ std::vector<VkClearValue> Application::getClearValue()
     return clearValues;
 }
 
+void Application::createOtherRenderPass(const VkCommandBuffer& commandBuffer)
+{
+}
+
 void Application::beginRenderCommandAndPass(const VkCommandBuffer commandBuffer, int frameBufferIndex)
 {
     VkCommandBufferBeginInfo beginInfo = {};
@@ -722,6 +726,8 @@ void Application::beginRenderCommandAndPass(const VkCommandBuffer commandBuffer,
     {
         throw std::runtime_error("failed to begin command buffer!");
     }
+    
+    createOtherRenderPass(commandBuffer);
 
     std::vector<VkClearValue> clearValues = getClearValue();
     
