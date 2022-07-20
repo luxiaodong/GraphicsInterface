@@ -68,6 +68,7 @@ protected:
     VkDescriptorSet m_debugDescriptorSet;
     VkPipelineLayout m_debugPipelineLayout;
     VkDescriptorSetLayout m_debugDescriptorSetLayout;
+    Texture* m_pGlassTexture = nullptr; //玻璃材质
     
     //pass 3 plane
     //VkPipeline m_planePipeline;

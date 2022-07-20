@@ -45,7 +45,7 @@ void OffScreen::clear()
     vkDestroyPipeline(m_device, m_mirrorPipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_mirrorPipelineLayout, nullptr);
     vkDestroyDescriptorSetLayout(m_device, m_mirrorDescriptorSetLayout, nullptr);
-    vkDestroyRenderPass(m_device, m_renderPass, nullptr);
+    vkDestroyRenderPass(m_device, m_mirrorRenderPass, nullptr);
     vkDestroyFramebuffer(m_device, m_mirrorFrameBuffer, nullptr);
     vkFreeMemory(m_device, m_mirrorUniformMemory, nullptr);
     vkDestroyBuffer(m_device, m_mirrorUniformBuffer, nullptr);
@@ -103,7 +103,7 @@ void OffScreen::prepareUniform()
                                          m_mirrorUniformBuffer, m_mirrorUniformMemory);
     
     mvp.modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    mvp.modelMatrix = glm::scale(mvp.modelMatrix, glm::vec3(0.0f, -1.0f, 0.0f));
+    mvp.modelMatrix = glm::scale(mvp.modelMatrix, glm::vec3(1.0f, -1.0f, 1.0f));
     mvp.modelMatrix = glm::translate(mvp.modelMatrix, glm::vec3(0.0f, -1.0f, 0.0f));
     Tools::mapMemory(m_mirrorUniformMemory, uniformSize, &mvp);
 }
@@ -261,6 +261,9 @@ void OffScreen::createGraphicsPipeline()
     rasterization.cullMode = VK_CULL_MODE_NONE;
     createInfo.layout = m_debugPipelineLayout;
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_debugPipeline));
+    
+    vkDestroyShaderModule(m_device, vertModule, nullptr);
+    vkDestroyShaderModule(m_device, fragModule, nullptr);
 
     // pass 4
     vertModule = Tools::createShaderModule( Tools::getShaderPath() + "offscreen/phong.vert.spv");
@@ -271,7 +274,7 @@ void OffScreen::createGraphicsPipeline()
     createInfo.layout = m_pipelineLayout;
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_graphicsPipeline));
     
-    // pass1
+    // pass 1
     rasterization.cullMode = VK_CULL_MODE_FRONT_BIT;
     createInfo.renderPass = m_mirrorRenderPass;
     createInfo.layout = m_mirrorPipelineLayout;
@@ -319,25 +322,25 @@ void OffScreen::recordRenderCommand(const VkCommandBuffer commandBuffer)
     scissor.offset = {0, 0};
     scissor.extent = m_swapchainExtent;
     
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     
     // pass 1
+//    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_mirrorPipeline);
+//    m_dragonLoader.bindBuffers(commandBuffer);
+//    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_mirrorPipelineLayout, 0, 1, &m_mirrorDescriptorSet, 0, nullptr);
+//    m_dragonLoader.draw(commandBuffer);
+    
+    // pass 2
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipelineLayout, 0, 1, &m_debugDescriptorSet, 0, NULL);
     vkCmdDraw(commandBuffer, 3, 1, 0, 0);
     
     // pass 4
+//    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
 //    m_dragonLoader.bindBuffers(commandBuffer);
 //    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
 //    m_dragonLoader.draw(commandBuffer);
-    
-    // pass 1
-//    vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
-//    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_readPipeline);
-//    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_readPipelineLayout, 0, 1, &m_readDescriptorSet, 0, NULL);
-//    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 }
 
 void OffScreen::createMirrorRenderPass()
@@ -347,11 +350,12 @@ void OffScreen::createMirrorRenderPass()
     
     attachmentDescription[1] = Tools::getAttachmentDescription(VK_FORMAT_D32_SFLOAT, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     
-    VkAttachmentReference attachmentReference[2] = {};
-    attachmentReference[0].attachment = 0;
-    attachmentReference[0].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    attachmentReference[1].attachment = 1;
-    attachmentReference[1].layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    VkAttachmentReference colorAttachmentReference = {};
+    colorAttachmentReference.attachment = 0;
+    colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    VkAttachmentReference depthAttachmentReference = {};
+    depthAttachmentReference.attachment = 1;
+    depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     
     VkSubpassDescription subpassDescription = {};
     subpassDescription.flags = 0;
@@ -359,9 +363,9 @@ void OffScreen::createMirrorRenderPass()
     subpassDescription.inputAttachmentCount = 0;
     subpassDescription.pInputAttachments = nullptr;
     subpassDescription.colorAttachmentCount = 1;
-    subpassDescription.pColorAttachments = attachmentReference;
+    subpassDescription.pColorAttachments = &colorAttachmentReference;
     subpassDescription.pResolveAttachments = nullptr;
-    subpassDescription.pDepthStencilAttachment = &attachmentReference[1];
+    subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
     subpassDescription.preserveAttachmentCount = 0;
     subpassDescription.pPreserveAttachments = nullptr;
     
@@ -441,124 +445,13 @@ void OffScreen::createOtherRenderPass(const VkCommandBuffer& commandBuffer)
     scissor.offset = {0, 0};
     scissor.extent.width = m_mirrorWidth;
     scissor.extent.height = m_mirrorHeight;
-    
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_mirrorPipeline);
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_mirrorPipeline);
     m_dragonLoader.bindBuffers(commandBuffer);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_mirrorPipelineLayout, 0, 1, &m_mirrorDescriptorSet, 0, nullptr);
     m_dragonLoader.draw(commandBuffer);
     
     vkCmdEndRenderPass(commandBuffer);
 }
-
-
-//
-//void OffScreen::createAttachmentDescription()
-//{
-//    // Swap chain image color attachment
-//    // Will be transitioned to present layout
-//    VkAttachmentDescription surfaceAttachmentDescription = Tools::getAttachmentDescription(m_surfaceFormatKHR.format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-//
-//    // Input attachments
-//    // These will be written in the first subpass, transitioned to input attachments
-//    // and then read in the secod subpass
-//    VkAttachmentDescription colorAttachmentDescription = Tools::getAttachmentDescription(m_surfaceFormatKHR.format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-//
-//    // Depth
-//    VkAttachmentDescription depthAttachmentDescription = Tools::getAttachmentDescription(VK_FORMAT_D32_SFLOAT, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-//
-//    m_attachmentDescriptions.push_back(surfaceAttachmentDescription);
-//    m_attachmentDescriptions.push_back(colorAttachmentDescription);
-//    m_attachmentDescriptions.push_back(depthAttachmentDescription);
-//}
-
-//void OffScreen::createRenderPass()
-//{
-//    // pass 1
-//    VkAttachmentReference colorAttachmentReference = {};
-//    colorAttachmentReference.attachment = 1;
-//    colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-//
-//    VkAttachmentReference depthAttachmentReference = {};
-//    depthAttachmentReference.attachment = 2;
-//    depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-//
-//    // pass 2
-//    VkAttachmentReference colorSwapChainAttachmentReference = {};
-//    colorSwapChainAttachmentReference.attachment = 0;
-//    colorSwapChainAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-//
-//    VkAttachmentReference inputAttachmentReference[2];
-//    inputAttachmentReference[0].attachment = 1;
-//    inputAttachmentReference[0].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-//    inputAttachmentReference[1].attachment = 2;
-//    inputAttachmentReference[1].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-//
-//    VkSubpassDescription subpassDescription[2] = {};
-//    subpassDescription[0].flags = 0;
-//    subpassDescription[0].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-//    subpassDescription[0].inputAttachmentCount = 0;
-//    subpassDescription[0].pInputAttachments = nullptr;
-//    subpassDescription[0].colorAttachmentCount = 1;
-//    subpassDescription[0].pColorAttachments = &colorAttachmentReference;
-//    subpassDescription[0].pResolveAttachments = nullptr;
-//    subpassDescription[0].pDepthStencilAttachment = &depthAttachmentReference;
-//    subpassDescription[0].preserveAttachmentCount = 0;
-//    subpassDescription[0].pPreserveAttachments = nullptr;
-//
-//    subpassDescription[1].flags = 0;
-//    subpassDescription[1].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-//    subpassDescription[1].inputAttachmentCount = 2;
-//    subpassDescription[1].pInputAttachments = inputAttachmentReference;
-//    subpassDescription[1].colorAttachmentCount = 1;
-//    subpassDescription[1].pColorAttachments = &colorSwapChainAttachmentReference;
-//    subpassDescription[1].pResolveAttachments = nullptr;
-//    subpassDescription[1].pDepthStencilAttachment = nullptr;
-//    subpassDescription[1].preserveAttachmentCount = 0;
-//    subpassDescription[1].pPreserveAttachments = nullptr;
-//
-//    VkSubpassDependency dependencies[1] = {};
-////    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-////    dependencies[0].dstSubpass = 0;
-////    dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-////    dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-////    dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-////    dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-////    dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-//
-//    // This dependency transitions the input attachment from color attachment to shader read
-//    dependencies[0].srcSubpass = 0;
-//    dependencies[0].dstSubpass = 1;
-//    dependencies[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-//    dependencies[0].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-//    dependencies[0].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-//    dependencies[0].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-//    dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-//
-////    dependencies[2].srcSubpass = 0;
-////    dependencies[2].dstSubpass = VK_SUBPASS_EXTERNAL;
-////    dependencies[2].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-////    dependencies[2].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-////    dependencies[2].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-////    dependencies[2].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-////    dependencies[2].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-//
-//    VkRenderPassCreateInfo createInfo = {};
-//    createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-//    createInfo.flags = 0;
-//    createInfo.attachmentCount = static_cast<uint32_t>(m_attachmentDescriptions.size());
-//    createInfo.pAttachments = m_attachmentDescriptions.data();
-//    createInfo.subpassCount = 2;
-//    createInfo.pSubpasses = subpassDescription;
-//    createInfo.dependencyCount = 1;
-//    createInfo.pDependencies = dependencies;
-//
-//    if( vkCreateRenderPass(m_device, &createInfo, nullptr, &m_renderPass) != VK_SUCCESS )
-//    {
-//        throw std::runtime_error("failed to create renderpass!");
-//    }
-//}
-
-
