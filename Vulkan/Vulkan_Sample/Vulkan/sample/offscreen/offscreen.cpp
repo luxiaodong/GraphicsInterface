@@ -62,12 +62,20 @@ void OffScreen::clear()
     vkDestroyPipeline(m_device, m_debugPipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_debugPipelineLayout, nullptr);
     vkDestroyDescriptorSetLayout(m_device, m_debugDescriptorSetLayout, nullptr);
+    
+    // pass 3
+    vkDestroyPipeline(m_device, m_planePipeline, nullptr);
+    vkDestroyPipelineLayout(m_device, m_planePipelineLayout, nullptr);
+    vkDestroyDescriptorSetLayout(m_device, m_planeDescriptorSetLayout, nullptr);
+    vkFreeMemory(m_device, m_planeUniformMemory, nullptr);
+    vkDestroyBuffer(m_device, m_planeUniformBuffer, nullptr);
 
     // pass 4
     vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     vkFreeMemory(m_device, m_uniformMemory, nullptr);
     vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
 
+    m_planeLoader.clear();
     m_dragonLoader.clear();
     Application::clear();
 }
@@ -78,7 +86,9 @@ void OffScreen::prepareVertex()
     m_dragonLoader.createVertexAndIndexBuffer();
     m_dragonLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Color, VertexComponent::Normal});
     
-//    m_planeLoader.loadFromFile(Tools::getModelPath() + "plane.gltf", m_graphicsQueue);
+    m_planeLoader.loadFromFile(Tools::getModelPath() + "plane.gltf", m_graphicsQueue);
+    m_planeLoader.createVertexAndIndexBuffer();
+//    m_planeLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Color, VertexComponent::Normal});
 }
 
 void OffScreen::prepareUniform()
@@ -106,6 +116,13 @@ void OffScreen::prepareUniform()
     mvp.modelMatrix = glm::scale(mvp.modelMatrix, glm::vec3(1.0f, -1.0f, 1.0f));
     mvp.modelMatrix = glm::translate(mvp.modelMatrix, glm::vec3(0.0f, -1.0f, 0.0f));
     Tools::mapMemory(m_mirrorUniformMemory, uniformSize, &mvp);
+    
+    // pass 3
+    Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                         m_planeUniformBuffer, m_planeUniformMemory);
+    mvp.modelMatrix = glm::mat4(1.0f);
+    Tools::mapMemory(m_planeUniformMemory, uniformSize, &mvp);
 }
 
 void OffScreen::createOtherBuffer()
@@ -153,6 +170,16 @@ void OffScreen::prepareDescriptorSetLayoutAndPipelineLayout()
         createPipelineLayout(&m_debugDescriptorSetLayout, 1, m_debugPipelineLayout);
     }
     
+    // pass 3 plane
+    {
+        VkDescriptorSetLayoutBinding bindings[2] = {};
+        bindings[0] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
+        bindings[1] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
+        VkDescriptorSetLayoutCreateInfo createInfo = Tools::getDescriptorSetLayoutCreateInfo(bindings, 2);
+        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_device, &createInfo, nullptr, &m_planeDescriptorSetLayout));
+        createPipelineLayout(&m_planeDescriptorSetLayout, 1, m_planePipelineLayout);
+    }
+    
     // pass 4
     {
         VkDescriptorSetLayoutBinding binding = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
@@ -165,13 +192,11 @@ void OffScreen::prepareDescriptorSetAndWrite()
 {
     std::array<VkDescriptorPoolSize, 2> poolSizes;
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = 2;
+    poolSizes[0].descriptorCount = 3;
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = 1;
-//    poolSizes[1].type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-//    poolSizes[1].descriptorCount = 2;
+    poolSizes[1].descriptorCount = 2;
     
-    createDescriptorPool(poolSizes.data(), static_cast<uint32_t>(poolSizes.size()), 3);
+    createDescriptorPool(poolSizes.data(), static_cast<uint32_t>(poolSizes.size()), 4);
     
     //pass 1
     {
@@ -196,6 +221,26 @@ void OffScreen::prepareDescriptorSetAndWrite()
         
         VkWriteDescriptorSet write = Tools::getWriteDescriptorSet(m_debugDescriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo);
         vkUpdateDescriptorSets(m_device, 1, &write, 0, nullptr);
+    }
+    
+    //pass 3 plane
+    {
+        createDescriptorSet(&m_planeDescriptorSetLayout, 1, m_planeDescriptorSet);
+        
+        VkDescriptorBufferInfo bufferInfo = {};
+        bufferInfo.offset = 0;
+        bufferInfo.range = sizeof(Uniform);
+        bufferInfo.buffer = m_planeUniformBuffer;
+        
+        VkDescriptorImageInfo imageInfo = {};
+        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo.imageView = m_mirrorColorImageView;
+        imageInfo.sampler = m_mirrorColorSampler;
+        
+        VkWriteDescriptorSet writes[2] = {};
+        writes[0] = Tools::getWriteDescriptorSet(m_planeDescriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
+        writes[1] = Tools::getWriteDescriptorSet(m_planeDescriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo);
+        vkUpdateDescriptorSets(m_device, 2, writes, 0, nullptr);
     }
     
     //pass 4
@@ -261,7 +306,16 @@ void OffScreen::createGraphicsPipeline()
     rasterization.cullMode = VK_CULL_MODE_NONE;
     createInfo.layout = m_debugPipelineLayout;
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_debugPipeline));
+    vkDestroyShaderModule(m_device, vertModule, nullptr);
+    vkDestroyShaderModule(m_device, fragModule, nullptr);
     
+    // pass 3
+    vertModule = Tools::createShaderModule( Tools::getShaderPath() + "offscreen/mirror.vert.spv");
+    fragModule = Tools::createShaderModule( Tools::getShaderPath() + "offscreen/mirror.frag.spv");
+    shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
+    shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
+    createInfo.layout = m_planePipelineLayout;
+    VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_planePipeline));
     vkDestroyShaderModule(m_device, vertModule, nullptr);
     vkDestroyShaderModule(m_device, fragModule, nullptr);
 
@@ -332,15 +386,21 @@ void OffScreen::recordRenderCommand(const VkCommandBuffer commandBuffer)
 //    m_dragonLoader.draw(commandBuffer);
     
     // pass 2
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipeline);
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipelineLayout, 0, 1, &m_debugDescriptorSet, 0, NULL);
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+//    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipeline);
+//    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipelineLayout, 0, 1, &m_debugDescriptorSet, 0, NULL);
+//    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    
+    // pass 3
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_planePipeline);
+    m_planeLoader.bindBuffers(commandBuffer);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_planePipelineLayout, 0, 1, &m_planeDescriptorSet, 0, nullptr);
+    m_planeLoader.draw(commandBuffer);
     
     // pass 4
-//    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
-//    m_dragonLoader.bindBuffers(commandBuffer);
-//    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
-//    m_dragonLoader.draw(commandBuffer);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+    m_dragonLoader.bindBuffers(commandBuffer);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
+    m_dragonLoader.draw(commandBuffer);
 }
 
 void OffScreen::createMirrorRenderPass()
