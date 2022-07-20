@@ -12,6 +12,7 @@
 #include "sample/texture3d/texture3d.h"
 #include "sample/inputattachments/inputattachments.h"
 #include "sample/subpasses/subpasses.h"
+#include "sample/offscreen/offscreen.h"
 
 int main(int argc, const char * argv[])
 {
@@ -27,7 +28,9 @@ int main(int argc, const char * argv[])
 //    TextureCubemapArray app("texturecubemaparray");
 //    Texture3Dim app("texture3d");
 //    InputAttachments app("inputattachments");
-    SubPasses app("subpasses");
+//    SubPasses app("subpasses");
+    
+    OffScreen app("offscreen");
     
     try {
         app.run();
