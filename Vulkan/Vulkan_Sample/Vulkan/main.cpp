@@ -14,6 +14,7 @@
 #include "sample/subpasses/subpasses.h"
 #include "sample/offscreen/offscreen.h"
 #include "sample/particlefire/particlefire.h"
+#include "sample/stencilbuffer/stencilbuffer.h"
 
 int main(int argc, const char * argv[])
 {
@@ -31,8 +32,9 @@ int main(int argc, const char * argv[])
 //    InputAttachments app("inputattachments");
 //    SubPasses app("subpasses");
 //    OffScreen app("offscreen");
+//    ParticleFire app("particlefire");
     
-    ParticleFire app("particlefire");
+    StencilBuffer app("stencilbuffer");
     
     try {
         app.run();

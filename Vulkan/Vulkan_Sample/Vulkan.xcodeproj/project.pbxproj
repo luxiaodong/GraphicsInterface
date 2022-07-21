@@ -53,6 +53,7 @@
 		B0B5D0F228864606003A175D /* subpasses.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0F128864605003A175D /* subpasses.cpp */; };
 		B0B5D0F728879E48003A175D /* offscreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0F528879E48003A175D /* offscreen.cpp */; };
 		B0B5D0FC2888F884003A175D /* particlefire.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0FA2888F884003A175D /* particlefire.cpp */; };
+		B0B5D106288949AA003A175D /* stencilbuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D105288949AA003A175D /* stencilbuffer.cpp */; };
 		B0E13A1C2861729300D1D2B6 /* triangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0E13A1B2861729300D1D2B6 /* triangle.cpp */; };
 /* End PBXBuildFile section */
 
@@ -151,6 +152,8 @@
 		B0B5D0F628879E48003A175D /* offscreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = offscreen.h; sourceTree = "<group>"; };
 		B0B5D0FA2888F884003A175D /* particlefire.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = particlefire.cpp; sourceTree = "<group>"; };
 		B0B5D0FB2888F884003A175D /* particlefire.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = particlefire.h; sourceTree = "<group>"; };
+		B0B5D104288949AA003A175D /* stencilbuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stencilbuffer.h; sourceTree = "<group>"; };
+		B0B5D105288949AA003A175D /* stencilbuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = stencilbuffer.cpp; sourceTree = "<group>"; };
 		B0E13A1A2861729300D1D2B6 /* triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = triangle.h; sourceTree = "<group>"; };
 		B0E13A1B2861729300D1D2B6 /* triangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = triangle.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -408,9 +411,19 @@
 			path = particlefire;
 			sourceTree = "<group>";
 		};
+		B0B5D103288949AA003A175D /* stencilbuffer */ = {
+			isa = PBXGroup;
+			children = (
+				B0B5D104288949AA003A175D /* stencilbuffer.h */,
+				B0B5D105288949AA003A175D /* stencilbuffer.cpp */,
+			);
+			path = stencilbuffer;
+			sourceTree = "<group>";
+		};
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0B5D103288949AA003A175D /* stencilbuffer */,
 				B0B5D0F92888F884003A175D /* particlefire */,
 				B0B5D0F428879E48003A175D /* offscreen */,
 				B0B5D0EF28864605003A175D /* subpasses */,
@@ -497,6 +510,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B09AEA2F2862A380006ED326 /* imgui_draw.cpp in Sources */,
+				B0B5D106288949AA003A175D /* stencilbuffer.cpp in Sources */,
 				B0B5D0B0287BFCCC003A175D /* descriptorsets.cpp in Sources */,
 				B0B5D0D428801610003A175D /* texturecubemapping.cpp in Sources */,
 				B0B5D0D92881110B003A175D /* texturecubemaparray.cpp in Sources */,
