@@ -38,8 +38,8 @@ VkVertexInputAttributeDescription Vertex::inputAttributeDescription(uint32_t bin
             return Tools::getVertexInputAttributeDescription(binding, location, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, m_uv) );
         case VertexComponent::Color:
             return Tools::getVertexInputAttributeDescription(binding, location, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, m_color) );
-//        case VertexComponent::Tangent:
-//            return VkVertexInputAttributeDescription({ location, binding, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, tangent)} );
+        case VertexComponent::Tangent:
+            return VkVertexInputAttributeDescription({ location, binding, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, m_tangent)} );
 //        case VertexComponent::Joint0:
 //            return VkVertexInputAttributeDescription({ location, binding, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, joint0) });
 //        case VertexComponent::Weight0:

@@ -263,6 +263,14 @@ void GltfLoader::loadMesh(Mesh* newMesh, const tinygltf::Mesh &mesh)
             numColorComponents = colorAccessor.type == TINYGLTF_PARAMETER_TYPE_FLOAT_VEC3 ? 3 : 4;
             bufferColors = reinterpret_cast<const float*>(&(m_gltfModel.buffers[colorView.buffer].data[colorAccessor.byteOffset + colorView.byteOffset]));
         }
+        
+        const float* bufferTangents = nullptr;
+        if (primitive.attributes.find("TANGENT") != primitive.attributes.end())
+        {
+            const tinygltf::Accessor &tangentAccessor = m_gltfModel.accessors[primitive.attributes.find("TANGENT")->second];
+            const tinygltf::BufferView &tangentView = m_gltfModel.bufferViews[tangentAccessor.bufferView];
+            bufferTangents = reinterpret_cast<const float *>(&(m_gltfModel.buffers[tangentView.buffer].data[tangentAccessor.byteOffset + tangentView.byteOffset]));
+        }
 
         uint32_t vertexOffset = static_cast<uint32_t>(m_vertexData.size());
         uint32_t vertexCount = static_cast<uint32_t>(posAccessor.count);
@@ -284,7 +292,7 @@ void GltfLoader::loadMesh(Mesh* newMesh, const tinygltf::Mesh &mesh)
                     vert.m_color = glm::make_vec4(&bufferColors[i * 4]);
                 }
             }
-            
+            vert.m_tangent = bufferTangents ? glm::vec4(glm::make_vec4(&bufferTangents[i * 4])) : glm::vec4(0.0f);
             m_vertexData.push_back(vert);
         }
         

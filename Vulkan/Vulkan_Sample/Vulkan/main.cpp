@@ -13,6 +13,7 @@
 #include "sample/inputattachments/inputattachments.h"
 #include "sample/subpasses/subpasses.h"
 #include "sample/offscreen/offscreen.h"
+#include "sample/particlefire/particlefire.h"
 
 int main(int argc, const char * argv[])
 {
@@ -29,8 +30,9 @@ int main(int argc, const char * argv[])
 //    Texture3Dim app("texture3d");
 //    InputAttachments app("inputattachments");
 //    SubPasses app("subpasses");
+//    OffScreen app("offscreen");
     
-    OffScreen app("offscreen");
+    ParticleFire app("particlefire");
     
     try {
         app.run();
