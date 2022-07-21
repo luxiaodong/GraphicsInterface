@@ -1,11 +1,26 @@
 
 #include "tools.h"
+#include <stdlib.h>
+#include <random>
 
 VkPhysicalDevice Tools::m_physicalDevice = VK_NULL_HANDLE;
 VkDevice Tools::m_device = VK_NULL_HANDLE;
 VkCommandPool Tools::m_commandPool = VK_NULL_HANDLE;
 VkPhysicalDeviceFeatures Tools::m_deviceEnabledFeatures = {};
 VkPhysicalDeviceProperties Tools::m_deviceProperties = {};
+
+std::default_random_engine rndEngine;
+
+void Tools::seed()
+{
+    rndEngine.seed((unsigned)time(nullptr));
+}
+
+float Tools::random01()
+{
+    std::uniform_real_distribution<float> rndDist(0.0f, 1.0f);
+    return rndDist(rndEngine);
+}
 
 std::string Tools::getShaderPath()
 {

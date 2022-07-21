@@ -46,13 +46,15 @@ public:
     static std::string getTexturePath();
     static bool isFileExists(const std::string &filename);
     static std::vector<char> readFile(const std::string& filename);
-    
+
     static VkPhysicalDevice m_physicalDevice;
     static VkDevice m_device;
     static VkPhysicalDeviceFeatures m_deviceEnabledFeatures;
     static VkPhysicalDeviceProperties m_deviceProperties;
     static VkCommandPool m_commandPool;
     
+    static void seed();
+    static float random01();
     static uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
     static void createBufferAndMemoryThenBind(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags, VkBuffer &buffer, VkDeviceMemory& memory);
     static void createImageAndMemoryThenBind(VkFormat format, uint32_t width, uint32_t height, uint32_t lodLevels, uint32_t layerCount, VkSampleCountFlagBits sampleFlag, VkImageUsageFlags usage, VkImageTiling tiling, VkMemoryPropertyFlags propertyFlags, VkImage &image, VkDeviceMemory &imageMemory, VkImageCreateFlags createFlags = 0, uint32_t depth = 1, VkImageType imageType = VK_IMAGE_TYPE_2D);
