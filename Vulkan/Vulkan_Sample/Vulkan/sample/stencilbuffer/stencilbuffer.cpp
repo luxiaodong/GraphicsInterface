@@ -134,6 +134,7 @@ void StencilBuffer::createGraphicsPipeline()
     createInfo.subpass = 0;
 
     VkStencilOpState stencilOpState = {};
+    depthStencil.stencilTestEnable = VK_TRUE;
     stencilOpState.compareOp = VK_COMPARE_OP_ALWAYS;
     stencilOpState.passOp = VK_STENCIL_OP_REPLACE;
     stencilOpState.failOp = VK_STENCIL_OP_KEEP;
@@ -141,11 +142,8 @@ void StencilBuffer::createGraphicsPipeline()
     stencilOpState.compareMask = 0xff;
     stencilOpState.writeMask = 0xff;
     stencilOpState.reference = 1;
-    
-    depthStencil.stencilTestEnable = VK_FALSE;
     depthStencil.back = stencilOpState;
     depthStencil.front = stencilOpState;
-    depthStencil.depthTestEnable = VK_TRUE;
     
     // toon shading pipeline
     VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "stencilbuffer/toon.vert.spv");
@@ -163,14 +161,8 @@ void StencilBuffer::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
     
     // outline
-    stencilOpState.compareOp = VK_COMPARE_OP_NOT_EQUAL;
-    stencilOpState.passOp = VK_STENCIL_OP_REPLACE;
-    stencilOpState.failOp = VK_STENCIL_OP_KEEP;
-    stencilOpState.depthFailOp = VK_STENCIL_OP_KEEP;
-    stencilOpState.compareMask = 0xff;
-    stencilOpState.writeMask = 0xff;
-    stencilOpState.reference = 1;
-    
+    stencilOpState.compareOp = VK_COMPARE_OP_EQUAL;
+    stencilOpState.reference = 0;
     depthStencil.back = stencilOpState;
     depthStencil.front = stencilOpState;
     depthStencil.depthTestEnable = VK_FALSE;
@@ -208,11 +200,9 @@ void StencilBuffer::recordRenderCommand(const VkCommandBuffer commandBuffer)
     m_gltfLoader.bindBuffers(commandBuffer);
 
     // pass 1
-    
-    
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_outlinePipeline);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
     m_gltfLoader.draw(commandBuffer);
     
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_outlinePipeline);
     m_gltfLoader.draw(commandBuffer);
 }
