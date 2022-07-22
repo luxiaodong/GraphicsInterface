@@ -15,6 +15,7 @@
 #include "sample/offscreen/offscreen.h"
 #include "sample/particlefire/particlefire.h"
 #include "sample/stencilbuffer/stencilbuffer.h"
+#include "sample/separatevertexattributes/separatevertexattributes.h"
 
 int main(int argc, const char * argv[])
 {
@@ -33,8 +34,9 @@ int main(int argc, const char * argv[])
 //    SubPasses app("subpasses");
 //    OffScreen app("offscreen");
 //    ParticleFire app("particlefire");
+//    StencilBuffer app("stencilbuffer");
     
-    StencilBuffer app("stencilbuffer");
+    SeparateVertexAttributes app("separatevertexattributes");
     
     try {
         app.run();
