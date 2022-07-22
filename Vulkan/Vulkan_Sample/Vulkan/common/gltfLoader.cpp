@@ -37,15 +37,15 @@ void GltfLoader::clear()
 #endif
 }
 
-void GltfLoader::loadFromFile(std::string fileName, VkQueue transferQueue)
+void GltfLoader::loadFromFile(std::string fileName, VkQueue transferQueue, uint32_t loadFlags)
 {
 #ifdef USE_BUILDIN_LOAD_GLTF
     const uint32_t glTFLoadingFlags = vkglTF::FileLoadingFlags::PreTransformVertices | vkglTF::FileLoadingFlags::PreMultiplyVertexColors | vkglTF::FileLoadingFlags::FlipY | vkglTF::FileLoadingFlags::DontLoadImages;
     m_pModel->loadFromFile(fileName, transferQueue, glTFLoadingFlags);
 #else
     m_graphicsQueue = transferQueue;
-    const uint32_t glTFLoadFlags = GltfFileLoadFlags::PreTransformVertices | GltfFileLoadFlags::PreMultiplyVertexColors | GltfFileLoadFlags::FlipY | GltfFileLoadFlags::DontLoadImages;
-    load(fileName, glTFLoadFlags);
+    m_loadFlags = loadFlags;
+    load(fileName);
 #endif
 }
 
@@ -74,7 +74,7 @@ void GltfLoader::draw(VkCommandBuffer commandBuffer)
 
 // --------------------------------------------------------------------------------------------------------
 
-void GltfLoader::load(std::string fileName, uint32_t fileLoadFlags)
+void GltfLoader::load(std::string fileName)
 {
     tinygltf::TinyGLTF gltfContext;
     std::string error, warning;
@@ -87,17 +87,24 @@ void GltfLoader::load(std::string fileName, uint32_t fileLoadFlags)
     this->loadMaterials();
     this->loadNodes();
     
-    if ((fileLoadFlags & GltfFileLoadFlags::PreTransformVertices) || (fileLoadFlags & GltfFileLoadFlags::PreMultiplyVertexColors) || (fileLoadFlags & GltfFileLoadFlags::FlipY))
+    for(GltfNode* node : m_linearNodes)
     {
-        const bool preTransform = fileLoadFlags & GltfFileLoadFlags::PreTransformVertices;
-        const bool preMultiplyColor = fileLoadFlags & GltfFileLoadFlags::PreMultiplyVertexColors;
-        const bool flipY = fileLoadFlags & GltfFileLoadFlags::FlipY;
+        if(node->m_mesh)
+        {
+            node->m_worldMatrix = node->worldMatrix(); //先生成所有的世界矩阵
+        }
+    }
+    
+    if ((m_loadFlags & GltfFileLoadFlags::PreTransformVertices) || (m_loadFlags & GltfFileLoadFlags::PreMultiplyVertexColors) || (m_loadFlags & GltfFileLoadFlags::FlipY))
+    {
+        const bool preTransform = m_loadFlags & GltfFileLoadFlags::PreTransformVertices;
+        const bool preMultiplyColor = m_loadFlags & GltfFileLoadFlags::PreMultiplyVertexColors;
+        const bool flipY = m_loadFlags & GltfFileLoadFlags::FlipY;
         
         for(GltfNode* node : m_linearNodes)
         {
             if(node->m_mesh)
             {
-                const glm::mat4 worldMatrix = node->worldMatrix();
                 for (Primitive* primitive : node->m_mesh->m_primitives)
                 {
                     for(uint32_t i = 0; i < primitive->m_vertexCount; ++i)
@@ -105,8 +112,8 @@ void GltfLoader::load(std::string fileName, uint32_t fileLoadFlags)
                         Vertex& vert = m_vertexData[primitive->m_vertexOffset + i];
                         if(preTransform)
                         {
-                            vert.m_position = glm::vec3(worldMatrix * glm::vec4(vert.m_position, 1.0f));
-                            vert.m_normal = glm::normalize(glm::mat3(worldMatrix) * vert.m_normal);
+                            vert.m_position = glm::vec3(node->m_worldMatrix * glm::vec4(vert.m_position, 1.0f));
+                            vert.m_normal = glm::normalize(glm::mat3(node->m_worldMatrix) * vert.m_normal);
                         }
                         if(flipY)
                         {
@@ -340,7 +347,9 @@ void GltfLoader::loadMesh(Mesh* newMesh, const tinygltf::Mesh &mesh)
 }
 
 void GltfLoader::loadImages()
-{}
+{
+    
+}
 
 void GltfLoader::loadAnimations()
 {}
@@ -409,7 +418,16 @@ VkPipelineVertexInputStateCreateInfo* GltfLoader::getPipelineVertexInputState()
 
 void GltfLoader::drawNode(VkCommandBuffer commandBuffer, GltfNode* node)
 {
-    if (node->m_mesh) {
+    VkPipelineLayout notUseLayout = {};
+    drawNode(commandBuffer, node, notUseLayout);
+}
+
+void GltfLoader::drawNode(VkCommandBuffer commandBuffer, GltfNode* node, const VkPipelineLayout& pipelineLayout)
+{
+    const bool preTransform = m_loadFlags & GltfFileLoadFlags::PreTransformVertices;
+    
+    if (node->m_mesh)
+    {
         for (Primitive* primitive : node->m_mesh->m_primitives)
         {
             bool skip = false;
@@ -428,13 +446,18 @@ void GltfLoader::drawNode(VkCommandBuffer commandBuffer, GltfNode* node)
 //                if (renderFlags & RenderFlags::BindImages) {
 //                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, bindImageSet, 1, &material.descriptorSet, 0, nullptr);
 //                }
+                if(preTransform == false)
+                {
+                    vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &node->m_worldMatrix);
+                }
+                
                 vkCmdDrawIndexed(commandBuffer, primitive->m_indexCount, 1, primitive->m_indexOffset, 0, 0);
             }
         }
     }
     
     for (auto& child : node->m_children) {
-        drawNode(commandBuffer, child);
+        drawNode(commandBuffer, child, pipelineLayout);
     }
 }
 

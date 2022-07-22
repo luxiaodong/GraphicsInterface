@@ -26,7 +26,7 @@ public:
     GltfLoader();
     ~GltfLoader();
     void clear();
-    void loadFromFile(std::string fileName, VkQueue transferQueue);
+    void loadFromFile(std::string fileName, VkQueue transferQueue, uint32_t loadFlags = GltfFileLoadFlags::PreTransformVertices | GltfFileLoadFlags::PreMultiplyVertexColors | GltfFileLoadFlags::FlipY | GltfFileLoadFlags::DontLoadImages);
 
 public:
     VkPipelineVertexInputStateCreateInfo* getPipelineVertexInputState();
@@ -36,7 +36,7 @@ public:
     void draw(VkCommandBuffer commandBuffer);
 
 private:
-    void load(std::string fileName, uint32_t fileLoadiFlags);
+    void load(std::string fileName);
     void loadNodes();
     void loadSingleNode(GltfNode* parent, const tinygltf::Node &node, uint32_t indexAtScene);
 
@@ -49,8 +49,11 @@ private:
 
 private:
     void drawNode(VkCommandBuffer commandBuffer, GltfNode* node);
+    void drawNode(VkCommandBuffer commandBuffer, GltfNode* node, const VkPipelineLayout& pipelineLayout);
 
 private:
+    uint32_t m_loadFlags;
+    
     tinygltf::Model m_gltfModel;
     
     std::vector<Material*> m_materials;

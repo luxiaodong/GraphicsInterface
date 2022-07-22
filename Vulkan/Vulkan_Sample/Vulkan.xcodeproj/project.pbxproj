@@ -55,6 +55,7 @@
 		B0B5D0FC2888F884003A175D /* particlefire.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D0FA2888F884003A175D /* particlefire.cpp */; };
 		B0B5D106288949AA003A175D /* stencilbuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D105288949AA003A175D /* stencilbuffer.cpp */; };
 		B0B5D10B288A7935003A175D /* separatevertexattributes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D109288A7935003A175D /* separatevertexattributes.cpp */; };
+		B0B5D110288A8CCA003A175D /* gltfloading.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D10E288A8CCA003A175D /* gltfloading.cpp */; };
 		B0E13A1C2861729300D1D2B6 /* triangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0E13A1B2861729300D1D2B6 /* triangle.cpp */; };
 /* End PBXBuildFile section */
 
@@ -157,6 +158,8 @@
 		B0B5D105288949AA003A175D /* stencilbuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = stencilbuffer.cpp; sourceTree = "<group>"; };
 		B0B5D109288A7935003A175D /* separatevertexattributes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = separatevertexattributes.cpp; sourceTree = "<group>"; };
 		B0B5D10A288A7935003A175D /* separatevertexattributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = separatevertexattributes.h; sourceTree = "<group>"; };
+		B0B5D10E288A8CCA003A175D /* gltfloading.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gltfloading.cpp; sourceTree = "<group>"; };
+		B0B5D10F288A8CCA003A175D /* gltfloading.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gltfloading.h; sourceTree = "<group>"; };
 		B0E13A1A2861729300D1D2B6 /* triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = triangle.h; sourceTree = "<group>"; };
 		B0E13A1B2861729300D1D2B6 /* triangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = triangle.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -432,9 +435,19 @@
 			path = separatevertexattributes;
 			sourceTree = "<group>";
 		};
+		B0B5D10D288A8CCA003A175D /* gltfloading */ = {
+			isa = PBXGroup;
+			children = (
+				B0B5D10E288A8CCA003A175D /* gltfloading.cpp */,
+				B0B5D10F288A8CCA003A175D /* gltfloading.h */,
+			);
+			path = gltfloading;
+			sourceTree = "<group>";
+		};
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0B5D10D288A8CCA003A175D /* gltfloading */,
 				B0B5D108288A7935003A175D /* separatevertexattributes */,
 				B0B5D103288949AA003A175D /* stencilbuffer */,
 				B0B5D0F92888F884003A175D /* particlefire */,
@@ -556,6 +569,7 @@
 				B0B5D0E228813096003A175D /* texture3d.cpp in Sources */,
 				B0B5D02C28753328003A175D /* gltfLoader.cpp in Sources */,
 				B0B5D0862876AC3F003A175D /* checkheader.c in Sources */,
+				B0B5D110288A8CCA003A175D /* gltfloading.cpp in Sources */,
 				B0B5D0A328794562003A175D /* vertex.cpp in Sources */,
 				B0B5D07D2876AB40003A175D /* texture.c in Sources */,
 				B09AEA2C2862A380006ED326 /* imgui.cpp in Sources */,

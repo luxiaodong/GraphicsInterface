@@ -26,5 +26,7 @@ public:
     glm::vec3 m_scale = glm::vec3(1.0f);
     glm::mat4 m_originMat = glm::mat4(1.0f);
     
+    glm::mat4 m_worldMatrix = glm::mat4(1.0f);
+    
     std::vector<GltfNode*> m_children;
 };
