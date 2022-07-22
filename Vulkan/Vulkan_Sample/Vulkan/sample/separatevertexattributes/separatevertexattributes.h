@@ -7,8 +7,11 @@ class SeparateVertexAttributes : public Application
 {
 public:
     
-    struct Vertex {
+    struct Position {
         float position[3];
+    };
+    
+    struct Color {
         float color[3];
     };
     
@@ -42,8 +45,10 @@ protected:
     std::vector<VkVertexInputBindingDescription> m_vertexInputBindDes;
     std::vector<VkVertexInputAttributeDescription> m_vertexInputAttrDes;
     
-    VkBuffer m_vertexBuffer;
-    VkDeviceMemory m_vertexMemory;
+    VkBuffer m_positionBuffer;
+    VkDeviceMemory m_positionMemory;
+    VkBuffer m_colorBuffer;
+    VkDeviceMemory m_colorMemory;
     
     VkBuffer m_indexBuffer;
     VkDeviceMemory m_indexMemory;

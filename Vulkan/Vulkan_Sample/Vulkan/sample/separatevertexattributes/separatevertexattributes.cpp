@@ -32,8 +32,10 @@ void SeparateVertexAttributes::clear()
     vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     vkFreeMemory(m_device, m_uniformMemory, nullptr);
     vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
-    vkFreeMemory(m_device, m_vertexMemory, nullptr);
-    vkDestroyBuffer(m_device, m_vertexBuffer, nullptr);
+    vkFreeMemory(m_device, m_positionMemory, nullptr);
+    vkDestroyBuffer(m_device, m_positionBuffer, nullptr);
+    vkFreeMemory(m_device, m_colorMemory, nullptr);
+    vkDestroyBuffer(m_device, m_colorBuffer, nullptr);
     vkFreeMemory(m_device, m_indexMemory, nullptr);
     vkDestroyBuffer(m_device, m_indexBuffer, nullptr);
     
@@ -42,33 +44,51 @@ void SeparateVertexAttributes::clear()
 
 void SeparateVertexAttributes::prepareVertex()
 {
-    std::vector<Vertex> vertexs =
+    std::vector<Position> positions =
     {
-        { {  1.0f,  1.0f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
-        { { -1.0f,  1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
-        { {  0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
+        { {  1.0f,  1.0f, 0.0f } },
+        { { -1.0f,  1.0f, 0.0f } },
+        { {  0.0f, -1.0f, 0.0f } }
+    };
+    
+    std::vector<Color> colors =
+    {
+        { { 1.0f, 0.0f, 0.0f } },
+        { { 0.0f, 1.0f, 0.0f } },
+        { { 0.0f, 0.0f, 1.0f } }
     };
 
     std::vector<uint32_t> indexs = { 0, 1, 2 };
     
     m_vertexInputBindDes.clear();
-    m_vertexInputBindDes.push_back(Tools::getVertexInputBindingDescription(0, sizeof(Vertex)));
+    m_vertexInputBindDes.push_back(Tools::getVertexInputBindingDescription(0, sizeof(Position)));
+    m_vertexInputBindDes.push_back(Tools::getVertexInputBindingDescription(1, sizeof(Color)));
     
     m_vertexInputAttrDes.clear();
-    m_vertexInputAttrDes.push_back(Tools::getVertexInputAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)));
-    m_vertexInputAttrDes.push_back(Tools::getVertexInputAttributeDescription(0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)));
+    m_vertexInputAttrDes.push_back(Tools::getVertexInputAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0));
+    m_vertexInputAttrDes.push_back(Tools::getVertexInputAttributeDescription(1, 1, VK_FORMAT_R32G32B32_SFLOAT, 0));
 
-    VkDeviceSize vertexSize = vertexs.size() * sizeof(Vertex);
+    VkDeviceSize positionSize = positions.size() * sizeof(Position);
+    VkDeviceSize colorSize = colors.size() * sizeof(Color);
     VkDeviceSize indexSize = indexs.size() * sizeof(uint32_t);
     
-    VkBuffer vertexStageBuffer;
-    VkDeviceMemory vertexStageMemory;
-    Tools::createBufferAndMemoryThenBind(vertexSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+    VkBuffer positionStageBuffer;
+    VkDeviceMemory positionStageMemory;
+    Tools::createBufferAndMemoryThenBind(positionSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                         vertexStageBuffer, vertexStageMemory);
-    Tools::mapMemory(vertexStageMemory, vertexSize, vertexs.data());
-    Tools::createBufferAndMemoryThenBind(vertexSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                                         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_vertexBuffer, m_vertexMemory);
+                                         positionStageBuffer, positionStageMemory);
+    Tools::mapMemory(positionStageMemory, positionSize, positions.data());
+    Tools::createBufferAndMemoryThenBind(positionSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                                         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_positionBuffer, m_positionMemory);
+    
+    VkBuffer colorStageBuffer;
+    VkDeviceMemory colorStageMemory;
+    Tools::createBufferAndMemoryThenBind(colorSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                         colorStageBuffer, colorStageMemory);
+    Tools::mapMemory(colorStageMemory, colorSize, colors.data());
+    Tools::createBufferAndMemoryThenBind(colorSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                                         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_colorBuffer, m_colorMemory);
     
     VkBuffer indexStageBuffer;
     VkDeviceMemory indexStageMemory;
@@ -82,11 +102,17 @@ void SeparateVertexAttributes::prepareVertex()
 
     VkCommandBuffer cmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
     
-    VkBufferCopy vertexCopy = {};
-    vertexCopy.srcOffset = 0;
-    vertexCopy.dstOffset = 0;
-    vertexCopy.size = vertexSize;
-    vkCmdCopyBuffer(cmd, vertexStageBuffer, m_vertexBuffer, 1, &vertexCopy);
+    VkBufferCopy positionCopy = {};
+    positionCopy.srcOffset = 0;
+    positionCopy.dstOffset = 0;
+    positionCopy.size = positionSize;
+    vkCmdCopyBuffer(cmd, positionStageBuffer, m_positionBuffer, 1, &positionCopy);
+    
+    VkBufferCopy colorCopy = {};
+    colorCopy.srcOffset = 0;
+    colorCopy.dstOffset = 0;
+    colorCopy.size = colorSize;
+    vkCmdCopyBuffer(cmd, colorStageBuffer, m_colorBuffer, 1, &colorCopy);
     
     VkBufferCopy indexCopy = {};
     indexCopy.srcOffset = 0;
@@ -96,8 +122,10 @@ void SeparateVertexAttributes::prepareVertex()
     
     Tools::flushCommandBuffer(cmd, m_graphicsQueue, true);
     
-    vkFreeMemory(m_device, vertexStageMemory, nullptr);
-    vkDestroyBuffer(m_device, vertexStageBuffer, nullptr);
+    vkFreeMemory(m_device, positionStageMemory, nullptr);
+    vkDestroyBuffer(m_device, positionStageBuffer, nullptr);
+    vkFreeMemory(m_device, colorStageMemory, nullptr);
+    vkDestroyBuffer(m_device, colorStageBuffer, nullptr);
     vkFreeMemory(m_device, indexStageMemory, nullptr);
     vkDestroyBuffer(m_device, indexStageBuffer, nullptr);
 }
@@ -221,8 +249,9 @@ void SeparateVertexAttributes::recordRenderCommand(const VkCommandBuffer command
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    VkDeviceSize offset = {0};
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_vertexBuffer, &offset);
+    VkDeviceSize offset[2] = {0, 0};
+    VkBuffer vertexBuffer[2] = {m_positionBuffer, m_colorBuffer};
+    vkCmdBindVertexBuffers(commandBuffer, 0, 2, vertexBuffer, offset);
     vkCmdBindIndexBuffer(commandBuffer, m_indexBuffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
     vkCmdDrawIndexed(commandBuffer, 3, 1, 0, 0, 0);
