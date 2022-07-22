@@ -449,18 +449,22 @@ void Application::createSwapchainImageView()
 
 void Application::createDepthBuffer()
 {
-    Tools::createImageAndMemoryThenBind(VK_FORMAT_D32_SFLOAT, m_swapchainExtent.width, m_swapchainExtent.height, 1, 1,
+    VkImageAspectFlags flags = VK_IMAGE_ASPECT_DEPTH_BIT;
+    if( m_depthFormat == VK_FORMAT_D32_SFLOAT_S8_UINT)
+    {
+        flags |= VK_IMAGE_ASPECT_STENCIL_BIT;
+    }
+    
+    Tools::createImageAndMemoryThenBind(m_depthFormat, m_swapchainExtent.width, m_swapchainExtent.height, 1, 1,
                                  VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
                                  VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                  m_depthImage, m_depthMemory);
     
-    Tools::createImageView(m_depthImage, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT, 1, 1, m_depthImageView);
+    Tools::createImageView(m_depthImage, m_depthFormat, flags, 1, 1, m_depthImageView);
     
     VkCommandBuffer cmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-    Tools::setImageLayout(cmd, m_depthImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
+    Tools::setImageLayout(cmd, m_depthImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, flags);
     Tools::flushCommandBuffer(cmd, m_graphicsQueue, true);
-
-//    transitionImageLayout(m_depthImage, VK_FORMAT_D32_SFLOAT, , , 1);
 }
 
 void Application::createOtherBuffer()
@@ -578,7 +582,7 @@ void Application::createCommandPool()
 
 void Application::createAttachmentDescription()
 {
-    VkAttachmentDescription depthAttachmentDescription = Tools::getAttachmentDescription(VK_FORMAT_D32_SFLOAT, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    VkAttachmentDescription depthAttachmentDescription = Tools::getAttachmentDescription(m_depthFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     
     VkAttachmentDescription colorAttachmentDescription = Tools::getAttachmentDescription(m_surfaceFormatKHR.format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     
@@ -622,6 +626,15 @@ void Application::createRenderPass()
     {
         throw std::runtime_error("failed to create renderpass!");
     }
+}
+
+VkFormat Application::findDepthFormat()
+{
+    return Tools::findSupportedFormat(
+      {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+          VK_IMAGE_TILING_OPTIMAL,
+          VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+      );
 }
 
 std::vector<VkImageView> Application::getAttachmentsImageViews(size_t i)

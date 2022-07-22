@@ -3,7 +3,7 @@
 
 StencilBuffer::StencilBuffer(std::string title) : Application(title)
 {
-
+    m_depthFormat = VK_FORMAT_D32_SFLOAT_S8_UINT;
 }
 
 StencilBuffer::~StencilBuffer()
@@ -135,23 +135,24 @@ void StencilBuffer::createGraphicsPipeline()
 
     VkStencilOpState stencilOpState = {};
     stencilOpState.compareOp = VK_COMPARE_OP_ALWAYS;
-    stencilOpState.failOp = VK_STENCIL_OP_REPLACE;
-    stencilOpState.depthFailOp = VK_STENCIL_OP_REPLACE;
     stencilOpState.passOp = VK_STENCIL_OP_REPLACE;
+    stencilOpState.failOp = VK_STENCIL_OP_KEEP;
+    stencilOpState.depthFailOp = VK_STENCIL_OP_KEEP;
     stencilOpState.compareMask = 0xff;
     stencilOpState.writeMask = 0xff;
     stencilOpState.reference = 1;
     
-    depthStencil.stencilTestEnable = VK_TRUE;
+    depthStencil.stencilTestEnable = VK_FALSE;
     depthStencil.back = stencilOpState;
     depthStencil.front = stencilOpState;
+    depthStencil.depthTestEnable = VK_TRUE;
     
     // toon shading pipeline
     VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "stencilbuffer/toon.vert.spv");
     VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "stencilbuffer/toon.frag.spv");
     shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
     shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
-    rasterization.cullMode = VK_CULL_MODE_FRONT_BIT;
+    rasterization.cullMode = VK_CULL_MODE_NONE;
 
     if( vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS )
     {
@@ -163,9 +164,13 @@ void StencilBuffer::createGraphicsPipeline()
     
     // outline
     stencilOpState.compareOp = VK_COMPARE_OP_NOT_EQUAL;
+    stencilOpState.passOp = VK_STENCIL_OP_REPLACE;
     stencilOpState.failOp = VK_STENCIL_OP_KEEP;
     stencilOpState.depthFailOp = VK_STENCIL_OP_KEEP;
-    stencilOpState.passOp = VK_STENCIL_OP_REPLACE;
+    stencilOpState.compareMask = 0xff;
+    stencilOpState.writeMask = 0xff;
+    stencilOpState.reference = 1;
+    
     depthStencil.back = stencilOpState;
     depthStencil.front = stencilOpState;
     depthStencil.depthTestEnable = VK_FALSE;
@@ -174,6 +179,7 @@ void StencilBuffer::createGraphicsPipeline()
     fragModule = Tools::createShaderModule( Tools::getShaderPath() + "stencilbuffer/outline.frag.spv");
     shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
     shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
+    rasterization.cullMode = VK_CULL_MODE_NONE;
 
     if( vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_outlinePipeline) != VK_SUCCESS )
     {
@@ -202,9 +208,11 @@ void StencilBuffer::recordRenderCommand(const VkCommandBuffer commandBuffer)
     m_gltfLoader.bindBuffers(commandBuffer);
 
     // pass 1
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
-    m_gltfLoader.draw(commandBuffer);
+    
     
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_outlinePipeline);
+    m_gltfLoader.draw(commandBuffer);
+    
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
     m_gltfLoader.draw(commandBuffer);
 }

@@ -56,6 +56,7 @@ public:
     static void seed();
     static float random01();
     static uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+    static VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
     static void createBufferAndMemoryThenBind(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags, VkBuffer &buffer, VkDeviceMemory& memory);
     static void createImageAndMemoryThenBind(VkFormat format, uint32_t width, uint32_t height, uint32_t lodLevels, uint32_t layerCount, VkSampleCountFlagBits sampleFlag, VkImageUsageFlags usage, VkImageTiling tiling, VkMemoryPropertyFlags propertyFlags, VkImage &image, VkDeviceMemory &imageMemory, VkImageCreateFlags createFlags = 0, uint32_t depth = 1, VkImageType imageType = VK_IMAGE_TYPE_2D);
     static void createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t levelCount, uint32_t layerCount, VkImageView &imageView, VkImageViewType viewType = VK_IMAGE_VIEW_TYPE_2D);

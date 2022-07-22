@@ -70,6 +70,7 @@ protected:
     void createFramebuffers();
     void createSemaphores();
     
+    VkFormat findDepthFormat();
     virtual std::vector<VkImageView> getAttachmentsImageViews(size_t i);
     virtual std::vector<VkClearValue> getClearValue();
     
@@ -109,6 +110,7 @@ protected:
     std::vector<VkImage> m_swapchainImages;
     std::vector<VkImageView> m_swapchainImageViews;
     
+    VkFormat m_depthFormat = VK_FORMAT_D32_SFLOAT;
     VkImage m_depthImage;
     VkDeviceMemory m_depthMemory;
     VkImageView m_depthImageView;
