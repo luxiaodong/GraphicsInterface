@@ -161,11 +161,11 @@ void StencilBuffer::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
     
     // outline
-    stencilOpState.compareOp = VK_COMPARE_OP_NOT_EQUAL;
+    stencilOpState.compareOp = VK_COMPARE_OP_EQUAL;
     stencilOpState.passOp = VK_STENCIL_OP_KEEP;
     stencilOpState.failOp = VK_STENCIL_OP_KEEP;
     stencilOpState.depthFailOp = VK_STENCIL_OP_KEEP;
-    stencilOpState.reference = 1;
+    stencilOpState.reference = 0;
     depthStencil.back = stencilOpState;
     depthStencil.front = stencilOpState;
     depthStencil.depthTestEnable = VK_FALSE;
