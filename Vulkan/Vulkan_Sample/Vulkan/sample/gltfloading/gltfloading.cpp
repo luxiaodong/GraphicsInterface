@@ -21,8 +21,9 @@ void GltfLoading::init()
 
 void GltfLoading::initCamera()
 {
-    m_camera.setPosition(glm::vec3(0.0f, 1.0f, -6.0f));
-    m_camera.setRotation(glm::vec3(-2.5f, 0.0f, 0.0f));
+    m_camera.m_isFlipY = true;
+    m_camera.setPosition(glm::vec3(0.0f, -0.1f, -1.0f));
+    m_camera.setRotation(glm::vec3(0.0f, -135.0f, 0.0f));
     m_camera.setRotationSpeed(0.5f);
     m_camera.setPerspective(60.0f, (float)m_width / (float)m_height, 1.0f, 256.0f);
 }
@@ -45,7 +46,7 @@ void GltfLoading::clear()
 
 void GltfLoading::prepareVertex()
 {
-    m_gltfLoader.loadFromFile(Tools::getModelPath() + "FlightHelmet/glTF/FlightHelmet.gltf", m_graphicsQueue, GltfFileLoadFlags::PreMultiplyVertexColors | GltfFileLoadFlags::FlipY );
+    m_gltfLoader.loadFromFile(Tools::getModelPath() + "FlightHelmet/glTF/FlightHelmet.gltf", m_graphicsQueue, GltfFileLoadFlags::None);
     m_gltfLoader.createVertexAndIndexBuffer();
     m_gltfLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal, VertexComponent::UV, VertexComponent::Color});
 }

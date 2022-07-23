@@ -62,6 +62,7 @@ Texture* Texture::loadTexture2D(tinygltf::Image &gltfimage, std::string path, Vk
         newTexture->m_height = gltfimage.height;
         newTexture->m_layerCount = 1;
         newTexture->m_mipLevels = static_cast<uint32_t>(floor(log2(std::max(newTexture->m_width, newTexture->m_height))) + 1.0);
+        newTexture->m_name = gltfimage.uri;
 
         unsigned char* buffer = nullptr;
         VkDeviceSize bufferSize = 0;

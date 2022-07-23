@@ -42,4 +42,5 @@ public:
     
     //在主逻辑赋值.
     VkDescriptorSet m_descriptorSet;
+    std::string m_name = "";
 };

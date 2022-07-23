@@ -512,6 +512,7 @@ void GltfLoader::drawNode(VkCommandBuffer commandBuffer, GltfNode* node, const V
                     if(primitive->m_material && primitive->m_material->m_pBaseColorTexture)
                     {
                         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &primitive->m_material->m_pBaseColorTexture->m_descriptorSet, 0, nullptr);
+//                        std::cout << primitive->m_material->m_pBaseColorTexture->m_name << std::endl;
                     }
                 }
                 
