@@ -24,6 +24,14 @@ void GltfLoader::clear()
     vkFreeMemory(Tools::m_device, m_indexMemory, nullptr);
     vkDestroyBuffer(Tools::m_device, m_indexBuffer, nullptr);
     
+    m_emptyTexture->clear();
+    delete m_emptyTexture;
+    for(Texture* tex : m_textures)
+    {
+        tex->clear();
+        delete tex;
+    }
+    
     for(Material* mat : m_materials)
     {
         delete mat;
@@ -62,21 +70,54 @@ void GltfLoader::bindBuffers(VkCommandBuffer commandBuffer)
 
 void GltfLoader::draw(VkCommandBuffer commandBuffer)
 {
+    VkPipelineLayout notUseLayout = {};
+    draw(commandBuffer, notUseLayout);
+}
+
+void GltfLoader::draw(VkCommandBuffer commandBuffer, const VkPipelineLayout& pipelineLayout)
+{
 #ifdef USE_BUILDIN_LOAD_GLTF
     m_pModel->draw(commandBuffer);
 #else
     for (auto& node : m_treeNodes)
     {
-        drawNode(commandBuffer,node);
+        drawNode(commandBuffer, node, pipelineLayout);
     }
 #endif
 }
 
 // --------------------------------------------------------------------------------------------------------
 
+bool callbackImageLoad(tinygltf::Image* image, const int imageIndex, std::string* error, std::string* warning, int req_width, int req_height, const unsigned char* bytes, int size, void* userData)
+{
+    // KTX files will be handled by our own code
+    if (image->uri.find_last_of(".") != std::string::npos) {
+        if (image->uri.substr(image->uri.find_last_of(".") + 1) == "ktx") {
+            return true;
+        }
+    }
+
+    return tinygltf::LoadImageData(image, imageIndex, error, warning, req_width, req_height, bytes, size, userData);
+}
+
+bool callbackImageLoadEmpty(tinygltf::Image* image, const int imageIndex, std::string* error, std::string* warning, int req_width, int req_height, const unsigned char* bytes, int size, void* userData)
+{
+    return true;
+}
+
 void GltfLoader::load(std::string fileName)
 {
     tinygltf::TinyGLTF gltfContext;
+    
+    if( m_loadFlags & GltfFileLoadFlags::DontLoadImages )
+    {
+        gltfContext.SetImageLoader(callbackImageLoadEmpty, nullptr);
+    }
+    else
+    {
+        gltfContext.SetImageLoader(callbackImageLoad, nullptr);
+    }
+    
     std::string error, warning;
     if(gltfContext.LoadASCIIFromFile(&m_gltfModel, &error, &warning, fileName) == false)
     {
@@ -84,6 +125,14 @@ void GltfLoader::load(std::string fileName)
         return ;
     }
     
+    size_t pos = fileName.find_last_of('/');
+    m_modelPath = fileName.substr(0, pos);
+    
+    if (!(m_loadFlags & GltfFileLoadFlags::DontLoadImages))
+    {
+        loadImages();
+    }
+
     this->loadMaterials();
     this->loadNodes();
     
@@ -131,6 +180,18 @@ void GltfLoader::load(std::string fileName)
     }
 }
 
+
+void GltfLoader::loadImages()
+{
+    for (tinygltf::Image &image : m_gltfModel.images)
+    {
+        Texture* tex = Texture::loadTexture2D(image, m_modelPath, m_graphicsQueue);
+        m_textures.push_back(tex);
+    }
+    
+    m_emptyTexture = Texture::loadTextureEmpty(m_graphicsQueue);
+}
+
 void GltfLoader::loadMaterials()
 {
     for (tinygltf::Material &mat : m_gltfModel.materials)
@@ -147,6 +208,11 @@ void GltfLoader::loadMaterials()
         if (mat.values.find("baseColorFactor") != mat.values.end())
         {
             newMat->m_baseColor = glm::make_vec4(mat.values["baseColorFactor"].ColorFactor().data());
+        }
+        if (mat.values.find("baseColorTexture") != mat.values.end())
+        {
+            int index = m_gltfModel.textures[mat.values["baseColorTexture"].TextureIndex()].source;
+            newMat->m_pBaseColorTexture = m_textures.at(index);
         }
         
         m_materials.push_back(newMat);
@@ -346,11 +412,6 @@ void GltfLoader::loadMesh(Mesh* newMesh, const tinygltf::Mesh &mesh)
     }
 }
 
-void GltfLoader::loadImages()
-{
-    
-}
-
 void GltfLoader::loadAnimations()
 {}
 
@@ -416,15 +477,10 @@ VkPipelineVertexInputStateCreateInfo* GltfLoader::getPipelineVertexInputState()
 #endif
 }
 
-void GltfLoader::drawNode(VkCommandBuffer commandBuffer, GltfNode* node)
-{
-    VkPipelineLayout notUseLayout = {};
-    drawNode(commandBuffer, node, notUseLayout);
-}
-
 void GltfLoader::drawNode(VkCommandBuffer commandBuffer, GltfNode* node, const VkPipelineLayout& pipelineLayout)
 {
     const bool preTransform = m_loadFlags & GltfFileLoadFlags::PreTransformVertices;
+    const bool dotLoadImage = m_loadFlags & GltfFileLoadFlags::DontLoadImages;
     
     if (node->m_mesh)
     {
@@ -449,6 +505,14 @@ void GltfLoader::drawNode(VkCommandBuffer commandBuffer, GltfNode* node, const V
                 if(preTransform == false)
                 {
                     vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &node->m_worldMatrix);
+                }
+                
+                if(dotLoadImage == false)
+                {
+                    if(primitive->m_material && primitive->m_material->m_pBaseColorTexture)
+                    {
+                        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &primitive->m_material->m_pBaseColorTexture->m_descriptorSet, 0, nullptr);
+                    }
                 }
                 
                 vkCmdDrawIndexed(commandBuffer, primitive->m_indexCount, 1, primitive->m_indexOffset, 0, 0);

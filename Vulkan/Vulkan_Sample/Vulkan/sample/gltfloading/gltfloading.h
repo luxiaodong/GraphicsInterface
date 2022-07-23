@@ -10,7 +10,6 @@ public:
     struct Uniform {
         glm::mat4 projectionMatrix;
         glm::mat4 viewMatrix;
-        glm::mat4 modelMatrix;
         glm::vec4 lightPos = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     };
     
@@ -39,8 +38,9 @@ protected:
     VkBuffer m_uniformBuffer;
     VkDeviceMemory m_uniformMemory;
     
-    
-    
+    VkPipelineLayout m_textruePipelineLayout;
+    VkDescriptorSetLayout m_textureDescriptorSetLayout;
+
 private:
     GltfLoader m_gltfLoader;
 };

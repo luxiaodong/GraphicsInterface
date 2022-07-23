@@ -497,17 +497,6 @@ void Application::createDescriptorPool(const VkDescriptorPoolSize* pPoolSizes, u
 
 void Application::createDescriptorSet(VkDescriptorSet& descriptorSet)
 {
-//    VkDescriptorSetAllocateInfo allocInfo = {};
-//    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-//    allocInfo.descriptorPool = m_descriptorPool;
-//    allocInfo.descriptorSetCount = 1;
-//    allocInfo.pSetLayouts = &m_descriptorSetLayout;
-//
-//    if( vkAllocateDescriptorSets(m_device, &allocInfo, &descriptorSet) != VK_SUCCESS)
-//    {
-//        throw std::runtime_error("failed to allocate descriptorSets!");
-//    }
-    
     createDescriptorSet(&m_descriptorSetLayout, 1, descriptorSet);
 }
 

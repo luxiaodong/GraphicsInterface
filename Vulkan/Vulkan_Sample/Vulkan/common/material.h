@@ -2,6 +2,7 @@
 #pragma once
 
 #include "tools.h"
+#include "texture.h"
 
 class Material
 {
@@ -14,4 +15,5 @@ public:
     float m_metallic = 1.0f;
     float m_roughness = 1.0f;
     glm::vec4 m_baseColor = glm::vec4(1.0f);
+    Texture* m_pBaseColorTexture = nullptr;
 };

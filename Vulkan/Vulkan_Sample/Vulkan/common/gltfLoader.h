@@ -34,6 +34,7 @@ public:
     void createVertexAndIndexBuffer();
     void setVertexBindingAndAttributeDescription(const std::vector<VertexComponent> components);
     void draw(VkCommandBuffer commandBuffer);
+    void draw(VkCommandBuffer commandBuffer, const VkPipelineLayout& pipelineLayout);
 
 private:
     void load(std::string fileName);
@@ -48,14 +49,17 @@ private:
     void loadSkins();
 
 private:
-    void drawNode(VkCommandBuffer commandBuffer, GltfNode* node);
     void drawNode(VkCommandBuffer commandBuffer, GltfNode* node, const VkPipelineLayout& pipelineLayout);
-
+    
 private:
     uint32_t m_loadFlags;
+    std::string m_modelPath;
     
     tinygltf::Model m_gltfModel;
-    
+
+public:
+    Texture* m_emptyTexture;
+    std::vector<Texture*> m_textures;
     std::vector<Material*> m_materials;
     
     //两种结点组织方式
