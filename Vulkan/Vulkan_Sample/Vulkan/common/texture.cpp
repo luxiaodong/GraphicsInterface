@@ -61,7 +61,7 @@ Texture* Texture::loadTexture2D(tinygltf::Image &gltfimage, std::string path, Vk
         newTexture->m_width = gltfimage.width;
         newTexture->m_height = gltfimage.height;
         newTexture->m_layerCount = 1;
-        newTexture->m_mipLevels = 1; // static_cast<uint32_t>(floor(log2(std::max(newTexture->m_width, newTexture->m_height))) + 1.0);
+        newTexture->m_mipLevels = static_cast<uint32_t>(floor(log2(std::max(newTexture->m_width, newTexture->m_height))) + 1.0);
         newTexture->m_name = gltfimage.uri;
 
         unsigned char* buffer = nullptr;
@@ -117,7 +117,7 @@ void Texture::fillTextrue(Texture* texture, unsigned char* buffer, VkDeviceSize 
                                          stagingBuffer, stagingMemory);
     Tools::mapMemory(stagingMemory, bufferSize, buffer);
     Tools::createImageAndMemoryThenBind(texture->m_fromat, texture->m_width, texture->m_height, texture->m_mipLevels, texture->m_layerCount,
-                                        VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                                        VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                                         VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                         texture->m_image, texture->m_imageMemory);
     
@@ -152,9 +152,77 @@ void Texture::fillTextrue(Texture* texture, unsigned char* buffer, VkDeviceSize 
                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(bufferCopyRegions.size()), bufferCopyRegions.data());
 
     Tools::setImageLayout(cmd, texture->m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                          texture->m_imageLayout, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                          VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                           VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, subresourceRange);
 
+    // Generate the mip chain (glTF uses jpg and png, so we need to create this manually)
+    if( texture->m_mipLevels > 1)
+    {
+        for (uint32_t i = 1; i < texture->m_mipLevels; i++)
+        {
+            VkImageBlit imageBlit{};
+            imageBlit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            imageBlit.srcSubresource.layerCount = 1;
+            imageBlit.srcSubresource.mipLevel = i - 1;
+            imageBlit.srcOffsets[1].x = int32_t(texture->m_width >> (i - 1));
+            imageBlit.srcOffsets[1].y = int32_t(texture->m_height >> (i - 1));
+            imageBlit.srcOffsets[1].z = 1;
+            
+            imageBlit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            imageBlit.dstSubresource.layerCount = 1;
+            imageBlit.dstSubresource.mipLevel = i;
+            imageBlit.dstOffsets[1].x = int32_t(texture->m_width >> i);
+            imageBlit.dstOffsets[1].y = int32_t(texture->m_height >> i);
+            imageBlit.dstOffsets[1].z = 1;
+        
+            VkImageSubresourceRange mipSubRange = {};
+            mipSubRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            mipSubRange.baseMipLevel = i;
+            mipSubRange.levelCount = 1;
+            mipSubRange.layerCount = 1;
+        
+            {
+                VkImageMemoryBarrier imageMemoryBarrier{};
+                imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+                imageMemoryBarrier.srcAccessMask = 0;
+                imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                imageMemoryBarrier.image = texture->m_image;
+                imageMemoryBarrier.subresourceRange = mipSubRange;
+                vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+            }
+
+            vkCmdBlitImage(cmd, texture->m_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, texture->m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageBlit, VK_FILTER_LINEAR);
+                    
+            {
+                VkImageMemoryBarrier imageMemoryBarrier{};
+                imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+                imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+                imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+                imageMemoryBarrier.image = texture->m_image;
+                imageMemoryBarrier.subresourceRange = mipSubRange;
+                vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+            }
+        }
+
+        subresourceRange.levelCount = texture->m_mipLevels;
+
+        {
+            VkImageMemoryBarrier imageMemoryBarrier{};
+            imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+            imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            imageMemoryBarrier.image = texture->m_image;
+            imageMemoryBarrier.subresourceRange = subresourceRange;
+            vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+        }
+    }
+    
     Tools::flushCommandBuffer(cmd, transferQueue, true);
     vkFreeMemory(Tools::m_device, stagingMemory, nullptr);
     vkDestroyBuffer(Tools::m_device, stagingBuffer, nullptr);
