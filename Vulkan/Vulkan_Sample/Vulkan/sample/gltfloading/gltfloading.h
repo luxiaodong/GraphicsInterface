@@ -30,6 +30,8 @@ protected:
     void prepareDescriptorSetLayoutAndPipelineLayout();
     void prepareDescriptorSetAndWrite();
     void createGraphicsPipeline();
+    
+    virtual std::vector<VkClearValue> getClearValue();
 
 protected:
     VkPipeline m_graphicsPipeline;

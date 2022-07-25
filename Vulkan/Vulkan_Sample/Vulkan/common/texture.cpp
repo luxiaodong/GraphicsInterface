@@ -61,7 +61,7 @@ Texture* Texture::loadTexture2D(tinygltf::Image &gltfimage, std::string path, Vk
         newTexture->m_width = gltfimage.width;
         newTexture->m_height = gltfimage.height;
         newTexture->m_layerCount = 1;
-        newTexture->m_mipLevels = static_cast<uint32_t>(floor(log2(std::max(newTexture->m_width, newTexture->m_height))) + 1.0);
+        newTexture->m_mipLevels = 1; // static_cast<uint32_t>(floor(log2(std::max(newTexture->m_width, newTexture->m_height))) + 1.0);
         newTexture->m_name = gltfimage.uri;
 
         unsigned char* buffer = nullptr;
@@ -161,6 +161,7 @@ void Texture::fillTextrue(Texture* texture, unsigned char* buffer, VkDeviceSize 
     
     Tools::createImageView(texture->m_image, texture->m_fromat, VK_IMAGE_ASPECT_COLOR_BIT, texture->m_mipLevels, texture->m_layerCount, texture->m_imageView);
     Tools::createTextureSampler(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, texture->m_mipLevels, texture->m_sampler);
+    
 }
 
 void Texture::fillTextrue(Texture* texture, ktxTexture* ktxTexture, VkQueue transferQueue, TextureCopyRegion copyRegion)

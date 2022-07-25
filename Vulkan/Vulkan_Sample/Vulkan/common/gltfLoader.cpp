@@ -24,8 +24,12 @@ void GltfLoader::clear()
     vkFreeMemory(Tools::m_device, m_indexMemory, nullptr);
     vkDestroyBuffer(Tools::m_device, m_indexBuffer, nullptr);
     
-    m_emptyTexture->clear();
-    delete m_emptyTexture;
+    if(m_emptyTexture)
+    {
+        m_emptyTexture->clear();
+        delete m_emptyTexture;
+    }
+    
     for(Texture* tex : m_textures)
     {
         tex->clear();

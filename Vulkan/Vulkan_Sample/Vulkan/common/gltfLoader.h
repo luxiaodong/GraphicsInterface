@@ -58,7 +58,7 @@ private:
     tinygltf::Model m_gltfModel;
 
 public:
-    Texture* m_emptyTexture;
+    Texture* m_emptyTexture = nullptr;
     std::vector<Texture*> m_textures;
     std::vector<Material*> m_materials;
     

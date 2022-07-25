@@ -25,7 +25,7 @@ void GltfLoading::initCamera()
     m_camera.setPosition(glm::vec3(0.0f, -0.1f, -1.0f));
     m_camera.setRotation(glm::vec3(0.0f, -135.0f, 0.0f));
     m_camera.setRotationSpeed(0.5f);
-    m_camera.setPerspective(60.0f, (float)m_width / (float)m_height, 1.0f, 256.0f);
+    m_camera.setPerspective(60.0f, (float)m_width / (float)m_height, 0.1f, 256.0f);
 }
 
 void GltfLoading::setEnabledFeatures()
@@ -60,7 +60,7 @@ void GltfLoading::prepareUniform()
                                          m_uniformBuffer, m_uniformMemory);
 
     Uniform mvp = {};
-    mvp.viewMatrix = m_camera.m_viewMat;
+    mvp.viewMatrix = m_camera.m_viewMat * glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));;
     mvp.projectionMatrix = m_camera.m_projMat;
     mvp.lightPos = glm::vec4(5.0f, 5.0f, -5.0f, 1.0f);
     Tools::mapMemory(m_uniformMemory, uniformSize, &mvp);
@@ -106,7 +106,7 @@ void GltfLoading::prepareDescriptorSetAndWrite()
     
     {
         createDescriptorSet(m_descriptorSet);
-            
+
         VkDescriptorBufferInfo bufferInfo = {};
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(Uniform);
@@ -150,14 +150,14 @@ void GltfLoading::createGraphicsPipeline()
     VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
     VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
 
-    VkPipelineColorBlendAttachmentState colorBlendAttachment = Tools::getPipelineColorBlendAttachmentState(VK_FALSE, VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
+    VkPipelineColorBlendAttachmentState colorBlendAttachment = Tools::getPipelineColorBlendAttachmentState(VK_FALSE);
     VkPipelineColorBlendStateCreateInfo colorBlend = Tools::getPipelineColorBlendStateCreateInfo(1, &colorBlendAttachment);
     
     std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
     VkGraphicsPipelineCreateInfo createInfo = Tools::getGraphicsPipelineCreateInfo(m_pipelineLayout, m_renderPass);
     createInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
     createInfo.pStages = shaderStages.data();
-    
+
     createInfo.pVertexInputState = m_gltfLoader.getPipelineVertexInputState();
     createInfo.pInputAssemblyState = &inputAssembly;
     createInfo.pTessellationState = nullptr;
@@ -180,10 +180,14 @@ void GltfLoading::createGraphicsPipeline()
 
 void GltfLoading::updateRenderData()
 {
+//    static int i  = 0;
+//    i++;
+//
 //    Uniform mvp = {};
-//    mvp.modelMatrix = glm::mat4(1.0f);
-//    mvp.viewMatrix = m_camera.m_viewMat;
+//    mvp.viewMatrix = m_camera.m_viewMat * glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 //    mvp.projectionMatrix = m_camera.m_projMat;
+//    mvp.lightPos = glm::vec4(5.0f, 5.0f, -5.0f, 1.0f);
+//    mvp.lightPos = glm::rotate(glm::mat4(1.0f), glm::radians(i*1.0f), glm::vec3(0.0f, 1.0f, 0.0f)) * glm::vec4(5.0f, 5.0f, -5.0f, 1.0f);
 //    Tools::mapMemory(m_uniformMemory, sizeof(Uniform), &mvp);
 }
 
@@ -201,4 +205,17 @@ void GltfLoading::recordRenderCommand(const VkCommandBuffer commandBuffer)
     m_gltfLoader.bindBuffers(commandBuffer);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
     m_gltfLoader.draw(commandBuffer, m_pipelineLayout);
+}
+
+std::vector<VkClearValue> GltfLoading::getClearValue()
+{
+    std::vector<VkClearValue> clearValues = {};
+    VkClearValue color = {};
+    color.color = {{0.25f, 0.25f, 0.25f, 1.0f}};
+    VkClearValue depth = {};
+    depth.depthStencil = {1.0f, 0};
+    
+    clearValues.push_back(color);
+    clearValues.push_back(depth);
+    return clearValues;
 }
