@@ -75,17 +75,17 @@ void GltfLoader::bindBuffers(VkCommandBuffer commandBuffer)
 void GltfLoader::draw(VkCommandBuffer commandBuffer)
 {
     VkPipelineLayout notUseLayout = {};
-    draw(commandBuffer, notUseLayout);
+    draw(commandBuffer, notUseLayout, 0);
 }
 
-void GltfLoader::draw(VkCommandBuffer commandBuffer, const VkPipelineLayout& pipelineLayout)
+void GltfLoader::draw(VkCommandBuffer commandBuffer, const VkPipelineLayout& pipelineLayout, int method)
 {
 #ifdef USE_BUILDIN_LOAD_GLTF
     m_pModel->draw(commandBuffer);
 #else
     for (auto& node : m_treeNodes)
     {
-        drawNode(commandBuffer, node, pipelineLayout);
+        drawNode(commandBuffer, node, pipelineLayout, method);
     }
 #endif
 }
@@ -481,7 +481,7 @@ VkPipelineVertexInputStateCreateInfo* GltfLoader::getPipelineVertexInputState()
 #endif
 }
 
-void GltfLoader::drawNode(VkCommandBuffer commandBuffer, GltfNode* node, const VkPipelineLayout& pipelineLayout)
+void GltfLoader::drawNode(VkCommandBuffer commandBuffer, GltfNode* node, const VkPipelineLayout& pipelineLayout, int method)
 {
     const bool preTransform = m_loadFlags & GltfFileLoadFlags::PreTransformVertices;
     const bool dotLoadImage = m_loadFlags & GltfFileLoadFlags::DontLoadImages;
@@ -506,17 +506,20 @@ void GltfLoader::drawNode(VkCommandBuffer commandBuffer, GltfNode* node, const V
 //                if (renderFlags & RenderFlags::BindImages) {
 //                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, bindImageSet, 1, &material.descriptorSet, 0, nullptr);
 //                }
-                if(preTransform == false)
-                {
-                    vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &node->m_worldMatrix);
-                }
                 
-                if(dotLoadImage == false)
+                if(method == 1)
                 {
-                    if(primitive->m_material && primitive->m_material->m_pBaseColorTexture)
+                    if(preTransform == false)
                     {
-                        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &primitive->m_material->m_pBaseColorTexture->m_descriptorSet, 0, nullptr);
-//                        std::cout << primitive->m_material->m_pBaseColorTexture->m_name << std::endl;
+                        vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &node->m_worldMatrix);
+                    }
+                    
+                    if(dotLoadImage == false)
+                    {
+                        if(primitive->m_material && primitive->m_material->m_pBaseColorTexture)
+                        {
+                            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &primitive->m_material->m_pBaseColorTexture->m_descriptorSet, 0, nullptr);
+                        }
                     }
                 }
                 
@@ -526,7 +529,7 @@ void GltfLoader::drawNode(VkCommandBuffer commandBuffer, GltfNode* node, const V
     }
     
     for (auto& child : node->m_children) {
-        drawNode(commandBuffer, child, pipelineLayout);
+        drawNode(commandBuffer, child, pipelineLayout, method);
     }
 }
 

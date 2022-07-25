@@ -34,7 +34,7 @@ public:
     void createVertexAndIndexBuffer();
     void setVertexBindingAndAttributeDescription(const std::vector<VertexComponent> components);
     void draw(VkCommandBuffer commandBuffer);
-    void draw(VkCommandBuffer commandBuffer, const VkPipelineLayout& pipelineLayout);
+    void draw(VkCommandBuffer commandBuffer, const VkPipelineLayout& pipelineLayout, int method);
 
 private:
     void load(std::string fileName);
@@ -49,7 +49,7 @@ private:
     void loadSkins();
 
 private:
-    void drawNode(VkCommandBuffer commandBuffer, GltfNode* node, const VkPipelineLayout& pipelineLayout);
+    void drawNode(VkCommandBuffer commandBuffer, GltfNode* node, const VkPipelineLayout& pipelineLayout, int method);
     
 private:
     uint32_t m_loadFlags;
