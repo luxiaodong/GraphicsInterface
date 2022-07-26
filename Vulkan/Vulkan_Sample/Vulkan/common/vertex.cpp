@@ -40,10 +40,10 @@ VkVertexInputAttributeDescription Vertex::inputAttributeDescription(uint32_t bin
             return Tools::getVertexInputAttributeDescription(binding, location, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, m_color) );
         case VertexComponent::Tangent:
             return VkVertexInputAttributeDescription({ location, binding, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, m_tangent)} );
-//        case VertexComponent::Joint0:
-//            return VkVertexInputAttributeDescription({ location, binding, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, joint0) });
-//        case VertexComponent::Weight0:
-//            return VkVertexInputAttributeDescription({ location, binding, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, weight0) });
+        case VertexComponent::JointIndex:
+            return VkVertexInputAttributeDescription({ location, binding, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, m_jointIndex) });
+        case VertexComponent::JointWeight:
+            return VkVertexInputAttributeDescription({ location, binding, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, m_jointWeight) });
         default:
             break;
     }

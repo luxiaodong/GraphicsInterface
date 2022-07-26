@@ -3,7 +3,7 @@
 
 #include "tools.h"
 
-enum VertexComponent { Position, Normal, UV, Color, Tangent, Joint0, Weight0 };
+enum VertexComponent { Position, Normal, UV, Color, Tangent, JointIndex, JointWeight };
 
 class Vertex
 {
@@ -17,6 +17,8 @@ public:
     glm::vec2 m_uv = glm::vec2(0.0f);
     glm::vec4 m_color = glm::vec4(1.0f);
     glm::vec4 m_tangent;
+    glm::vec4 m_jointIndex;
+    glm::vec4 m_jointWeight;
 
 public:
     static void setVertexInputBindingDescription(uint32_t binding);

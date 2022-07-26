@@ -9,6 +9,8 @@
 #include "primitive.h"
 #include "texture.h"
 #include "mesh.h"
+#include "skin.h"
+#include "animation.h"
 
 //#define USE_BUILDIN_LOAD_GLTF 1
 
@@ -45,11 +47,13 @@ private:
     void loadMesh(Mesh* newMesh, const tinygltf::Mesh &mesh);
 
     void loadImages();
-    void loadAnimations();
     void loadSkins();
+    void loadAnimations();
 
 private:
     void drawNode(VkCommandBuffer commandBuffer, GltfNode* node, const VkPipelineLayout& pipelineLayout, int method);
+    GltfNode* findNode(GltfNode *parent, uint32_t index);
+    GltfNode* nodeFromIndex(uint32_t index);
     
 private:
     uint32_t m_loadFlags;
@@ -61,6 +65,8 @@ public:
     Texture* m_emptyTexture = nullptr;
     std::vector<Texture*> m_textures;
     std::vector<Material*> m_materials;
+    std::vector<Skin*> m_skins;
+    std::vector<Animation*> m_animations;
     
     //两种结点组织方式
     std::vector<GltfNode*> m_treeNodes;

@@ -17,6 +17,7 @@
 #include "sample/stencilbuffer/stencilbuffer.h"
 #include "sample/separatevertexattributes/separatevertexattributes.h"
 #include "sample/gltfloading/gltfloading.h"
+#include "sample/gltfskinning/gltfskinning.h"
 
 int main(int argc, const char * argv[])
 {
@@ -37,8 +38,9 @@ int main(int argc, const char * argv[])
 //    ParticleFire app("particlefire");
 //    StencilBuffer app("stencilbuffer");
 //    SeparateVertexAttributes app("separatevertexattributes");
+//    GltfLoading app("gltfloading");
     
-    GltfLoading app("gltfloading");
+    GltfSkinning app("gltfskinning");
     try {
         app.run();
     } catch (const std::exception& e) {

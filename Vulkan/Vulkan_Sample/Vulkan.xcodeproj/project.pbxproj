@@ -56,6 +56,9 @@
 		B0B5D106288949AA003A175D /* stencilbuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D105288949AA003A175D /* stencilbuffer.cpp */; };
 		B0B5D10B288A7935003A175D /* separatevertexattributes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D109288A7935003A175D /* separatevertexattributes.cpp */; };
 		B0B5D110288A8CCA003A175D /* gltfloading.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D10E288A8CCA003A175D /* gltfloading.cpp */; };
+		B0B5D115288E85C0003A175D /* gltfskinning.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D113288E85C0003A175D /* gltfskinning.cpp */; };
+		B0B5D119288E9CE0003A175D /* skin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D118288E9CE0003A175D /* skin.cpp */; };
+		B0B5D11D288F8C1D003A175D /* animation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D11C288F8C1D003A175D /* animation.cpp */; };
 		B0E13A1C2861729300D1D2B6 /* triangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0E13A1B2861729300D1D2B6 /* triangle.cpp */; };
 /* End PBXBuildFile section */
 
@@ -160,6 +163,12 @@
 		B0B5D10A288A7935003A175D /* separatevertexattributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = separatevertexattributes.h; sourceTree = "<group>"; };
 		B0B5D10E288A8CCA003A175D /* gltfloading.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gltfloading.cpp; sourceTree = "<group>"; };
 		B0B5D10F288A8CCA003A175D /* gltfloading.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gltfloading.h; sourceTree = "<group>"; };
+		B0B5D113288E85C0003A175D /* gltfskinning.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gltfskinning.cpp; sourceTree = "<group>"; };
+		B0B5D114288E85C0003A175D /* gltfskinning.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gltfskinning.h; sourceTree = "<group>"; };
+		B0B5D117288E9CE0003A175D /* skin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = skin.h; sourceTree = "<group>"; };
+		B0B5D118288E9CE0003A175D /* skin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = skin.cpp; sourceTree = "<group>"; };
+		B0B5D11B288F8C1D003A175D /* animation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = animation.h; sourceTree = "<group>"; };
+		B0B5D11C288F8C1D003A175D /* animation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = animation.cpp; sourceTree = "<group>"; };
 		B0E13A1A2861729300D1D2B6 /* triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = triangle.h; sourceTree = "<group>"; };
 		B0E13A1B2861729300D1D2B6 /* triangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = triangle.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -257,6 +266,10 @@
 				B0B5D0A628794942003A175D /* primitive.h */,
 				B0B5D0A128794562003A175D /* vertex.cpp */,
 				B0B5D0A228794562003A175D /* vertex.h */,
+				B0B5D11C288F8C1D003A175D /* animation.cpp */,
+				B0B5D11B288F8C1D003A175D /* animation.h */,
+				B0B5D118288E9CE0003A175D /* skin.cpp */,
+				B0B5D117288E9CE0003A175D /* skin.h */,
 				B0B5D09E287944F6003A175D /* mesh.cpp */,
 				B0B5D09D287944F6003A175D /* mesh.h */,
 				B0B5D099287920AD003A175D /* gltfNode.cpp */,
@@ -444,9 +457,19 @@
 			path = gltfloading;
 			sourceTree = "<group>";
 		};
+		B0B5D112288E85C0003A175D /* gltfskinning */ = {
+			isa = PBXGroup;
+			children = (
+				B0B5D113288E85C0003A175D /* gltfskinning.cpp */,
+				B0B5D114288E85C0003A175D /* gltfskinning.h */,
+			);
+			path = gltfskinning;
+			sourceTree = "<group>";
+		};
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0B5D112288E85C0003A175D /* gltfskinning */,
 				B0B5D10D288A8CCA003A175D /* gltfloading */,
 				B0B5D108288A7935003A175D /* separatevertexattributes */,
 				B0B5D103288949AA003A175D /* stencilbuffer */,
@@ -573,11 +596,14 @@
 				B0B5D0A328794562003A175D /* vertex.cpp in Sources */,
 				B0B5D07D2876AB40003A175D /* texture.c in Sources */,
 				B09AEA2C2862A380006ED326 /* imgui.cpp in Sources */,
+				B0B5D119288E9CE0003A175D /* skin.cpp in Sources */,
 				B0B5D08C2876AC95003A175D /* hashlist.c in Sources */,
+				B0B5D11D288F8C1D003A175D /* animation.cpp in Sources */,
 				B0B5D0212875293B003A175D /* tools.cpp in Sources */,
 				B0B5D0F228864606003A175D /* subpasses.cpp in Sources */,
 				B0B5D0A728794942003A175D /* primitive.cpp in Sources */,
 				B0B5D0AB2879863A003A175D /* material.cpp in Sources */,
+				B0B5D115288E85C0003A175D /* gltfskinning.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
