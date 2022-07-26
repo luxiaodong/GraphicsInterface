@@ -34,7 +34,7 @@ void GltfSkinning::setEnabledFeatures()
 
 void GltfSkinning::clear()
 {
-    vkDestroyPipelineLayout(m_device, m_textruePipelineLayout, nullptr);
+    vkDestroyDescriptorSetLayout(m_device, m_jointMatrixDescriptorSetLayout, nullptr);
     vkDestroyDescriptorSetLayout(m_device, m_textureDescriptorSetLayout, nullptr);
     vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     vkFreeMemory(m_device, m_uniformMemory, nullptr);
@@ -71,12 +71,15 @@ void GltfSkinning::prepareDescriptorSetLayoutAndPipelineLayout()
     VkDescriptorSetLayoutBinding binding = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
     createDescriptorSetLayout(&binding, 1);
     
+    VkDescriptorSetLayoutBinding binding1 = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
+    VkDescriptorSetLayoutCreateInfo createInfo1 = Tools::getDescriptorSetLayoutCreateInfo(&binding1, 1);
+    VK_CHECK_RESULT( vkCreateDescriptorSetLayout(m_device, &createInfo1, nullptr, &m_jointMatrixDescriptorSetLayout) );
+    
     VkDescriptorSetLayoutBinding binding2 = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
-    VkDescriptorSetLayoutCreateInfo createInfo1 = Tools::getDescriptorSetLayoutCreateInfo(&binding2, 1);
+    VkDescriptorSetLayoutCreateInfo createInfo2 = Tools::getDescriptorSetLayoutCreateInfo(&binding2, 1);
+    VK_CHECK_RESULT( vkCreateDescriptorSetLayout(m_device, &createInfo2, nullptr, &m_textureDescriptorSetLayout) );
     
-    VK_CHECK_RESULT( vkCreateDescriptorSetLayout(m_device, &createInfo1, nullptr, &m_textureDescriptorSetLayout) );
-    
-    VkDescriptorSetLayout descriptorSetLayout[2] = {m_descriptorSetLayout, m_textureDescriptorSetLayout};
+    VkDescriptorSetLayout descriptorSetLayout[3] = {m_descriptorSetLayout, m_jointMatrixDescriptorSetLayout, m_textureDescriptorSetLayout};
     
     VkPushConstantRange pushConstantRange;
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
@@ -86,7 +89,7 @@ void GltfSkinning::prepareDescriptorSetLayoutAndPipelineLayout()
     VkPipelineLayoutCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     createInfo.flags = 0;
-    createInfo.setLayoutCount = 2;
+    createInfo.setLayoutCount = 3;
     createInfo.pSetLayouts = descriptorSetLayout;
     createInfo.pushConstantRangeCount = 1;
     createInfo.pPushConstantRanges = &pushConstantRange;
@@ -96,13 +99,15 @@ void GltfSkinning::prepareDescriptorSetLayoutAndPipelineLayout()
 
 void GltfSkinning::prepareDescriptorSetAndWrite()
 {
-    std::array<VkDescriptorPoolSize, 2> poolSizes;
+    std::array<VkDescriptorPoolSize, 3> poolSizes;
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[0].descriptorCount = 1;
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     poolSizes[1].descriptorCount = static_cast<uint32_t>(m_gltfLoader.m_textures.size());
+    poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    poolSizes[2].descriptorCount = 1;
     
-    createDescriptorPool(poolSizes.data(), static_cast<uint32_t>(poolSizes.size()), static_cast<uint32_t>(m_gltfLoader.m_textures.size()) + 1);
+    createDescriptorPool(poolSizes.data(), static_cast<uint32_t>(poolSizes.size()), static_cast<uint32_t>(m_gltfLoader.m_textures.size()) + 2);
     
     {
         createDescriptorSet(m_descriptorSet);
@@ -113,6 +118,18 @@ void GltfSkinning::prepareDescriptorSetAndWrite()
         bufferInfo.buffer = m_uniformBuffer;
         
         VkWriteDescriptorSet write = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
+        vkUpdateDescriptorSets(m_device, 1, &write, 0, nullptr);
+    }
+    
+    {
+        createDescriptorSet(&m_jointMatrixDescriptorSetLayout, 1,  m_gltfLoader.m_skins.at(0)->m_descriptorSet);
+
+        VkDescriptorBufferInfo bufferInfo = {};
+        bufferInfo.offset = 0;
+        bufferInfo.range = m_gltfLoader.m_skins.at(0)->m_totalSize;
+        bufferInfo.buffer = m_gltfLoader.m_skins.at(0)->m_jointMatrixBuffer;
+        
+        VkWriteDescriptorSet write = Tools::getWriteDescriptorSet(m_gltfLoader.m_skins.at(0)->m_descriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 0, &bufferInfo);
         vkUpdateDescriptorSets(m_device, 1, &write, 0, nullptr);
     }
     
@@ -180,15 +197,7 @@ void GltfSkinning::createGraphicsPipeline()
 
 void GltfSkinning::updateRenderData()
 {
-//    static int i  = 0;
-//    i++;
-//
-//    Uniform mvp = {};
-//    mvp.viewMatrix = m_camera.m_viewMat * glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-//    mvp.projectionMatrix = m_camera.m_projMat;
-//    mvp.lightPos = glm::vec4(5.0f, 5.0f, -5.0f, 1.0f);
-//    mvp.lightPos = glm::rotate(glm::mat4(1.0f), glm::radians(i*1.0f), glm::vec3(0.0f, 1.0f, 0.0f)) * glm::vec4(5.0f, 5.0f, -5.0f, 1.0f);
-//    Tools::mapMemory(m_uniformMemory, sizeof(Uniform), &mvp);
+    m_gltfLoader.updateAnimation(1.0f);
 }
 
 void GltfSkinning::recordRenderCommand(const VkCommandBuffer commandBuffer)
@@ -204,7 +213,7 @@ void GltfSkinning::recordRenderCommand(const VkCommandBuffer commandBuffer)
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
     m_gltfLoader.bindBuffers(commandBuffer);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
-    m_gltfLoader.draw(commandBuffer, m_pipelineLayout, 1);
+    m_gltfLoader.draw(commandBuffer, m_pipelineLayout, 2);
 }
 
 std::vector<VkClearValue> GltfSkinning::getClearValue()

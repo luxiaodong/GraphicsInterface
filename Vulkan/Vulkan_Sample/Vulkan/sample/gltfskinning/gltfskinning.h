@@ -40,7 +40,7 @@ protected:
     VkBuffer m_uniformBuffer;
     VkDeviceMemory m_uniformMemory;
     
-    VkPipelineLayout m_textruePipelineLayout;
+    VkDescriptorSetLayout m_jointMatrixDescriptorSetLayout;
     VkDescriptorSetLayout m_textureDescriptorSetLayout;
 
 private:

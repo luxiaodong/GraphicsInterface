@@ -34,7 +34,7 @@ void GltfLoading::setEnabledFeatures()
 
 void GltfLoading::clear()
 {
-    vkDestroyPipelineLayout(m_device, m_textruePipelineLayout, nullptr);
+//    vkDestroyPipelineLayout(m_device, m_textruePipelineLayout, nullptr);
     vkDestroyDescriptorSetLayout(m_device, m_textureDescriptorSetLayout, nullptr);
     vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     vkFreeMemory(m_device, m_uniformMemory, nullptr);

@@ -38,6 +38,9 @@ public:
     void draw(VkCommandBuffer commandBuffer);
     void draw(VkCommandBuffer commandBuffer, const VkPipelineLayout& pipelineLayout, int method);
 
+    void updateAnimation(float deltaTime);
+    void updateAnimation(uint32_t index, float deltaTime);
+    
 private:
     void load(std::string fileName);
     void loadNodes();
@@ -75,6 +78,7 @@ public:
     //顶点数据
     std::vector<Vertex> m_vertexData;
     std::vector<uint32_t> m_indexData;
+    std::vector<glm::mat4> m_jointMatrices;
 
 private:
     VkQueue m_graphicsQueue;

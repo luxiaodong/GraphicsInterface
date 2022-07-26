@@ -24,6 +24,17 @@ void GltfLoader::clear()
     vkFreeMemory(Tools::m_device, m_indexMemory, nullptr);
     vkDestroyBuffer(Tools::m_device, m_indexBuffer, nullptr);
     
+    for(Skin* skin : m_skins)
+    {
+        skin->clear();
+        delete skin;
+    }
+    
+    for(Animation* ani : m_animations)
+    {
+        delete ani;
+    }
+    
     if(m_emptyTexture)
     {
         m_emptyTexture->clear();
@@ -278,6 +289,7 @@ void GltfLoader::loadSkins()
             memcpy(newSkin->m_inverseBindMatrices.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::mat4));
         }
 
+        newSkin->createJointMatrixBuffer();
         m_skins.push_back(newSkin);
     }
 }
@@ -406,20 +418,80 @@ void GltfLoader::loadAnimations()
         }
         
         m_animations.push_back(newAnimation);
-        
-        // test.
-//        for(auto &channel : newAnimation->m_channels)
-//        {
-//            if(channel.m_channelType == AnimationChannelType::Scale)
-//            {
-//                AnimationSampler sampler = newAnimation->m_samplers.at(channel.m_samplerIndex);
-//                for(size_t i = 0; i < sampler.m_keyFrames.size(); ++i)
-//                {
-//                    glm::vec4 value = sampler.m_values.at(i);
-//                    std::cout << sampler.m_keyFrames.at(i) << ":" << value.x <<","<<value.y<<","<<value.z<< std::endl;
-//                }
-//            }
-//        }
+    }
+}
+
+void GltfLoader::updateAnimation(float time)
+{
+    for(uint32_t i = 0; i < m_animations.size(); ++i)
+    {
+        updateAnimation(i, time);
+    }
+    
+    for(uint32_t i = 0; i < m_skins.size(); ++i)
+    {
+        m_skins.at(i)->update();
+    }
+}
+
+void GltfLoader::updateAnimation(uint32_t index, float deltaTime)
+{
+    Animation* newAnimation = m_animations.at(index);
+    newAnimation->m_currentTime += deltaTime;
+    if(newAnimation->m_currentTime > newAnimation->m_end)
+    {
+        newAnimation->m_currentTime -= newAnimation->m_end;
+    }
+    
+    newAnimation->m_currentTime = 1.0f;
+    
+    if(newAnimation->m_currentTime < newAnimation->m_start || newAnimation->m_currentTime > newAnimation->m_end)
+    {
+        return ;
+    }
+    
+    for(auto &channel : newAnimation->m_channels)
+    {
+        AnimationSampler sampler = newAnimation->m_samplers.at(channel.m_samplerIndex);
+        for(size_t i = 0; i < sampler.m_keyFrames.size() - 1; ++i)
+        {
+            float prevFrame = sampler.m_keyFrames.at(i);
+            float nextFrame = sampler.m_keyFrames.at(i+1);
+            
+            if(prevFrame < newAnimation->m_currentTime && newAnimation->m_currentTime < nextFrame)
+            {
+                float p = (newAnimation->m_currentTime - prevFrame)/(nextFrame - prevFrame);
+                
+                if(channel.m_channelType == AnimationChannelType::Translation)
+                {
+                    channel.m_node->m_translation = glm::mix(sampler.m_values[i], sampler.m_values[i+1], p);
+                }
+                else if(channel.m_channelType == AnimationChannelType::Scale)
+                {
+                    channel.m_node->m_scale = glm::mix(sampler.m_values[i], sampler.m_values[i+1], p);
+                }
+                else if(channel.m_channelType == AnimationChannelType::Rotation)
+                {
+                    glm::quat q1;
+                    q1.x = sampler.m_values[i].x;
+                    q1.y = sampler.m_values[i].y;
+                    q1.z = sampler.m_values[i].z;
+                    q1.w = sampler.m_values[i].w;
+                    glm::quat q2;
+                    q2.x = sampler.m_values[i + 1].x;
+                    q2.y = sampler.m_values[i + 1].y;
+                    q2.z = sampler.m_values[i + 1].z;
+                    q2.w = sampler.m_values[i + 1].w;
+                    channel.m_node->m_rotation = glm::normalize(glm::slerp(q1, q2, p));
+                }
+            }
+        }
+    }
+    
+    //更新结点的世界矩阵
+    for(auto &channel : newAnimation->m_channels)
+    {
+        channel.m_node->m_worldMatrix = channel.m_node->worldMatrix();
     }
 }
 
@@ -739,6 +811,27 @@ void GltfLoader::drawNode(VkCommandBuffer commandBuffer, GltfNode* node, const V
                         }
                     }
                 }
+                else if(method == 2)
+                {
+                    if(preTransform == false)
+                    {
+                        glm::mat4 mat(1.0f);
+                        vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mat);
+                    }
+                    
+                    if(m_skins.size() > 0)
+                    {
+                        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &m_skins.at(0)->m_descriptorSet, 0, nullptr);
+                    }
+                    
+                    if(dotLoadImage == false)
+                    {
+                        if(primitive->m_material && primitive->m_material->m_pBaseColorTexture)
+                        {
+                            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &primitive->m_material->m_pBaseColorTexture->m_descriptorSet, 0, nullptr);
+                        }
+                    }
+                }
                 
                 vkCmdDrawIndexed(commandBuffer, primitive->m_indexCount, 1, primitive->m_indexOffset, 0, 0);
             }
@@ -749,6 +842,7 @@ void GltfLoader::drawNode(VkCommandBuffer commandBuffer, GltfNode* node, const V
         drawNode(commandBuffer, child, pipelineLayout, method);
     }
 }
+
 
 // helper function
 
