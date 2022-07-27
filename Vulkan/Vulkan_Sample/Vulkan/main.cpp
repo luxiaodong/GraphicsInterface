@@ -41,7 +41,6 @@ int main(int argc, const char * argv[])
 //    SeparateVertexAttributes app("separatevertexattributes");
 //    GltfLoading app("gltfloading");
 //    GltfSkinning app("gltfskinning");
-    
     GltfSceneRendering app("gltfscenerendering");
     try {
         app.run();

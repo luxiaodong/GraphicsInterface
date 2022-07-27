@@ -151,8 +151,15 @@ void Texture::fillTextrue(Texture* texture, unsigned char* buffer, VkDeviceSize 
     vkCmdCopyBufferToImage(cmd, stagingBuffer, texture->m_image,
                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(bufferCopyRegions.size()), bufferCopyRegions.data());
 
+    VkImageLayout layout = texture->m_imageLayout;
+    
+    if( texture->m_mipLevels > 1)
+    {
+        layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    }
+    
     Tools::setImageLayout(cmd, texture->m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                          layout, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                           VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, subresourceRange);
 
     // Generate the mip chain (glTF uses jpg and png, so we need to create this manually)

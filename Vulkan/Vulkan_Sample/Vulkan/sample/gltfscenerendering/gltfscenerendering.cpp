@@ -121,8 +121,6 @@ void GltfSceneRendering::prepareDescriptorSetAndWrite()
     }
     
     {
-        uint32_t i = 0;
-        std::cout << m_gltfLoader.m_materials.size() << std::endl;
         for(Material* mat : m_gltfLoader.m_materials)
         {
             createDescriptorSet(&m_textureDescriptorSetLayout, 1, mat->m_descriptorSet);
@@ -134,7 +132,6 @@ void GltfSceneRendering::prepareDescriptorSetAndWrite()
             writes[0] = Tools::getWriteDescriptorSet(mat->m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &imageInfo1);
             writes[1] = Tools::getWriteDescriptorSet(mat->m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo2);
             vkUpdateDescriptorSets(m_device, 2, writes, 0, nullptr);
-            i++;
         }
     }
 }
