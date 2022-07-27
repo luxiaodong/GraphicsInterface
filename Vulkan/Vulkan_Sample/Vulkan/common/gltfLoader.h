@@ -34,6 +34,8 @@ public:
     VkPipelineVertexInputStateCreateInfo* getPipelineVertexInputState();
     void bindBuffers(VkCommandBuffer commandBuffer);
     void createVertexAndIndexBuffer();
+    void createJointMatrixBuffer();
+    void createMaterialBuffer();
     void setVertexBindingAndAttributeDescription(const std::vector<VertexComponent> components);
     void draw(VkCommandBuffer commandBuffer);
     void draw(VkCommandBuffer commandBuffer, const VkPipelineLayout& pipelineLayout, int method);

@@ -11,12 +11,17 @@ Skin::~Skin()
 
 void Skin::clear()
 {
-    vkFreeMemory(Tools::m_device, m_jointMatrixMemory, nullptr);
-    vkDestroyBuffer(Tools::m_device, m_jointMatrixBuffer, nullptr);
+    if(m_isNeedVkBuffer)
+    {
+        vkFreeMemory(Tools::m_device, m_jointMatrixMemory, nullptr);
+        vkDestroyBuffer(Tools::m_device, m_jointMatrixBuffer, nullptr);
+    }
 }
 
 void Skin::createJointMatrixBuffer()
 {
+    m_isNeedVkBuffer = true;
+    
     m_totalSize = static_cast<uint32_t>(m_joints.size() * sizeof(glm::mat4));
     Tools::createBufferAndMemoryThenBind(m_totalSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,

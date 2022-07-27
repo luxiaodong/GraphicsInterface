@@ -18,6 +18,7 @@
 #include "sample/separatevertexattributes/separatevertexattributes.h"
 #include "sample/gltfloading/gltfloading.h"
 #include "sample/gltfskinning/gltfskinning.h"
+#include "sample/gltfscenerendering/gltfscenerendering.h"
 
 int main(int argc, const char * argv[])
 {
@@ -39,8 +40,9 @@ int main(int argc, const char * argv[])
 //    StencilBuffer app("stencilbuffer");
 //    SeparateVertexAttributes app("separatevertexattributes");
 //    GltfLoading app("gltfloading");
+//    GltfSkinning app("gltfskinning");
     
-    GltfSkinning app("gltfskinning");
+    GltfSceneRendering app("gltfscenerendering");
     try {
         app.run();
     } catch (const std::exception& e) {

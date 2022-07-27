@@ -59,6 +59,7 @@
 		B0B5D115288E85C0003A175D /* gltfskinning.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D113288E85C0003A175D /* gltfskinning.cpp */; };
 		B0B5D119288E9CE0003A175D /* skin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D118288E9CE0003A175D /* skin.cpp */; };
 		B0B5D11D288F8C1D003A175D /* animation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D11C288F8C1D003A175D /* animation.cpp */; };
+		B0B5D1222890D870003A175D /* gltfscenerendering.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0B5D1212890D86F003A175D /* gltfscenerendering.cpp */; };
 		B0E13A1C2861729300D1D2B6 /* triangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0E13A1B2861729300D1D2B6 /* triangle.cpp */; };
 /* End PBXBuildFile section */
 
@@ -169,6 +170,8 @@
 		B0B5D118288E9CE0003A175D /* skin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = skin.cpp; sourceTree = "<group>"; };
 		B0B5D11B288F8C1D003A175D /* animation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = animation.h; sourceTree = "<group>"; };
 		B0B5D11C288F8C1D003A175D /* animation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = animation.cpp; sourceTree = "<group>"; };
+		B0B5D1202890D86F003A175D /* gltfscenerendering.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gltfscenerendering.h; sourceTree = "<group>"; };
+		B0B5D1212890D86F003A175D /* gltfscenerendering.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gltfscenerendering.cpp; sourceTree = "<group>"; };
 		B0E13A1A2861729300D1D2B6 /* triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = triangle.h; sourceTree = "<group>"; };
 		B0E13A1B2861729300D1D2B6 /* triangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = triangle.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -466,9 +469,19 @@
 			path = gltfskinning;
 			sourceTree = "<group>";
 		};
+		B0B5D11F2890D86F003A175D /* gltfscenerendering */ = {
+			isa = PBXGroup;
+			children = (
+				B0B5D1212890D86F003A175D /* gltfscenerendering.cpp */,
+				B0B5D1202890D86F003A175D /* gltfscenerendering.h */,
+			);
+			path = gltfscenerendering;
+			sourceTree = "<group>";
+		};
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0B5D11F2890D86F003A175D /* gltfscenerendering */,
 				B0B5D112288E85C0003A175D /* gltfskinning */,
 				B0B5D10D288A8CCA003A175D /* gltfloading */,
 				B0B5D108288A7935003A175D /* separatevertexattributes */,
@@ -567,6 +580,7 @@
 				B0E13A1C2861729300D1D2B6 /* triangle.cpp in Sources */,
 				B0B5D0802876ABAF003A175D /* memstream.c in Sources */,
 				B0A47F1F282E4D6200209D51 /* main.cpp in Sources */,
+				B0B5D1222890D870003A175D /* gltfscenerendering.cpp in Sources */,
 				B0B5D0202875293B003A175D /* camera.cpp in Sources */,
 				B0B5D09B287920AD003A175D /* gltfNode.cpp in Sources */,
 				B0B5D0C0287EBB26003A175D /* pushconstants.cpp in Sources */,

@@ -152,7 +152,7 @@ void Texture::fillTextrue(Texture* texture, unsigned char* buffer, VkDeviceSize 
                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(bufferCopyRegions.size()), bufferCopyRegions.data());
 
     Tools::setImageLayout(cmd, texture->m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                          VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                           VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, subresourceRange);
 
     // Generate the mip chain (glTF uses jpg and png, so we need to create this manually)
@@ -229,7 +229,6 @@ void Texture::fillTextrue(Texture* texture, unsigned char* buffer, VkDeviceSize 
     
     Tools::createImageView(texture->m_image, texture->m_fromat, VK_IMAGE_ASPECT_COLOR_BIT, texture->m_mipLevels, texture->m_layerCount, texture->m_imageView);
     Tools::createTextureSampler(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, texture->m_mipLevels, texture->m_sampler);
-    
 }
 
 void Texture::fillTextrue(Texture* texture, ktxTexture* ktxTexture, VkQueue transferQueue, TextureCopyRegion copyRegion)

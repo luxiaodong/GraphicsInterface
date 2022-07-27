@@ -27,4 +27,5 @@ public:
     VkDeviceMemory m_jointMatrixMemory;
     VkDescriptorSet m_descriptorSet;
     uint32_t m_totalSize;
+    bool m_isNeedVkBuffer = false;
 };

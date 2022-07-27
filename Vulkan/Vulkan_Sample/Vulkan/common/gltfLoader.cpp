@@ -49,6 +49,7 @@ void GltfLoader::clear()
     
     for(Material* mat : m_materials)
     {
+        mat->clear();
         delete mat;
     }
     
@@ -232,12 +233,39 @@ void GltfLoader::loadMaterials()
             int index = m_gltfModel.textures[mat.values["baseColorTexture"].TextureIndex()].source;
             newMat->m_pBaseColorTexture = m_textures.at(index);
         }
-        
+        if (mat.additionalValues.find("normalTexture") != mat.additionalValues.end())
+        {
+            int index = m_gltfModel.textures[mat.additionalValues["normalTexture"].TextureIndex()].source;
+            newMat->m_pNormalTexture = m_textures.at(index);
+        }
+        else
+        {
+            newMat->m_pNormalTexture = m_emptyTexture;
+        }
+        if (mat.additionalValues.find("alphaMode") != mat.additionalValues.end())
+        {
+            tinygltf::Parameter param = mat.additionalValues["alphaMode"];
+            if (param.string_value == "BLEND")
+            {
+                newMat->m_alphaMode = Material::BLEND;
+            }
+            if (param.string_value == "MASK")
+            {
+                newMat->m_alphaMode = Material::MASK;
+            }
+        }
+        if (mat.additionalValues.find("alphaCutoff") != mat.additionalValues.end())
+        {
+            newMat->m_alphaCutoff = static_cast<float>(mat.additionalValues["alphaCutoff"].Factor());
+        }
+
         m_materials.push_back(newMat);
     }
     
-    // add default material;
-    m_materials.push_back(new Material());
+    if( m_gltfModel.materials.size() == 0 )
+    {
+        m_materials.push_back(new Material());
+    }
 }
 
 void GltfLoader::loadNodes()
@@ -289,7 +317,6 @@ void GltfLoader::loadSkins()
             memcpy(newSkin->m_inverseBindMatrices.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::mat4));
         }
 
-        newSkin->createJointMatrixBuffer();
         m_skins.push_back(newSkin);
     }
 }
@@ -752,6 +779,22 @@ void GltfLoader::setVertexBindingAndAttributeDescription(const std::vector<Verte
 #endif
 }
 
+void GltfLoader::createJointMatrixBuffer()
+{
+    for(auto skin : m_skins)
+    {
+        skin->createJointMatrixBuffer();
+    }
+}
+
+void GltfLoader::createMaterialBuffer()
+{
+//    for(auto mat : m_materials)
+//    {
+//        mat->createMaterialBuffer();
+//    }
+}
+
 VkPipelineVertexInputStateCreateInfo* GltfLoader::getPipelineVertexInputState()
 {
 #ifdef USE_BUILDIN_LOAD_GLTF
@@ -775,64 +818,59 @@ void GltfLoader::drawNode(VkCommandBuffer commandBuffer, GltfNode* node, const V
     
     if (node->m_mesh)
     {
+        
+        
         for (Primitive* primitive : node->m_mesh->m_primitives)
         {
-            bool skip = false;
-//            const vkglTF::Material& material = primitive->material;
-//            if (renderFlags & RenderFlags::RenderOpaqueNodes) {
-//                skip = (material.alphaMode != Material::ALPHAMODE_OPAQUE);
-//            }
-//            if (renderFlags & RenderFlags::RenderAlphaMaskedNodes) {
-//                skip = (material.alphaMode != Material::ALPHAMODE_MASK);
-//            }
-//            if (renderFlags & RenderFlags::RenderAlphaBlendedNodes) {
-//                skip = (material.alphaMode != Material::ALPHAMODE_BLEND);
-//            }
-            if (!skip)
+            if(method == 1)
             {
-//                if (renderFlags & RenderFlags::BindImages) {
-//                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, bindImageSet, 1, &material.descriptorSet, 0, nullptr);
-//                }
-                
-                if(method == 1)
+                if(preTransform == false)
                 {
-                    if(preTransform == false)
-                    {
-                        vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &node->m_worldMatrix);
-                    }
-                    
-                    if(dotLoadImage == false)
-                    {
-                        if(primitive->m_material && primitive->m_material->m_pBaseColorTexture)
-                        {
-                            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &primitive->m_material->m_pBaseColorTexture->m_descriptorSet, 0, nullptr);
-                        }
-                    }
-                }
-                else if(method == 2)
-                {
-                    if(preTransform == false)
-                    {
-                        glm::mat4 mat(1.0f);
-                        vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mat);
-                    }
-                    
-                    if(m_skins.size() > 0)
-                    {
-                        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &m_skins.at(0)->m_descriptorSet, 0, nullptr);
-                    }
-                    
-                    if(dotLoadImage == false)
-                    {
-                        if(primitive->m_material && primitive->m_material->m_pBaseColorTexture)
-                        {
-                            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &primitive->m_material->m_pBaseColorTexture->m_descriptorSet, 0, nullptr);
-                        }
-                    }
+                    vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &node->m_worldMatrix);
                 }
                 
-                vkCmdDrawIndexed(commandBuffer, primitive->m_indexCount, 1, primitive->m_indexOffset, 0, 0);
+                if(dotLoadImage == false)
+                {
+                    if(primitive->m_material && primitive->m_material->m_pBaseColorTexture)
+                    {
+                        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &primitive->m_material->m_pBaseColorTexture->m_descriptorSet, 0, nullptr);
+                    }
+                }
             }
+            else if(method == 2)
+            {
+                if(preTransform == false)
+                {
+                    glm::mat4 mat(1.0f);
+                    vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mat);
+                }
+                
+                if(m_skins.size() > 0)
+                {
+                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &m_skins.at(0)->m_descriptorSet, 0, nullptr);
+                }
+                
+                if(dotLoadImage == false)
+                {
+                    if(primitive->m_material && primitive->m_material->m_pBaseColorTexture)
+                    {
+                        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &primitive->m_material->m_pBaseColorTexture->m_descriptorSet, 0, nullptr);
+                    }
+                }
+            }
+            else if(method == 3)
+            {
+                if(preTransform == false)
+                {
+                    vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &node->m_worldMatrix);
+                }
+                
+                Material* mat = primitive->m_material;
+                vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mat->m_graphicsPipeline);
+                vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &mat->m_descriptorSet, 0, nullptr);
+            }
+            
+            vkCmdDrawIndexed(commandBuffer, primitive->m_indexCount, 1, primitive->m_indexOffset, 0, 0);
         }
     }
     

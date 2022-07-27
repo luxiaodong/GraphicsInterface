@@ -49,6 +49,7 @@ void GltfSkinning::prepareVertex()
     m_gltfLoader.loadFromFile(Tools::getModelPath() + "CesiumMan/glTF/CesiumMan.gltf", m_graphicsQueue, GltfFileLoadFlags::None);
     m_gltfLoader.createVertexAndIndexBuffer();
     m_gltfLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal, VertexComponent::UV, VertexComponent::Color, VertexComponent::JointIndex, VertexComponent::JointWeight});
+    m_gltfLoader.createJointMatrixBuffer();
 }
 
 void GltfSkinning::prepareUniform()
