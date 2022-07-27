@@ -443,8 +443,6 @@ void GltfLoader::updateAnimation(uint32_t index, float deltaTime)
         newAnimation->m_currentTime -= newAnimation->m_end;
     }
     
-    newAnimation->m_currentTime = 1.0f;
-    
     if(newAnimation->m_currentTime < newAnimation->m_start || newAnimation->m_currentTime > newAnimation->m_end)
     {
         return ;

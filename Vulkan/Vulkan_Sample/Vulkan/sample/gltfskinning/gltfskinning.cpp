@@ -60,7 +60,7 @@ void GltfSkinning::prepareUniform()
                                          m_uniformBuffer, m_uniformMemory);
 
     Uniform mvp = {};
-    mvp.viewMatrix = m_camera.m_viewMat * glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));;
+    mvp.viewMatrix = m_camera.m_viewMat;
     mvp.projectionMatrix = m_camera.m_projMat;
     mvp.lightPos = glm::vec4(5.0f, 5.0f, -5.0f, 1.0f);
     Tools::mapMemory(m_uniformMemory, uniformSize, &mvp);
@@ -197,7 +197,7 @@ void GltfSkinning::createGraphicsPipeline()
 
 void GltfSkinning::updateRenderData()
 {
-    m_gltfLoader.updateAnimation(1.0f);
+    m_gltfLoader.updateAnimation(0.01f);
 }
 
 void GltfSkinning::recordRenderCommand(const VkCommandBuffer commandBuffer)

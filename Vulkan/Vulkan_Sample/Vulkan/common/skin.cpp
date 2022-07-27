@@ -33,7 +33,7 @@ void Skin::update()
     for(int i = 0; i < m_joints.size(); ++i)
     {
         GltfNode* pNode = m_joints.at(i);
-        m_jointMatrices[i] = pNode->m_worldMatrix;
+        m_jointMatrices[i] = pNode->m_worldMatrix * m_inverseBindMatrices.at(i);
     }
     
     Tools::mapMemory(m_jointMatrixMemory, m_totalSize, m_jointMatrices.data());
