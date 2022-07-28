@@ -1,4 +1,3 @@
-
 #include "sample/triangle/triangle.h"
 #include "sample/pipelines/pipelines.h"
 #include "sample/descriptorsets/descriptorsets.h"
@@ -19,6 +18,7 @@
 #include "sample/gltfloading/gltfloading.h"
 #include "sample/gltfskinning/gltfskinning.h"
 #include "sample/gltfscenerendering/gltfscenerendering.h"
+#include "sample/multisampling/multisampling.h"
 
 int main(int argc, const char * argv[])
 {
@@ -41,7 +41,9 @@ int main(int argc, const char * argv[])
 //    SeparateVertexAttributes app("separatevertexattributes");
 //    GltfLoading app("gltfloading");
 //    GltfSkinning app("gltfskinning");
-    GltfSceneRendering app("gltfscenerendering");
+//    GltfSceneRendering app("gltfscenerendering");
+    MultiSampling app("multisampling");
+    
     try {
         app.run();
     } catch (const std::exception& e) {
