@@ -51,7 +51,7 @@ void MultiSampling::clear()
     vkFreeMemory(m_device, m_colorMemory, nullptr);
     
     vkDestroyDescriptorSetLayout(m_device, m_textureDescriptorSetLayout, nullptr);
-//    vkDestroyPipeline(m_device, m_multiSamplingPipeline, nullptr);
+    vkDestroyPipeline(m_device, m_multiSamplingPipeline, nullptr);
     vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     
     vkFreeMemory(m_device, m_uniformMemory, nullptr);
@@ -199,10 +199,10 @@ void MultiSampling::createGraphicsPipeline()
     shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
     shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
 
-    if( vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS )
-    {
-        throw std::runtime_error("failed to create graphics pipeline!");
-    }
+    VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_graphicsPipeline))
+    multisample.sampleShadingEnable = VK_TRUE;
+    multisample.minSampleShading = 0.25f;
+    VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_multiSamplingPipeline))
 
     vkDestroyShaderModule(m_device, vertModule, nullptr);
     vkDestroyShaderModule(m_device, fragModule, nullptr);
@@ -226,7 +226,7 @@ void MultiSampling::recordRenderCommand(const VkCommandBuffer commandBuffer)
     m_gltfLoader.bindBuffers(commandBuffer);
     
     // pass 1
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_multiSamplingPipeline);
     m_gltfLoader.draw(commandBuffer, m_pipelineLayout, 1);
     
 //    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_outlinePipeline);
