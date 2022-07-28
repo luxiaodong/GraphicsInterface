@@ -14,6 +14,7 @@
 		B09AEA2E2862A380006ED326 /* imgui_demo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA242862A380006ED326 /* imgui_demo.cpp */; };
 		B09AEA2F2862A380006ED326 /* imgui_draw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA252862A380006ED326 /* imgui_draw.cpp */; };
 		B0A01074289228EE006A339B /* multisampling.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A01072289228EE006A339B /* multisampling.cpp */; };
+		B0A0107928926B34006A339B /* highdynamicrange.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A0107728926B34006A339B /* highdynamicrange.cpp */; };
 		B0A47F1F282E4D6200209D51 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A47F1E282E4D6200209D51 /* main.cpp */; };
 		B0A48A96282E5E0B00209D51 /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A48A95282E5E0B00209D51 /* libglfw3.a */; };
 		B0A48A98282E5EBF00209D51 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A48A97282E5EBF00209D51 /* CoreFoundation.framework */; };
@@ -92,6 +93,8 @@
 		B09AEA252862A380006ED326 /* imgui_draw.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_draw.cpp; sourceTree = "<group>"; };
 		B0A01072289228EE006A339B /* multisampling.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = multisampling.cpp; sourceTree = "<group>"; };
 		B0A01073289228EE006A339B /* multisampling.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = multisampling.h; sourceTree = "<group>"; };
+		B0A0107728926B34006A339B /* highdynamicrange.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = highdynamicrange.cpp; sourceTree = "<group>"; };
+		B0A0107828926B34006A339B /* highdynamicrange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = highdynamicrange.h; sourceTree = "<group>"; };
 		B0A47F1B282E4D6200209D51 /* Vulkan */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Vulkan; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0A47F1E282E4D6200209D51 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		B0A48A95282E5E0B00209D51 /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = ../3rdParty/glfw/lib/libglfw3.a; sourceTree = "<group>"; };
@@ -222,6 +225,15 @@
 				B0A01073289228EE006A339B /* multisampling.h */,
 			);
 			path = multisampling;
+			sourceTree = "<group>";
+		};
+		B0A0107628926B34006A339B /* highdynamicrange */ = {
+			isa = PBXGroup;
+			children = (
+				B0A0107728926B34006A339B /* highdynamicrange.cpp */,
+				B0A0107828926B34006A339B /* highdynamicrange.h */,
+			);
+			path = highdynamicrange;
 			sourceTree = "<group>";
 		};
 		B0A47F12282E4D6200209D51 = {
@@ -493,6 +505,7 @@
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0A0107628926B34006A339B /* highdynamicrange */,
 				B0A01071289228EE006A339B /* multisampling */,
 				B0B5D11F2890D86F003A175D /* gltfscenerendering */,
 				B0B5D112288E85C0003A175D /* gltfskinning */,
@@ -617,6 +630,7 @@
 				B09AEA2D2862A380006ED326 /* imgui_tables.cpp in Sources */,
 				B0B5D0FC2888F884003A175D /* particlefire.cpp in Sources */,
 				B0B5D0F728879E48003A175D /* offscreen.cpp in Sources */,
+				B0A0107928926B34006A339B /* highdynamicrange.cpp in Sources */,
 				B0B5D0E228813096003A175D /* texture3d.cpp in Sources */,
 				B0B5D02C28753328003A175D /* gltfLoader.cpp in Sources */,
 				B0B5D0862876AC3F003A175D /* checkheader.c in Sources */,

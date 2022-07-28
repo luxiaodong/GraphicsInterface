@@ -19,6 +19,7 @@
 #include "sample/gltfskinning/gltfskinning.h"
 #include "sample/gltfscenerendering/gltfscenerendering.h"
 #include "sample/multisampling/multisampling.h"
+#include "sample/highdynamicrange/highdynamicrange.h"
 
 int main(int argc, const char * argv[])
 {
@@ -42,7 +43,9 @@ int main(int argc, const char * argv[])
 //    GltfLoading app("gltfloading");
 //    GltfSkinning app("gltfskinning");
 //    GltfSceneRendering app("gltfscenerendering");
-    MultiSampling app("multisampling");
+//    MultiSampling app("multisampling");
+    
+    HighDynamicRange app("highdynamicrange");
     
     try {
         app.run();
