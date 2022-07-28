@@ -56,6 +56,7 @@ void Application::init()
     choosePhysicalDevice();
     Tools::m_physicalDevice = m_physicalDevice;
     setEnabledFeatures();
+    setSampleCount();
     
     createLogicDeivce();
     Tools::m_device = m_device;
@@ -85,6 +86,11 @@ void Application::initCamera()
 
 void Application::setEnabledFeatures()
 {}
+
+void Application::setSampleCount()
+{
+    m_sampleCount = VK_SAMPLE_COUNT_1_BIT;
+}
 
 void Application::loop()
 {
@@ -456,7 +462,7 @@ void Application::createDepthBuffer()
     }
     
     Tools::createImageAndMemoryThenBind(m_depthFormat, m_swapchainExtent.width, m_swapchainExtent.height, 1, 1,
-                                 VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
+                                 m_sampleCount, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
                                  VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                  m_depthImage, m_depthMemory);
     

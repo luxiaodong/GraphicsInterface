@@ -94,4 +94,6 @@ public:
     static VkPipelineDynamicStateCreateInfo getPipelineDynamicStateCreateInfo(std::vector<VkDynamicState>& dynamicStates);
     static VkPipelineDynamicStateCreateInfo getPipelineDynamicStateCreateInfo(uint32_t count, VkDynamicState* pDynamicState);
     static VkAttachmentDescription getAttachmentDescription(VkFormat format, VkSampleCountFlagBits samples, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp, VkAttachmentLoadOp stencilLoadOp, VkAttachmentStoreOp stencilStoreOp, VkImageLayout initialLayout, VkImageLayout finalLayout);
+    
+    static VkSampleCountFlagBits getMaxUsableSampleCount();
 };

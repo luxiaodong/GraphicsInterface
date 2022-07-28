@@ -27,6 +27,7 @@ public:
     virtual void init();
     virtual void initCamera();
     virtual void setEnabledFeatures();
+    virtual void setSampleCount();
     virtual void clear();
     void run();
     void loop();
@@ -109,6 +110,8 @@ protected:
     uint32_t m_swapchainImageCount = 3;
     std::vector<VkImage> m_swapchainImages;
     std::vector<VkImageView> m_swapchainImageViews;
+    
+    VkSampleCountFlagBits m_sampleCount = VK_SAMPLE_COUNT_1_BIT;
     
     VkFormat m_depthFormat = VK_FORMAT_D32_SFLOAT;
     VkImage m_depthImage;

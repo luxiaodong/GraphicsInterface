@@ -39,10 +39,19 @@ void MultiSampling::setEnabledFeatures()
     }
 }
 
+void MultiSampling::setSampleCount()
+{
+    m_sampleCount = Tools::getMaxUsableSampleCount();
+}
+
 void MultiSampling::clear()
 {
+    vkDestroyImage(m_device, m_colorImage, nullptr);
+    vkDestroyImageView(m_device, m_colorImageView, nullptr);
+    vkFreeMemory(m_device, m_colorMemory, nullptr);
+    
     vkDestroyDescriptorSetLayout(m_device, m_textureDescriptorSetLayout, nullptr);
-    vkDestroyPipeline(m_device, m_multiSamplingPipeline, nullptr);
+//    vkDestroyPipeline(m_device, m_multiSamplingPipeline, nullptr);
     vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     
     vkFreeMemory(m_device, m_uniformMemory, nullptr);
@@ -150,7 +159,7 @@ void MultiSampling::createGraphicsPipeline()
 
     VkPipelineDynamicStateCreateInfo dynamic = Tools::getPipelineDynamicStateCreateInfo(dynamicStates);
     VkPipelineRasterizationStateCreateInfo rasterization = Tools::getPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE);
-    VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
+    VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(m_sampleCount);
     VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
     VkPipelineColorBlendAttachmentState colorBlendAttachment = Tools::getPipelineColorBlendAttachmentState(VK_FALSE);
     VkPipelineColorBlendStateCreateInfo colorBlend = Tools::getPipelineColorBlendStateCreateInfo(1, &colorBlendAttachment);
@@ -189,7 +198,6 @@ void MultiSampling::createGraphicsPipeline()
     VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "multisampling/mesh.frag.spv");
     shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
     shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
-    rasterization.cullMode = VK_CULL_MODE_BACK_BIT;
 
     if( vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS )
     {
@@ -223,4 +231,112 @@ void MultiSampling::recordRenderCommand(const VkCommandBuffer commandBuffer)
     
 //    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_outlinePipeline);
 //    m_gltfLoader.draw(commandBuffer);
+}
+
+void MultiSampling::createOtherBuffer()
+{
+    Tools::createImageAndMemoryThenBind(m_surfaceFormatKHR.format, m_swapchainExtent.width, m_swapchainExtent.height, 1, 1,
+                                        m_sampleCount, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+                                 VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                 m_colorImage, m_colorMemory);
+    
+    Tools::createImageView(m_colorImage, m_surfaceFormatKHR.format, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, m_colorImageView);
+}
+
+void MultiSampling::createAttachmentDescription()
+{
+    VkAttachmentDescription colorAttachmentDescription = Tools::getAttachmentDescription(m_surfaceFormatKHR.format, m_sampleCount, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    
+    VkAttachmentDescription resolveColorAttachmentDescription = Tools::getAttachmentDescription(m_surfaceFormatKHR.format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+ 
+    VkAttachmentDescription depthAttachmentDescription = Tools::getAttachmentDescription(m_depthFormat, m_sampleCount, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    
+    m_attachmentDescriptions.push_back(colorAttachmentDescription);
+    m_attachmentDescriptions.push_back(resolveColorAttachmentDescription);
+    m_attachmentDescriptions.push_back(depthAttachmentDescription);
+}
+
+void MultiSampling::createRenderPass()
+{
+    VkAttachmentReference colorAttachmentReference = {};
+    colorAttachmentReference.attachment = 0;
+    colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    
+    VkAttachmentReference resolveColorAttachmentReference = {};
+    resolveColorAttachmentReference.attachment = 1;
+    resolveColorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    
+    VkAttachmentReference depthAttachmentReference = {};
+    depthAttachmentReference.attachment = 2;
+    depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    
+    VkSubpassDescription subpassDescription = {};
+    subpassDescription.flags = 0;
+    subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpassDescription.inputAttachmentCount = 0;
+    subpassDescription.pInputAttachments = nullptr;
+    subpassDescription.colorAttachmentCount = 1;
+    subpassDescription.pColorAttachments = &colorAttachmentReference;
+    subpassDescription.pResolveAttachments = &resolveColorAttachmentReference;
+    subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
+    subpassDescription.preserveAttachmentCount = 0;
+    subpassDescription.pPreserveAttachments = nullptr;
+    
+    VkSubpassDependency dependencies[2] = {};
+    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependencies[0].dstSubpass = 0;
+    dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+    dependencies[1].srcSubpass = 0;
+    dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+    dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+    VkRenderPassCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.attachmentCount = static_cast<uint32_t>(m_attachmentDescriptions.size());
+    createInfo.pAttachments = m_attachmentDescriptions.data();
+    createInfo.subpassCount = 1;
+    createInfo.pSubpasses = &subpassDescription;
+    createInfo.dependencyCount = 2;
+    createInfo.pDependencies = dependencies;
+    
+    if( vkCreateRenderPass(m_device, &createInfo, nullptr, &m_renderPass) != VK_SUCCESS )
+    {
+        throw std::runtime_error("failed to create renderpass!");
+    }
+}
+
+std::vector<VkImageView> MultiSampling::getAttachmentsImageViews(size_t i)
+{
+    std::vector<VkImageView> attachments = {};
+    attachments.push_back(m_colorImageView);
+    attachments.push_back(m_swapchainImageViews[i]);
+    attachments.push_back(m_depthImageView);
+    return attachments;
+}
+
+std::vector<VkClearValue> MultiSampling::getClearValue()
+{
+    std::vector<VkClearValue> clearValues = {};
+    VkClearValue color = {};
+    color.color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+    
+    VkClearValue color1 = {};
+    color1.color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+    
+    VkClearValue depth = {};
+    depth.depthStencil = {1.0f, 0};
+    
+    clearValues.push_back(color);
+    clearValues.push_back(color1);
+    clearValues.push_back(depth);
+    return clearValues;
 }

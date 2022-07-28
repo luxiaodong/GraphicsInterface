@@ -20,6 +20,7 @@ public:
     virtual void init();
     virtual void initCamera();
     virtual void setEnabledFeatures();
+    virtual void setSampleCount();
     virtual void clear();
 
     virtual void updateRenderData();
@@ -31,6 +32,13 @@ protected:
     void prepareDescriptorSetLayoutAndPipelineLayout();
     void prepareDescriptorSetAndWrite();
     void createGraphicsPipeline();
+    
+protected:
+    virtual void createOtherBuffer();
+    virtual void createAttachmentDescription();
+    virtual void createRenderPass();
+    virtual std::vector<VkImageView> getAttachmentsImageViews(size_t i);
+    virtual std::vector<VkClearValue> getClearValue();
 
 protected:
     VkDescriptorSet m_descriptorSet;
@@ -41,6 +49,10 @@ protected:
     
     VkPipeline m_multiSamplingPipeline; //msaaSampling
     VkDescriptorSetLayout m_textureDescriptorSetLayout;
+    
+    VkImage m_colorImage;
+    VkDeviceMemory m_colorMemory;
+    VkImageView m_colorImageView;
 
 private:
     GltfLoader m_gltfLoader;
