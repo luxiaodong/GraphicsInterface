@@ -26,7 +26,7 @@ void HighDynamicRange::init()
 void HighDynamicRange::initCamera()
 {
     m_camera.setPosition(glm::vec3(0.0f, 0.0f, -6.0f));
-    m_camera.setRotation(glm::vec3(0.0f));
+    m_camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
     m_camera.setPerspective(60.0f, (float)m_width / (float)m_height, 1.0f, 256.0f);
 }
 
@@ -63,6 +63,8 @@ void HighDynamicRange::clear()
     vkFreeMemory(m_device, m_exposureUniformMemory, nullptr);
     vkDestroyBuffer(m_device, m_exposureUniformBuffer, nullptr);
     
+    vkDestroyPipeline(m_device, m_compositionPipeline, nullptr);
+    
     m_skyboxLoader.clear();
     m_objectLoader.clear();
     m_pTexture->clear();
@@ -72,7 +74,7 @@ void HighDynamicRange::clear()
 
 void HighDynamicRange::prepareVertex()
 {
-    m_skyboxLoader.loadFromFile(Tools::getModelPath() + "cube.gltf", m_graphicsQueue);
+    m_skyboxLoader.loadFromFile(Tools::getModelPath() + "cube.gltf", m_graphicsQueue, GltfFileLoadFlags::PreTransformVertices | GltfFileLoadFlags::FlipY);
     m_skyboxLoader.createVertexAndIndexBuffer();
     m_skyboxLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal});
     m_pTexture = Texture::loadTextrue2D(Tools::getTexturePath() +  "hdr/uffizi_cube.ktx", m_graphicsQueue, VK_FORMAT_R16G16B16A16_SFLOAT, TextureCopyRegion::Cube);
@@ -251,17 +253,26 @@ void HighDynamicRange::createGraphicsPipeline()
     createInfo.layout = m_skyboxPipelineLayout;
     createInfo.renderPass = m_offscreenRenderPass;
     rasterization.cullMode = VK_CULL_MODE_FRONT_BIT;
+    depthStencil.depthWriteEnable = VK_FALSE;
+    depthStencil.depthTestEnable = VK_FALSE;
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_skyboxPipeline));
     
     createInfo.pVertexInputState = m_objectLoader.getPipelineVertexInputState();
     rasterization.cullMode = VK_CULL_MODE_BACK_BIT;
     skyboxOrObjectIndex = 1;
+    depthStencil.depthWriteEnable = VK_TRUE;
+    depthStencil.depthTestEnable = VK_TRUE;
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_objectPipeline));
     
     vkDestroyShaderModule(m_device, vertModule, nullptr);
     vkDestroyShaderModule(m_device, fragModule, nullptr);
 
     // composition
+    VkPipelineVertexInputStateCreateInfo emptyVertexInput = {};
+    emptyVertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    emptyVertexInput.flags = 0;
+    rasterization.cullMode = VK_CULL_MODE_NONE;
+    createInfo.pVertexInputState = &emptyVertexInput;
     createInfo.layout = m_pipelineLayout;
     createInfo.renderPass = m_renderPass;
     VkPipelineColorBlendAttachmentState colorBlendAttachment = Tools::getPipelineColorBlendAttachmentState(VK_FALSE);
@@ -428,13 +439,14 @@ void HighDynamicRange::createOtherRenderPass(const VkCommandBuffer& commandBuffe
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_skyboxPipelineLayout, 0, 1, &m_skyboxDescriptorSet, 0, nullptr);
+
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_skyboxPipeline);
     m_skyboxLoader.bindBuffers(commandBuffer);
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_skyboxPipelineLayout, 0, 1, &m_skyboxDescriptorSet, 0, nullptr);
     m_skyboxLoader.draw(commandBuffer);
-    
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_objectPipeline);
-    m_skyboxLoader.draw(commandBuffer);
+    m_objectLoader.bindBuffers(commandBuffer);
+    m_objectLoader.draw(commandBuffer);
     
     vkCmdEndRenderPass(commandBuffer);
 }
