@@ -64,6 +64,8 @@ void HighDynamicRange::clear()
     vkDestroyBuffer(m_device, m_exposureUniformBuffer, nullptr);
     
     vkDestroyPipeline(m_device, m_compositionPipeline, nullptr);
+    vkDestroyPipeline(m_device, m_bloomPipeline[0], nullptr);
+    vkDestroyPipeline(m_device, m_bloomPipeline[1], nullptr);
     
     m_skyboxLoader.clear();
     m_objectLoader.clear();
@@ -171,9 +173,9 @@ void HighDynamicRange::prepareDescriptorSetAndWrite()
         
         VkDescriptorImageInfo imageInfo2 = {};
         imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo2.imageView = m_offscreenColorImageView[0];
+        imageInfo2.imageView = m_offscreenColorImageView[1];
         imageInfo2.sampler = m_offscreenColorSample;
-        
+
         std::array<VkWriteDescriptorSet, 2> writes = {};
         writes[0] = Tools::getWriteDescriptorSet(m_compositionDescriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &imageInfo1);
         writes[1] = Tools::getWriteDescriptorSet(m_compositionDescriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo2);
@@ -285,6 +287,34 @@ void HighDynamicRange::createGraphicsPipeline()
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_compositionPipeline));
     vkDestroyShaderModule(m_device, vertModule, nullptr);
     vkDestroyShaderModule(m_device, fragModule, nullptr);
+    
+    // bloom
+    VkPipelineColorBlendAttachmentState state = {};
+    state.blendEnable = VK_TRUE;
+    state.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    state.colorBlendOp = VK_BLEND_OP_ADD;
+    state.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+    state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+    state.alphaBlendOp = VK_BLEND_OP_ADD;
+    state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+    state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+    
+    VkPipelineColorBlendStateCreateInfo colorBlend3 = Tools::getPipelineColorBlendStateCreateInfo(1, &state);
+    createInfo.pColorBlendState = &colorBlend3;
+    
+    int direction = 0;
+    specializationInfo.pData = &direction;
+    vertModule = Tools::createShaderModule( Tools::getShaderPath() + "hdr/bloom.vert.spv");
+    fragModule = Tools::createShaderModule( Tools::getShaderPath() + "hdr/bloom.frag.spv");
+    shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
+    shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
+    shaderStages[1].pSpecializationInfo = &specializationInfo;
+    VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_bloomPipeline[0]));
+    
+    direction = 1;
+    VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_bloomPipeline[1]));
+    vkDestroyShaderModule(m_device, vertModule, nullptr);
+    vkDestroyShaderModule(m_device, fragModule, nullptr);
 }
 
 void HighDynamicRange::updateRenderData()
@@ -301,12 +331,17 @@ void HighDynamicRange::recordRenderCommand(const VkCommandBuffer commandBuffer)
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_compositionPipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_compositionDescriptorSet, 0, nullptr);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_compositionPipeline);
+    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_bloomPipeline[0]);
+    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_bloomPipeline[1]);
     vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 }
 
-//
 void HighDynamicRange::createOtherBuffer()
 {
     // color0

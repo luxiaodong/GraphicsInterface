@@ -50,7 +50,7 @@ void main(void)
 		ar = ts.y / ts.x;
 	}
 
-	vec2 P = inUV.yx - vec2(0, (weights.length() >> 1) * ar * blurScale);
+	vec2 P = inUV.xy - vec2(0, (weights.length() >> 1) * ar * blurScale);
 
 	vec4 color = vec4(0.0);
 	for (int i = 0; i < weights.length(); i++)

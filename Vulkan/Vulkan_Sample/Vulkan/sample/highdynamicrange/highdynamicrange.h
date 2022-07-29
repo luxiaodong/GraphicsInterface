@@ -81,6 +81,9 @@ protected:
     VkPipeline m_compositionPipeline;
     VkDescriptorSet m_compositionDescriptorSet;
     
+    // bloom
+    VkPipeline m_bloomPipeline[2];
+
 private:
     Texture* m_pTexture = nullptr;
     GltfLoader m_objectLoader;
