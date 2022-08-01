@@ -77,13 +77,10 @@ protected:
     VkRenderPass m_offscreenRenderPass;
     VkFramebuffer m_offscreenFrameBuffer;
     
-    // debug
+    // debug & scene
     VkPipeline m_debugPipeline;
-    
-    // scene
     VkBuffer m_uniformBuffer;
     VkDeviceMemory m_uniformMemory;
-    
     VkPipeline m_graphicsPipeline;
     VkDescriptorSet m_descriptorSet;
 

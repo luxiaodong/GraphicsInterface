@@ -65,7 +65,7 @@ void ShadowMapping::clear()
 void ShadowMapping::prepareVertex()
 {
     std::vector<std::string> filenames = { "samplescene.gltf", "vulkanscene_shadow.gltf"};
-    m_sceneLoader.loadFromFile(Tools::getModelPath() + filenames[0], m_graphicsQueue, GltfFileLoadFlags::PreTransformVertices | GltfFileLoadFlags::PreMultiplyVertexColors | GltfFileLoadFlags::FlipY);
+    m_sceneLoader.loadFromFile(Tools::getModelPath() + filenames[1], m_graphicsQueue, GltfFileLoadFlags::PreTransformVertices | GltfFileLoadFlags::PreMultiplyVertexColors | GltfFileLoadFlags::FlipY);
     m_sceneLoader.createVertexAndIndexBuffer();
     m_sceneLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::UV, VertexComponent::Color, VertexComponent::Normal});
 }
@@ -93,6 +93,7 @@ void ShadowMapping::prepareUniform()
     mvp.viewMatrix = m_camera.m_viewMat;
     mvp.modelMatrix = glm::mat4(1.0f);
     mvp.shadowMapMvp = m_shadowUniformMvp.shadowMVP;
+    mvp.lightPos = glm::vec4(m_lightPos, 1.0f);
     mvp.zNear = m_zNear;
     mvp.zFar = m_zFar;
     Tools::mapMemory(m_uniformMemory, sizeof(Uniform), &mvp);
@@ -157,25 +158,6 @@ void ShadowMapping::prepareDescriptorSetAndWrite()
         writes[1] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo);
         vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
     }
-    
-//    {
-//        createDescriptorSet(m_compositionDescriptorSet);
-//
-//        VkDescriptorImageInfo imageInfo1 = {};
-//        imageInfo1.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-//        imageInfo1.imageView = m_offscreenColorImageView[0];
-//        imageInfo1.sampler = m_offscreenColorSample;
-//
-//        VkDescriptorImageInfo imageInfo2 = {};
-//        imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-//        imageInfo2.imageView = m_offscreenColorImageView[1];
-//        imageInfo2.sampler = m_offscreenColorSample;
-//
-//        std::array<VkWriteDescriptorSet, 2> writes = {};
-//        writes[0] = Tools::getWriteDescriptorSet(m_compositionDescriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &imageInfo1);
-//        writes[1] = Tools::getWriteDescriptorSet(m_compositionDescriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo2);
-//        vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
-//    }
 }
 
 void ShadowMapping::createGraphicsPipeline()
@@ -238,6 +220,10 @@ void ShadowMapping::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
     
     //debug.
+    VkPipelineVertexInputStateCreateInfo emptyInputState = {};
+    emptyInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    createInfo.pVertexInputState = &emptyInputState;
+    rasterization.cullMode = VK_CULL_MODE_NONE;
     createInfo.layout = m_pipelineLayout;
     createInfo.renderPass = m_renderPass;
     vertModule = Tools::createShaderModule( Tools::getShaderPath() + "shadowmapping/quad.vert.spv");
@@ -248,61 +234,29 @@ void ShadowMapping::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, vertModule, nullptr);
     vkDestroyShaderModule(m_device, fragModule, nullptr);
     
-//    createInfo.pVertexInputState = m_sceneLoader.getPipelineVertexInputState();
-//    rasterization.cullMode = VK_CULL_MODE_BACK_BIT;
-//    skyboxOrObjectIndex = 1;
-//    depthStencil.depthWriteEnable = VK_TRUE;
-//    depthStencil.depthTestEnable = VK_TRUE;
-//    VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_objectPipeline));
-//    vkDestroyShaderModule(m_device, vertModule, nullptr);
-//    vkDestroyShaderModule(m_device, fragModule, nullptr);
-
-    // composition
-//    VkPipelineVertexInputStateCreateInfo emptyVertexInput = {};
-//    emptyVertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-//    emptyVertexInput.flags = 0;
-//    rasterization.cullMode = VK_CULL_MODE_NONE;
-//    createInfo.pVertexInputState = &emptyVertexInput;
-//    createInfo.layout = m_pipelineLayout;
-//    createInfo.renderPass = m_renderPass;
-//    VkPipelineColorBlendAttachmentState colorBlendAttachment = Tools::getPipelineColorBlendAttachmentState(VK_FALSE);
-//    VkPipelineColorBlendStateCreateInfo colorBlend2 = Tools::getPipelineColorBlendStateCreateInfo(1, &colorBlendAttachment);
-//    createInfo.pColorBlendState = &colorBlend2;
-//    vertModule = Tools::createShaderModule( Tools::getShaderPath() + "hdr/composition.vert.spv");
-//    fragModule = Tools::createShaderModule( Tools::getShaderPath() + "hdr/composition.frag.spv");
-//    shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
-//    shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
-//    VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_compositionPipeline));
-//    vkDestroyShaderModule(m_device, vertModule, nullptr);
-//    vkDestroyShaderModule(m_device, fragModule, nullptr);
+    //scene.
+    int enablePCF = 0;
+    VkSpecializationMapEntry specializationMapEntry;
+    specializationMapEntry.constantID = 0;
+    specializationMapEntry.size = sizeof(int);
+    specializationMapEntry.offset = 0;
     
-    // bloom
-//    VkPipelineColorBlendAttachmentState state = {};
-//    state.blendEnable = VK_TRUE;
-//    state.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-//    state.colorBlendOp = VK_BLEND_OP_ADD;
-//    state.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-//    state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
-//    state.alphaBlendOp = VK_BLEND_OP_ADD;
-//    state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-//    state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-//
-//    VkPipelineColorBlendStateCreateInfo colorBlend3 = Tools::getPipelineColorBlendStateCreateInfo(1, &state);
-//    createInfo.pColorBlendState = &colorBlend3;
-//
-//    int direction = 0;
-//    specializationInfo.pData = &direction;
-//    vertModule = Tools::createShaderModule( Tools::getShaderPath() + "hdr/bloom.vert.spv");
-//    fragModule = Tools::createShaderModule( Tools::getShaderPath() + "hdr/bloom.frag.spv");
-//    shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
-//    shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
-//    shaderStages[1].pSpecializationInfo = &specializationInfo;
-//    VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_bloomPipeline[0]));
-//
-//    direction = 1;
-//    VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_bloomPipeline[1]));
-//    vkDestroyShaderModule(m_device, vertModule, nullptr);
-//    vkDestroyShaderModule(m_device, fragModule, nullptr);
+    VkSpecializationInfo specializationInfo = {};
+    specializationInfo.dataSize = sizeof(int);
+    specializationInfo.mapEntryCount = 1;
+    specializationInfo.pMapEntries = &specializationMapEntry;
+    specializationInfo.pData = &enablePCF;
+    
+    createInfo.pVertexInputState = m_sceneLoader.getPipelineVertexInputState();
+    rasterization.cullMode = VK_CULL_MODE_BACK_BIT;
+    vertModule = Tools::createShaderModule( Tools::getShaderPath() + "shadowmapping/scene.vert.spv");
+    fragModule = Tools::createShaderModule( Tools::getShaderPath() + "shadowmapping/scene.frag.spv");
+    shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
+    shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
+    shaderStages[1].pSpecializationInfo = &specializationInfo;
+    VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_graphicsPipeline));
+    vkDestroyShaderModule(m_device, vertModule, nullptr);
+    vkDestroyShaderModule(m_device, fragModule, nullptr);
 }
 
 void ShadowMapping::updateRenderData()
@@ -320,9 +274,14 @@ void ShadowMapping::recordRenderCommand(const VkCommandBuffer commandBuffer)
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipeline);
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+//    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipeline);
+//    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+    m_sceneLoader.bindBuffers(commandBuffer);
+    m_sceneLoader.draw(commandBuffer);
 }
+
 
 // ================ shadow mapping ======================
 
