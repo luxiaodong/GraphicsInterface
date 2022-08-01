@@ -20,6 +20,7 @@
 #include "sample/gltfscenerendering/gltfscenerendering.h"
 #include "sample/multisampling/multisampling.h"
 #include "sample/highdynamicrange/highdynamicrange.h"
+#include "sample/shadowmapping/shadowmapping.h"
 
 int main(int argc, const char * argv[])
 {
@@ -44,8 +45,9 @@ int main(int argc, const char * argv[])
 //    GltfSkinning app("gltfskinning");
 //    GltfSceneRendering app("gltfscenerendering");
 //    MultiSampling app("multisampling");
+//    HighDynamicRange app("highdynamicrange");
     
-    HighDynamicRange app("highdynamicrange");
+    ShadowMapping app("shadowmapping");
     
     try {
         app.run();
