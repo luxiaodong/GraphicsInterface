@@ -48,6 +48,7 @@ protected:
 
     void updateLightPos();
     void updateShadowMapMVP();
+    void updateUniformMVP();
     
 protected:
     // shadowmapping.

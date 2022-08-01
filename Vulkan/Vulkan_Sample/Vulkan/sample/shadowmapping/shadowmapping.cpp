@@ -57,6 +57,7 @@ void ShadowMapping::clear()
     vkDestroyPipeline(m_device, m_debugPipeline, nullptr);
     vkFreeMemory(m_device, m_uniformMemory, nullptr);
     vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
+    vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     
     m_sceneLoader.clear();
     Application::clear();
@@ -87,16 +88,7 @@ void ShadowMapping::prepareUniform()
     Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                          m_uniformBuffer, m_uniformMemory);
-
-    Uniform mvp = {};
-    mvp.projectionMatrix = m_camera.m_projMat;
-    mvp.viewMatrix = m_camera.m_viewMat;
-    mvp.modelMatrix = glm::mat4(1.0f);
-    mvp.shadowMapMvp = m_shadowUniformMvp.shadowMVP;
-    mvp.lightPos = glm::vec4(m_lightPos, 1.0f);
-    mvp.zNear = m_zNear;
-    mvp.zFar = m_zFar;
-    Tools::mapMemory(m_uniformMemory, sizeof(Uniform), &mvp);
+    updateUniformMVP();
 }
 
 void ShadowMapping::prepareDescriptorSetLayoutAndPipelineLayout()
@@ -174,7 +166,8 @@ void ShadowMapping::createGraphicsPipeline()
 
     std::vector<VkDynamicState> dynamicStates = {
         VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR
+        VK_DYNAMIC_STATE_SCISSOR,
+        VK_DYNAMIC_STATE_DEPTH_BIAS
     };
 
     VkPipelineDynamicStateCreateInfo dynamic = Tools::getPipelineDynamicStateCreateInfo(dynamicStates);
@@ -211,6 +204,7 @@ void ShadowMapping::createGraphicsPipeline()
     
     createInfo.layout = m_shadowPipelineLayout;
     createInfo.renderPass = m_offscreenRenderPass;
+    rasterization.depthBiasEnable = VK_TRUE;
     VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "shadowmapping/offscreen.vert.spv");
     VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "shadowmapping/offscreen.frag.spv");
     shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
@@ -220,6 +214,8 @@ void ShadowMapping::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
     
     //debug.
+    //dynamicStates.pop_back();
+    rasterization.depthBiasEnable = VK_FALSE;
     VkPipelineVertexInputStateCreateInfo emptyInputState = {};
     emptyInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     createInfo.pVertexInputState = &emptyInputState;
@@ -249,6 +245,7 @@ void ShadowMapping::createGraphicsPipeline()
     
     createInfo.pVertexInputState = m_sceneLoader.getPipelineVertexInputState();
     rasterization.cullMode = VK_CULL_MODE_BACK_BIT;
+    rasterization.depthBiasEnable = VK_FALSE;
     vertModule = Tools::createShaderModule( Tools::getShaderPath() + "shadowmapping/scene.vert.spv");
     fragModule = Tools::createShaderModule( Tools::getShaderPath() + "shadowmapping/scene.frag.spv");
     shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
@@ -261,6 +258,9 @@ void ShadowMapping::createGraphicsPipeline()
 
 void ShadowMapping::updateRenderData()
 {
+    updateLightPos();
+    updateShadowMapMVP();
+    updateUniformMVP();
 }
 
 void ShadowMapping::recordRenderCommand(const VkCommandBuffer commandBuffer)
@@ -276,21 +276,20 @@ void ShadowMapping::recordRenderCommand(const VkCommandBuffer commandBuffer)
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
 //    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipeline);
 //    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-    
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
     m_sceneLoader.bindBuffers(commandBuffer);
     m_sceneLoader.draw(commandBuffer);
 }
 
-
-// ================ shadow mapping ======================
+// ================= shadow mapping ======================
 
 void ShadowMapping::updateLightPos()
 {
-    float passTime = 0.1;
+    static float passTime = 0.001;
     m_lightPos.x = cos(glm::radians(passTime * 360.0f)) * 40.0f;
     m_lightPos.y = -50.0f + sin(glm::radians(passTime * 360.0f)) * 20.0f;
     m_lightPos.z = 25.0f + sin(glm::radians(passTime * 360.0f)) * 5.0f;
+    passTime += 0.001f;
 }
 
 void ShadowMapping::updateShadowMapMVP()
@@ -304,6 +303,19 @@ void ShadowMapping::updateShadowMapMVP()
     Tools::mapMemory(m_shadowUniformMemory, sizeof(ShadowUniform), &m_shadowUniformMvp);
 }
 
+void ShadowMapping::updateUniformMVP()
+{
+    Uniform mvp = {};
+    mvp.projectionMatrix = m_camera.m_projMat;
+    mvp.viewMatrix = m_camera.m_viewMat;
+    mvp.modelMatrix = glm::mat4(1.0f);
+    mvp.shadowMapMvp = m_shadowUniformMvp.shadowMVP;
+    mvp.lightPos = glm::vec4(m_lightPos, 1.0f);
+    mvp.zNear = m_zNear;
+    mvp.zFar = m_zFar;
+    Tools::mapMemory(m_uniformMemory, sizeof(Uniform), &mvp);
+}
+
 void ShadowMapping::createOtherBuffer()
 {
     // depth
@@ -315,7 +327,8 @@ void ShadowMapping::createOtherBuffer()
     Tools::createImageView(m_offscreenDepthImage, m_offscreenDepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1, 1, m_offscreenDepthImageView);
     
     // sample
-    Tools::createTextureSampler(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, 1, m_offscreenDepthSampler);
+    VkFilter filter = true ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
+    Tools::createTextureSampler(filter, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, 1, m_offscreenDepthSampler);
 }
 
 void ShadowMapping::createOffscreenRenderPass()
@@ -412,6 +425,7 @@ void ShadowMapping::createOtherRenderPass(const VkCommandBuffer& commandBuffer)
     
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_shadowPipelineLayout, 0, 1, &m_shadowDescriptorSet, 0, nullptr);
 
+    vkCmdSetDepthBias(commandBuffer, 1.25f, 0.0f, 1.75f);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_shadowPipeline);
     m_sceneLoader.bindBuffers(commandBuffer);
     m_sceneLoader.draw(commandBuffer);
