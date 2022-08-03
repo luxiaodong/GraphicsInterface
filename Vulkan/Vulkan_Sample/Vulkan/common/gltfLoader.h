@@ -22,6 +22,12 @@ enum GltfFileLoadFlags {
     DontLoadImages = 0x00000008
 };
 
+enum GltfDescriptorBindingFlags
+{
+    ImageBaseColor = 0x00000001,
+    ImageNormalMap = 0x00000002
+};
+
 class GltfLoader
 {
 public:
@@ -34,6 +40,7 @@ public:
     VkPipelineVertexInputStateCreateInfo* getPipelineVertexInputState();
     void bindBuffers(VkCommandBuffer commandBuffer);
     void createVertexAndIndexBuffer();
+    void createDescriptorPoolAndLayout();
     void createJointMatrixBuffer();
     void createMaterialBuffer();
     void setVertexBindingAndAttributeDescription(const std::vector<VertexComponent> components);
@@ -61,6 +68,7 @@ private:
     GltfNode* nodeFromIndex(uint32_t index);
     
 private:
+    GltfDescriptorBindingFlags m_descriptorBindingFlags;
     uint32_t m_loadFlags;
     std::string m_modelPath;
     
@@ -89,7 +97,11 @@ private:
     VkBuffer m_indexBuffer;
     VkDeviceMemory m_indexMemory;
     
+    VkDescriptorPool m_descriptorPool = VK_NULL_HANDLE;
 public:
+    static VkDescriptorSetLayout m_uniformDescriptorSetLayout;
+    static VkDescriptorSetLayout m_imageDescriptorSetLayout;
+    
 #ifdef USE_BUILDIN_LOAD_GLTF
     vkglTF::Model* m_pModel = nullptr;
 #endif

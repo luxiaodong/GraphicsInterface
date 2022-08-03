@@ -1,6 +1,9 @@
 
 #include "gltfLoader.h"
 
+VkDescriptorSetLayout GltfLoader::m_uniformDescriptorSetLayout = VK_NULL_HANDLE;
+VkDescriptorSetLayout GltfLoader::m_imageDescriptorSetLayout = VK_NULL_HANDLE;
+
 GltfLoader::GltfLoader()
 {
 #ifdef USE_BUILDIN_LOAD_GLTF
@@ -23,6 +26,23 @@ void GltfLoader::clear()
     vkDestroyBuffer(Tools::m_device, m_vertexBuffer, nullptr);
     vkFreeMemory(Tools::m_device, m_indexMemory, nullptr);
     vkDestroyBuffer(Tools::m_device, m_indexBuffer, nullptr);
+    
+    if(m_descriptorPool)
+    {
+        vkDestroyDescriptorPool(Tools::m_device, m_descriptorPool, nullptr);
+    }
+    
+    if(m_uniformDescriptorSetLayout)
+    {
+        vkDestroyDescriptorSetLayout(Tools::m_device, m_uniformDescriptorSetLayout, nullptr);
+        m_uniformDescriptorSetLayout = VK_NULL_HANDLE;
+    }
+    
+    if(m_imageDescriptorSetLayout)
+    {
+        vkDestroyDescriptorSetLayout(Tools::m_device, m_imageDescriptorSetLayout, nullptr);
+        m_imageDescriptorSetLayout = VK_NULL_HANDLE;
+    }
     
     for(Skin* skin : m_skins)
     {
@@ -770,6 +790,80 @@ void GltfLoader::createVertexAndIndexBuffer()
 #endif
 }
 
+void GltfLoader::createDescriptorPoolAndLayout()
+{
+    uint32_t uniformCount = 0;
+//    for(auto node : m_linearNodes)
+//    {
+//        if(node->m_mesh)
+//        {
+//            uniformCount++;
+//        }
+//    }
+    
+    uint32_t imageCount = 0;
+    for(auto material : m_materials)
+    {
+        if(material->m_pBaseColorTexture)
+        {
+            imageCount++;
+        }
+    }
+    
+    std::vector<VkDescriptorPoolSize> poolSizes;
+//    if(uniformCount > 0)
+//    {
+//        VkDescriptorPoolSize poolSize = {};
+//        poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+//        poolSize.descriptorCount = uniformCount;
+//        poolSizes.push_back(poolSize);
+//    }
+    if(imageCount > 0)
+    {
+        VkDescriptorPoolSize poolSize = {};
+        poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSize.descriptorCount = imageCount;
+        poolSizes.push_back(poolSize);
+    }
+    
+    VkDescriptorPoolCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+    createInfo.pPoolSizes = poolSizes.data();
+    createInfo.maxSets = uniformCount + imageCount;
+
+    VK_CHECK_RESULT(vkCreateDescriptorPool(Tools::m_device, &createInfo, nullptr, &m_descriptorPool));
+    
+//    if(m_uniformDescriptorSetLayout == VK_NULL_HANDLE)
+//    {
+//        VkDescriptorSetLayoutBinding binding;
+//        binding = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
+//        VkDescriptorSetLayoutCreateInfo createInfo = Tools::getDescriptorSetLayoutCreateInfo(&binding, 1);
+//        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_device, &createInfo, nullptr, &m_uniformDescriptorSetLayout));
+//    }
+//遍历每个结点.
+    if(m_imageDescriptorSetLayout == VK_NULL_HANDLE)
+    {
+        VkDescriptorSetLayoutBinding binding;
+        binding = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
+        VkDescriptorSetLayoutCreateInfo createInfo = Tools::getDescriptorSetLayoutCreateInfo(&binding, 1);
+        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(Tools::m_device, &createInfo, nullptr, &m_imageDescriptorSetLayout));
+    }
+    
+    for(Material* mat : m_materials)
+    {
+        if(mat->m_pBaseColorTexture != nullptr)
+        {
+            Tools::allocateDescriptorSets(m_descriptorPool, &m_imageDescriptorSetLayout, 1, mat->m_descriptorSet);
+            VkDescriptorImageInfo imageInfo = mat->m_pBaseColorTexture->getDescriptorImageInfo();
+            VkWriteDescriptorSet writeDescriptorSet = Tools::getWriteDescriptorSet(mat->m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &imageInfo);
+            vkUpdateDescriptorSets(Tools::m_device, 1, &writeDescriptorSet, 0, nullptr);
+        }
+    }
+    
+}
+
 void GltfLoader::setVertexBindingAndAttributeDescription(const std::vector<VertexComponent> components)
 {
 #ifdef USE_BUILDIN_LOAD_GLTF
@@ -818,8 +912,6 @@ void GltfLoader::drawNode(VkCommandBuffer commandBuffer, GltfNode* node, const V
     
     if (node->m_mesh)
     {
-        
-        
         for (Primitive* primitive : node->m_mesh->m_primitives)
         {
             if(method == 1)
@@ -867,6 +959,11 @@ void GltfLoader::drawNode(VkCommandBuffer commandBuffer, GltfNode* node, const V
                 
                 Material* mat = primitive->m_material;
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mat->m_graphicsPipeline);
+                vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &mat->m_descriptorSet, 0, nullptr);
+            }
+            else if(method == 4)
+            {
+                Material* mat = primitive->m_material;
                 vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &mat->m_descriptorSet, 0, nullptr);
             }
             

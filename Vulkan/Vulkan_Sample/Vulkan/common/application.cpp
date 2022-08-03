@@ -536,15 +536,15 @@ void Application::createPipelineLayout(const VkPushConstantRange* pPushConstantR
     }
 }
 
-void Application::createPipelineLayout(const VkDescriptorSetLayout* pSetLayout, uint32_t setLayoutCount, VkPipelineLayout& pipelineLayout)
+void Application::createPipelineLayout(const VkDescriptorSetLayout* pSetLayout, uint32_t setLayoutCount, VkPipelineLayout& pipelineLayout, const VkPushConstantRange* pPushConstantRange, uint32_t pushConstantRangeCount)
 {
     VkPipelineLayoutCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     createInfo.flags = 0;
     createInfo.setLayoutCount = setLayoutCount;
     createInfo.pSetLayouts = pSetLayout;
-    createInfo.pushConstantRangeCount = 0;
-    createInfo.pPushConstantRanges = nullptr;
+    createInfo.pushConstantRangeCount = pushConstantRangeCount;
+    createInfo.pPushConstantRanges = pPushConstantRange;
 
     if( vkCreatePipelineLayout(m_device, &createInfo, nullptr, &pipelineLayout) != VK_SUCCESS )
     {

@@ -83,9 +83,10 @@ protected:
     VkDeviceMemory m_shadowUniformMemory;
     ShadowUniform m_shadowUniformMvp;
     
-    VkDescriptorSetLayout m_shadowDescriptorSetLayout[2];
+    VkPushConstantRange m_shadowPushConstantRange;
+    VkDescriptorSetLayout m_shadowDescriptorSetLayout;
     VkPipelineLayout m_shadowPipelineLayout;
-    VkDescriptorSet m_shadowDescriptorSet;
+//    VkDescriptorSet m_shadowDescriptorSet;
     VkPipeline m_shadowPipeline;
     
     // shadow map attachment.
@@ -97,8 +98,13 @@ protected:
     
     VkRenderPass m_offscreenRenderPass;
     
-    // debug & scene
+    // debug
+    VkDescriptorSetLayout m_debugDescriptorSetLayout;
+    VkPipelineLayout m_debugPipelineLayout;
+    VkDescriptorSet m_debugDescriptorSet;
     VkPipeline m_debugPipeline;
+    
+    // scene
     VkBuffer m_uniformBuffer;
     VkDeviceMemory m_uniformMemory;
     VkPipeline m_graphicsPipeline;

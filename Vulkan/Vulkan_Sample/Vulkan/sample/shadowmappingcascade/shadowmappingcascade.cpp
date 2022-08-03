@@ -40,8 +40,7 @@ void ShadowMappingCascade::setEnabledFeatures()
 void ShadowMappingCascade::clear()
 {
     vkDestroyPipeline(m_device, m_shadowPipeline, nullptr);
-    vkDestroyDescriptorSetLayout(m_device, m_shadowDescriptorSetLayout[0], nullptr);
-    vkDestroyDescriptorSetLayout(m_device, m_shadowDescriptorSetLayout[1], nullptr);
+    vkDestroyDescriptorSetLayout(m_device, m_shadowDescriptorSetLayout, nullptr);
     vkDestroyPipelineLayout(m_device, m_shadowPipelineLayout, nullptr);
     
     vkDestroyRenderPass(m_device, m_offscreenRenderPass, nullptr);
@@ -52,11 +51,21 @@ void ShadowMappingCascade::clear()
 
     vkFreeMemory(m_device, m_shadowUniformMemory, nullptr);
     vkDestroyBuffer(m_device, m_shadowUniformBuffer, nullptr);
+    
+    for(int i = 0; i < SHADOW_MAP_CASCADE_COUNT; ++i)
+    {
+        vkDestroyImageView(m_device, m_cascades[i].view, nullptr);
+        vkDestroyFramebuffer(m_device, m_cascades[i].frameBuffer, nullptr);
+    }
 
+    // debug
     vkDestroyPipeline(m_device, m_debugPipeline, nullptr);
-    vkFreeMemory(m_device, m_uniformMemory, nullptr);
-    vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
-    vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
+    vkDestroyDescriptorSetLayout(m_device, m_debugDescriptorSetLayout, nullptr);
+    vkDestroyPipelineLayout(m_device, m_debugPipelineLayout, nullptr);
+    
+//    vkFreeMemory(m_device, m_uniformMemory, nullptr);
+//    vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
+//    vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     
     m_terrainLoader.clear();
     m_treeLoader.clear();
@@ -68,10 +77,12 @@ void ShadowMappingCascade::prepareVertex()
     m_terrainLoader.loadFromFile(Tools::getModelPath() + "terrain_gridlines.gltf", m_graphicsQueue, GltfFileLoadFlags::PreTransformVertices|GltfFileLoadFlags::FlipY);
     m_terrainLoader.createVertexAndIndexBuffer();
     m_terrainLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::UV, VertexComponent::Color, VertexComponent::Normal});
+    m_terrainLoader.createDescriptorPoolAndLayout();
     
     m_treeLoader.loadFromFile(Tools::getModelPath() + "oaktree.gltf", m_graphicsQueue, GltfFileLoadFlags::PreTransformVertices|GltfFileLoadFlags::FlipY);
     m_treeLoader.createVertexAndIndexBuffer();
     m_treeLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::UV, VertexComponent::Color, VertexComponent::Normal});
+    m_treeLoader.createDescriptorPoolAndLayout();
 }
 
 void ShadowMappingCascade::prepareUniform()
@@ -83,100 +94,107 @@ void ShadowMappingCascade::prepareUniform()
                                          m_shadowUniformBuffer, m_shadowUniformMemory);
 
     updateLightPos();
+    updateCascades();
     updateShadowMapMVP();
     
     // debug or scene
-    uniformSize = sizeof(Uniform);
-    
-    Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                         m_uniformBuffer, m_uniformMemory);
-    updateUniformMVP();
+//    uniformSize = sizeof(Uniform);
+//
+//    Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+//                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+//                                         m_uniformBuffer, m_uniformMemory);
+//    updateUniformMVP();
 }
 
 void ShadowMappingCascade::prepareDescriptorSetLayoutAndPipelineLayout()
 {
+    m_shadowPushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    m_shadowPushConstantRange.offset = 0;
+    m_shadowPushConstantRange.size = sizeof(PushConstantData);
+    
     {
-        {
-            VkDescriptorSetLayoutBinding binding;
-            binding = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
-            VkDescriptorSetLayoutCreateInfo createInfo = Tools::getDescriptorSetLayoutCreateInfo(&binding, 1);
-            VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_device, &createInfo, nullptr, &m_shadowDescriptorSetLayout[0]));
-        }
-        
-        {
-            VkDescriptorSetLayoutBinding binding;
-            binding = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
-            VkDescriptorSetLayoutCreateInfo createInfo = Tools::getDescriptorSetLayoutCreateInfo(&binding, 1);
-            VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_device, &createInfo, nullptr, &m_shadowDescriptorSetLayout[1]));
-        }
-        
-        createPipelineLayout(m_shadowDescriptorSetLayout, 2, m_shadowPipelineLayout);
+        VkDescriptorSetLayoutBinding binding;
+        binding = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
+        VkDescriptorSetLayoutCreateInfo createInfo = Tools::getDescriptorSetLayoutCreateInfo(&binding, 1);
+        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_device, &createInfo, nullptr, &m_shadowDescriptorSetLayout));
+        VkDescriptorSetLayout pSetLayout[2] = {m_shadowDescriptorSetLayout, GltfLoader::m_imageDescriptorSetLayout};
+        createPipelineLayout(pSetLayout, 2, m_shadowPipelineLayout, &m_shadowPushConstantRange, 1);
     }
     
     {
-        std::array<VkDescriptorSetLayoutBinding, 2> bindings;
-        bindings[0] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0);
-        bindings[1] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
-        createDescriptorSetLayout(bindings.data(), 2);
-        createPipelineLayout();
+        VkDescriptorSetLayoutBinding binding;
+        binding = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
+        VkDescriptorSetLayoutCreateInfo createInfo = Tools::getDescriptorSetLayoutCreateInfo(&binding, 1);
+        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_device, &createInfo, nullptr, &m_debugDescriptorSetLayout));
+        createPipelineLayout(&m_debugDescriptorSetLayout, 1, m_debugPipelineLayout, &m_shadowPushConstantRange, 1);
     }
+
+//    {
+//        std::array<VkDescriptorSetLayoutBinding, 3> bindings;
+//        bindings[0] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
+//        bindings[1] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
+//        bindings[2] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 2);
+//        createDescriptorSetLayout(bindings.data(), 3);
+//        createPipelineLayout();
+//    }
 }
 
 void ShadowMappingCascade::prepareDescriptorSetAndWrite()
 {
     std::array<VkDescriptorPoolSize, 2> poolSizes;
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = 2;
+    poolSizes[0].descriptorCount = SHADOW_MAP_CASCADE_COUNT;
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     poolSizes[1].descriptorCount = 1;
     createDescriptorPool(poolSizes.data(), static_cast<uint32_t>(poolSizes.size()), SHADOW_MAP_CASCADE_COUNT + 1);
     
     {
-        createDescriptorSet(&m_shadowDescriptorSetLayout[0], 1, m_shadowDescriptorSet);
-
-        VkDescriptorBufferInfo bufferInfo = {};
-        bufferInfo.offset = 0;
-        bufferInfo.range = VK_WHOLE_SIZE;
-        bufferInfo.buffer = m_shadowUniformBuffer;
-
-        std::array<VkWriteDescriptorSet, 1> writes = {};
-        writes[0] = Tools::getWriteDescriptorSet(m_shadowDescriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
-        vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
-        
         for(int i = 0; i < SHADOW_MAP_CASCADE_COUNT; ++i)
         {
-            createDescriptorSet(&m_shadowDescriptorSetLayout[1], 1, m_cascades[i].descriptorSet);
+            createDescriptorSet(&m_shadowDescriptorSetLayout, 1, m_cascades[i].descriptorSet);
             
-            VkDescriptorImageInfo imageInfo = {};
-            imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = m_cascades[i].view;
-            imageInfo.sampler = m_offscreenDepthSampler;
+            VkDescriptorBufferInfo bufferInfo = {};
+            bufferInfo.offset = 0;
+            bufferInfo.range = VK_WHOLE_SIZE;
+            bufferInfo.buffer = m_shadowUniformBuffer;
             
             std::array<VkWriteDescriptorSet, 1> writes = {};
-            writes[0] = Tools::getWriteDescriptorSet(m_cascades[i].descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &imageInfo);
+            writes[0] = Tools::getWriteDescriptorSet(m_cascades[i].descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
             vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
         }
     }
     
     {
-        createDescriptorSet(m_descriptorSet);
-        
-        VkDescriptorBufferInfo bufferInfo = {};
-        bufferInfo.offset = 0;
-        bufferInfo.range = VK_WHOLE_SIZE;
-        bufferInfo.buffer = m_uniformBuffer;
-        
+        createDescriptorSet(&m_debugDescriptorSetLayout, 1, m_debugDescriptorSet);
+
         VkDescriptorImageInfo imageInfo = {};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
         imageInfo.imageView = m_offscreenDepthImageView;
         imageInfo.sampler = m_offscreenDepthSampler;
-        
-        std::array<VkWriteDescriptorSet, 2> writes = {};
-        writes[0] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
-        writes[1] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo);
+
+        std::array<VkWriteDescriptorSet, 1> writes = {};
+        writes[0] = Tools::getWriteDescriptorSet(m_debugDescriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo);
         vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
     }
+    
+//    {
+//        createDescriptorSet(m_descriptorSet);
+//
+//        VkDescriptorBufferInfo bufferInfo = {};
+//        bufferInfo.offset = 0;
+//        bufferInfo.range = VK_WHOLE_SIZE;
+//        bufferInfo.buffer = m_uniformBuffer;
+//
+//        VkDescriptorImageInfo imageInfo = {};
+//        imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+//        imageInfo.imageView = m_offscreenDepthImageView;
+//        imageInfo.sampler = m_offscreenDepthSampler;
+//
+//        std::array<VkWriteDescriptorSet, 2> writes = {};
+//        writes[0] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
+//        writes[1] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo);
+//        vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
+//    }
 }
 
 void ShadowMappingCascade::createGraphicsPipeline()
@@ -194,7 +212,7 @@ void ShadowMappingCascade::createGraphicsPipeline()
     std::vector<VkDynamicState> dynamicStates = {
         VK_DYNAMIC_STATE_VIEWPORT,
         VK_DYNAMIC_STATE_SCISSOR,
-        VK_DYNAMIC_STATE_DEPTH_BIAS
+//        VK_DYNAMIC_STATE_DEPTH_BIAS
     };
 
     VkPipelineDynamicStateCreateInfo dynamic = Tools::getPipelineDynamicStateCreateInfo(dynamicStates);
@@ -246,7 +264,7 @@ void ShadowMappingCascade::createGraphicsPipeline()
     emptyInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     createInfo.pVertexInputState = &emptyInputState;
     rasterization.cullMode = VK_CULL_MODE_NONE;
-    createInfo.layout = m_pipelineLayout;
+    createInfo.layout = m_debugPipelineLayout;
     createInfo.renderPass = m_renderPass;
     vertModule = Tools::createShaderModule( Tools::getShaderPath() + "shadowmappingcascade/debugshadowmap.vert.spv");
     fragModule = Tools::createShaderModule( Tools::getShaderPath() + "shadowmappingcascade/debugshadowmap.frag.spv");
@@ -284,9 +302,9 @@ void ShadowMappingCascade::createGraphicsPipeline()
 
 void ShadowMappingCascade::updateRenderData()
 {
-    updateLightPos();
-    updateShadowMapMVP();
-    updateUniformMVP();
+//    updateLightPos();
+//    updateShadowMapMVP();
+//    updateUniformMVP();
 }
 
 void ShadowMappingCascade::recordRenderCommand(const VkCommandBuffer commandBuffer)
@@ -299,7 +317,7 @@ void ShadowMappingCascade::recordRenderCommand(const VkCommandBuffer commandBuff
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipelineLayout, 0, 1, &m_debugDescriptorSet, 0, nullptr);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipeline);
     vkCmdDraw(commandBuffer, 3, 1, 0, 0);
     
@@ -423,13 +441,12 @@ void ShadowMappingCascade::updateCascades()
 
 void ShadowMappingCascade::updateShadowMapMVP()
 {
-    // Matrix from light's point of view
-//    glm::mat4 depthProjectionMatrix = glm::perspective(glm::radians(m_lightFOV), 1.0f, m_zNear, m_zFar);
-//    glm::mat4 depthViewMatrix = glm::lookAt(m_lightPos, glm::vec3(0.0f), glm::vec3(0, 1, 0));
-//    glm::mat4 depthModelMatrix = glm::mat4(1.0f);
-
-//    m_shadowUniformMvp.shadowMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
-//    Tools::mapMemory(m_shadowUniformMemory, sizeof(ShadowUniform), &m_shadowUniformMvp);
+    ShadowUniform shadowUniform;
+    for(int i = 0; i < SHADOW_MAP_CASCADE_COUNT; ++i)
+    {
+        shadowUniform.cascadeVP[i] = m_cascades[i].viewProjMatrix;
+    }
+    Tools::mapMemory(m_shadowUniformMemory, sizeof(ShadowUniform), &shadowUniform);
 }
 
 void ShadowMappingCascade::updateUniformMVP()
@@ -512,7 +529,7 @@ void ShadowMappingCascade::createOffscreenFrameBuffer()
 {
     for(int i = 0; i < SHADOW_MAP_CASCADE_COUNT; ++i)
     {
-        Tools::createImageView(m_offscreenDepthImage, m_offscreenDepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1, SHADOW_MAP_CASCADE_COUNT, m_cascades[i].view, VK_IMAGE_VIEW_TYPE_2D_ARRAY, i);
+        Tools::createImageView(m_offscreenDepthImage, m_offscreenDepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1, 1, m_cascades[i].view, VK_IMAGE_VIEW_TYPE_2D_ARRAY, i);
         
         VkFramebufferCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -554,16 +571,15 @@ void ShadowMappingCascade::createOtherRenderPass(const VkCommandBuffer& commandB
         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
         
-        // vkCmdSetDepthBias(commandBuffer, 1.25f, 0.0f, 1.75f);
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_shadowPipelineLayout, 0, 1, &m_shadowDescriptorSet, 0, nullptr);
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_shadowPipelineLayout, 1, 1, &m_cascades[i].descriptorSet, 0, nullptr);
+//         vkCmdSetDepthBias(commandBuffer, 1.25f, 0.0f, 1.75f);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_shadowPipelineLayout, 0, 1, &m_cascades[i].descriptorSet, 0, nullptr);
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_shadowPipeline);
         
         // Floor
         PushConstantData pushConstBlock = { glm::vec4(0.0f), i};
-        vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushConstBlock);
+        vkCmdPushConstants(commandBuffer, m_shadowPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushConstBlock);
         m_terrainLoader.bindBuffers(commandBuffer);
-        m_terrainLoader.draw(commandBuffer);
+        m_terrainLoader.draw(commandBuffer, m_shadowPipelineLayout, 4);
         
         // Trees
         const std::vector<glm::vec3> positions =
@@ -578,9 +594,9 @@ void ShadowMappingCascade::createOtherRenderPass(const VkCommandBuffer& commandB
         for (auto position : positions)
         {
             pushConstBlock.position = glm::vec4(position, i);
-            vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushConstBlock);
+            vkCmdPushConstants(commandBuffer, m_shadowPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushConstBlock);
             m_treeLoader.bindBuffers(commandBuffer);
-            m_treeLoader.draw(commandBuffer);
+            m_treeLoader.draw(commandBuffer, m_shadowPipelineLayout, 4);
         }
         
         vkCmdEndRenderPass(commandBuffer);

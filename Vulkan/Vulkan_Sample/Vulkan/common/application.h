@@ -61,7 +61,7 @@ protected:
     void createDescriptorSet(VkDescriptorSet& descriptorSet);
     void createDescriptorSet(const VkDescriptorSetLayout* pSetLayout, uint32_t descriptorSetCount, VkDescriptorSet& descriptorSet);
     void createPipelineLayout(const VkPushConstantRange* pPushConstantRange = nullptr, uint32_t pushConstantRangeCount = 0);
-    void createPipelineLayout(const VkDescriptorSetLayout* pSetLayout, uint32_t setLayoutCount, VkPipelineLayout& pipelineLayout);
+    void createPipelineLayout(const VkDescriptorSetLayout* pSetLayout, uint32_t setLayoutCount, VkPipelineLayout& pipelineLayout, const VkPushConstantRange* pPushConstantRange = nullptr, uint32_t pushConstantRangeCount = 0);
     
     void createPipelineCache();
     void createCommandPool();
