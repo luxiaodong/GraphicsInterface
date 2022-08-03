@@ -21,6 +21,7 @@
 #include "sample/multisampling/multisampling.h"
 #include "sample/highdynamicrange/highdynamicrange.h"
 #include "sample/shadowmapping/shadowmapping.h"
+#include "sample/shadowmappingcascade/shadowmappingcascade.h"
 
 int main(int argc, const char * argv[])
 {
@@ -46,9 +47,9 @@ int main(int argc, const char * argv[])
 //    GltfSceneRendering app("gltfscenerendering");
 //    MultiSampling app("multisampling");
 //    HighDynamicRange app("highdynamicrange");
+//    ShadowMapping app("shadowmapping");
     
-    ShadowMapping app("shadowmapping");
-    
+    ShadowMappingCascade app("shadowmappingcascade");
     try {
         app.run();
     } catch (const std::exception& e) {

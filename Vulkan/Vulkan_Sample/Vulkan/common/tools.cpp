@@ -189,7 +189,7 @@ uint32_t Tools::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags proper
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-void Tools::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t levelCount, uint32_t layerCount, VkImageView &imageView, VkImageViewType viewType)
+void Tools::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t levelCount, uint32_t layerCount, VkImageView &imageView, VkImageViewType viewType, uint32_t baseArrayLayer)
 {
     VkImageViewCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -200,7 +200,7 @@ void Tools::createImageView(VkImage image, VkFormat format, VkImageAspectFlags a
     createInfo.subresourceRange.aspectMask = aspectFlags;
     createInfo.subresourceRange.baseMipLevel = 0;
     createInfo.subresourceRange.levelCount = levelCount;
-    createInfo.subresourceRange.baseArrayLayer = 0;
+    createInfo.subresourceRange.baseArrayLayer = baseArrayLayer;
     createInfo.subresourceRange.layerCount = layerCount;
 
     if( vkCreateImageView(m_device, &createInfo, nullptr, &imageView) != VK_SUCCESS )

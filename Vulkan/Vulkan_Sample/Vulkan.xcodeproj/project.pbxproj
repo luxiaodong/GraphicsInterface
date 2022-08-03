@@ -16,6 +16,7 @@
 		B0A01074289228EE006A339B /* multisampling.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A01072289228EE006A339B /* multisampling.cpp */; };
 		B0A0107928926B34006A339B /* highdynamicrange.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A0107728926B34006A339B /* highdynamicrange.cpp */; };
 		B0A0107E2893DA76006A339B /* shadowmapping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A0107D2893DA76006A339B /* shadowmapping.cpp */; };
+		B0A010832897DD0D006A339B /* shadowmappingcascade.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A010822897DD0D006A339B /* shadowmappingcascade.cpp */; };
 		B0A47F1F282E4D6200209D51 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A47F1E282E4D6200209D51 /* main.cpp */; };
 		B0A48A96282E5E0B00209D51 /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A48A95282E5E0B00209D51 /* libglfw3.a */; };
 		B0A48A98282E5EBF00209D51 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A48A97282E5EBF00209D51 /* CoreFoundation.framework */; };
@@ -98,6 +99,8 @@
 		B0A0107828926B34006A339B /* highdynamicrange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = highdynamicrange.h; sourceTree = "<group>"; };
 		B0A0107C2893DA76006A339B /* shadowmapping.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = shadowmapping.h; sourceTree = "<group>"; };
 		B0A0107D2893DA76006A339B /* shadowmapping.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shadowmapping.cpp; sourceTree = "<group>"; };
+		B0A010812897DD0D006A339B /* shadowmappingcascade.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = shadowmappingcascade.h; sourceTree = "<group>"; };
+		B0A010822897DD0D006A339B /* shadowmappingcascade.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shadowmappingcascade.cpp; sourceTree = "<group>"; };
 		B0A47F1B282E4D6200209D51 /* Vulkan */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Vulkan; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0A47F1E282E4D6200209D51 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		B0A48A95282E5E0B00209D51 /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = ../3rdParty/glfw/lib/libglfw3.a; sourceTree = "<group>"; };
@@ -246,6 +249,15 @@
 				B0A0107D2893DA76006A339B /* shadowmapping.cpp */,
 			);
 			path = shadowmapping;
+			sourceTree = "<group>";
+		};
+		B0A010802897DD0D006A339B /* shadowmappingcascade */ = {
+			isa = PBXGroup;
+			children = (
+				B0A010812897DD0D006A339B /* shadowmappingcascade.h */,
+				B0A010822897DD0D006A339B /* shadowmappingcascade.cpp */,
+			);
+			path = shadowmappingcascade;
 			sourceTree = "<group>";
 		};
 		B0A47F12282E4D6200209D51 = {
@@ -517,6 +529,7 @@
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0A010802897DD0D006A339B /* shadowmappingcascade */,
 				B0A0107B2893DA76006A339B /* shadowmapping */,
 				B0A0107628926B34006A339B /* highdynamicrange */,
 				B0A01071289228EE006A339B /* multisampling */,
@@ -620,6 +633,7 @@
 				B0B5D0802876ABAF003A175D /* memstream.c in Sources */,
 				B0A47F1F282E4D6200209D51 /* main.cpp in Sources */,
 				B0B5D1222890D870003A175D /* gltfscenerendering.cpp in Sources */,
+				B0A010832897DD0D006A339B /* shadowmappingcascade.cpp in Sources */,
 				B0B5D0202875293B003A175D /* camera.cpp in Sources */,
 				B0B5D09B287920AD003A175D /* gltfNode.cpp in Sources */,
 				B0B5D0C0287EBB26003A175D /* pushconstants.cpp in Sources */,
