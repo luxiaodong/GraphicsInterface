@@ -220,9 +220,7 @@ void ShadowMappingCascade::createGraphicsPipeline()
     VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
     VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
 
-    std::array<VkPipelineColorBlendAttachmentState, 1> colorBlendAttachments;
-    colorBlendAttachments[0] = Tools::getPipelineColorBlendAttachmentState(VK_FALSE);
-    VkPipelineColorBlendStateCreateInfo colorBlend = Tools::getPipelineColorBlendStateCreateInfo( static_cast<uint32_t>(colorBlendAttachments.size()), colorBlendAttachments.data());
+    VkPipelineColorBlendStateCreateInfo colorBlend0 = Tools::getPipelineColorBlendStateCreateInfo(0, nullptr);
 
     VkGraphicsPipelineCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -243,13 +241,14 @@ void ShadowMappingCascade::createGraphicsPipeline()
     createInfo.pRasterizationState = &rasterization;
     createInfo.pMultisampleState = &multisample;
     createInfo.pDepthStencilState = &depthStencil;
-    createInfo.pColorBlendState = &colorBlend;
+    createInfo.pColorBlendState = &colorBlend0;
     createInfo.pDynamicState = &dynamic;
     createInfo.subpass = 0;
     
     createInfo.layout = m_shadowPipelineLayout;
     createInfo.renderPass = m_offscreenRenderPass;
     rasterization.depthBiasEnable = VK_TRUE;
+    rasterization.depthClampEnable = m_deviceEnabledFeatures.depthClamp;
     VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "shadowmappingcascade/depthpass.vert.spv");
     VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "shadowmappingcascade/depthpass.frag.spv");
     shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
@@ -259,6 +258,10 @@ void ShadowMappingCascade::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
     
     //debug.
+    std::array<VkPipelineColorBlendAttachmentState, 1> colorBlendAttachments;
+    colorBlendAttachments[0] = Tools::getPipelineColorBlendAttachmentState(VK_FALSE);
+    VkPipelineColorBlendStateCreateInfo colorBlend1 = Tools::getPipelineColorBlendStateCreateInfo( static_cast<uint32_t>(colorBlendAttachments.size()), colorBlendAttachments.data());
+    createInfo.pColorBlendState = &colorBlend1;
     rasterization.depthBiasEnable = VK_FALSE;
     VkPipelineVertexInputStateCreateInfo emptyInputState = {};
     emptyInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -309,7 +312,7 @@ void ShadowMappingCascade::updateRenderData()
 
 void ShadowMappingCascade::recordRenderCommand(const VkCommandBuffer commandBuffer)
 {
-    VkViewport viewport = Tools::getViewport(0, 0, m_swapchainExtent.width, m_swapchainExtent.height);
+    VkViewport viewport = Tools::getViewport(0, 0, m_swapchainExtent.width/2, m_swapchainExtent.height/2);
     VkRect2D scissor;
     scissor.offset = {0, 0};
     scissor.extent = m_swapchainExtent;
@@ -317,9 +320,38 @@ void ShadowMappingCascade::recordRenderCommand(const VkCommandBuffer commandBuff
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipelineLayout, 0, 1, &m_debugDescriptorSet, 0, nullptr);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipeline);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipelineLayout, 0, 1, &m_debugDescriptorSet, 0, nullptr);
+    
+    PushConstantData pushConstBlock = { glm::vec4(0.0f), 0};
+    vkCmdPushConstants(commandBuffer, m_shadowPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushConstBlock);
     vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    
+    viewport.x = viewport.width;
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    pushConstBlock.cascadeIndex = 1;
+    vkCmdPushConstants(commandBuffer, m_shadowPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushConstBlock);
+    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    
+    viewport.x = 0;
+    viewport.y = viewport.height;
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    pushConstBlock.cascadeIndex = 2;
+    vkCmdPushConstants(commandBuffer, m_shadowPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushConstBlock);
+    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    
+    viewport.x = viewport.width;
+    viewport.y = viewport.height;
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    pushConstBlock.cascadeIndex = 3;
+    vkCmdPushConstants(commandBuffer, m_shadowPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushConstBlock);
+    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    
+    viewport.x = 0;
+    viewport.y = 0;
+    viewport.width = m_swapchainExtent.width;
+    viewport.height = m_swapchainExtent.height;
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     
 //    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
 //    m_sceneLoader.bindBuffers(commandBuffer);
