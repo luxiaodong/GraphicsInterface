@@ -14,16 +14,6 @@ public:
         std::array<glm::mat4, SHADOW_MAP_CASCADE_COUNT> cascadeVP;
     };
     
-    struct Uniform {
-        glm::mat4 projectionMatrix;
-        glm::mat4 viewMatrix;
-        glm::mat4 modelMatrix;
-        glm::mat4 shadowMapMvp;
-        glm::vec4 lightPos;
-        float zNear;
-        float zFar;
-    };
-    
     struct Cascade
     {
         float splitDepth;
@@ -32,6 +22,22 @@ public:
         VkFramebuffer frameBuffer;
         VkDescriptorSet descriptorSet;
         VkImageView view;
+    };
+    
+    struct Uniform {
+        glm::mat4 projectionMatrix;
+        glm::mat4 viewMatrix;
+        glm::mat4 modelMatrix;
+    };
+    
+    struct ShadowReceiveUniform
+    {
+        float cascadeSplits[4];
+        glm::mat4 cascadeViewProjMat[4];
+        glm::mat4 inverseViewMat;
+        glm::vec3 lightDir;
+        float _pad;
+        int32_t colorCascades;
     };
     
     struct PushConstantData
@@ -76,7 +82,6 @@ protected:
     float m_zFar = 48.0f;
     std::array<Cascade, SHADOW_MAP_CASCADE_COUNT> m_cascades;
     
-    
     uint32_t m_shadowMapWidth = 1024;
     uint32_t m_shadowMapHeight = 1024;
     VkBuffer m_shadowUniformBuffer;
@@ -107,6 +112,8 @@ protected:
     // scene
     VkBuffer m_uniformBuffer;
     VkDeviceMemory m_uniformMemory;
+    VkBuffer m_shadowReceiveUniformBuffer;
+    VkDeviceMemory m_shadowReceiveUniformMemory;
     VkPipeline m_graphicsPipeline;
     VkDescriptorSet m_descriptorSet;
 

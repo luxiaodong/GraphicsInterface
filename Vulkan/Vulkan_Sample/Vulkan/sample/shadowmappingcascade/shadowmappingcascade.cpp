@@ -63,9 +63,12 @@ void ShadowMappingCascade::clear()
     vkDestroyDescriptorSetLayout(m_device, m_debugDescriptorSetLayout, nullptr);
     vkDestroyPipelineLayout(m_device, m_debugPipelineLayout, nullptr);
     
-//    vkFreeMemory(m_device, m_uniformMemory, nullptr);
-//    vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
-//    vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
+    // scene
+    vkFreeMemory(m_device, m_uniformMemory, nullptr);
+    vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
+    vkFreeMemory(m_device, m_shadowReceiveUniformMemory, nullptr);
+    vkDestroyBuffer(m_device, m_shadowReceiveUniformBuffer, nullptr);
+    vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     
     m_terrainLoader.clear();
     m_treeLoader.clear();
@@ -98,12 +101,17 @@ void ShadowMappingCascade::prepareUniform()
     updateShadowMapMVP();
     
     // debug or scene
-//    uniformSize = sizeof(Uniform);
-//
-//    Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-//                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-//                                         m_uniformBuffer, m_uniformMemory);
-//    updateUniformMVP();
+    uniformSize = sizeof(Uniform);
+    Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                         m_uniformBuffer, m_uniformMemory);
+    
+    uniformSize = sizeof(ShadowReceiveUniform);
+    Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                         m_shadowReceiveUniformBuffer, m_shadowReceiveUniformMemory);
+    
+    updateUniformMVP();
 }
 
 void ShadowMappingCascade::prepareDescriptorSetLayoutAndPipelineLayout()
@@ -129,24 +137,25 @@ void ShadowMappingCascade::prepareDescriptorSetLayoutAndPipelineLayout()
         createPipelineLayout(&m_debugDescriptorSetLayout, 1, m_debugPipelineLayout, &m_shadowPushConstantRange, 1);
     }
 
-//    {
-//        std::array<VkDescriptorSetLayoutBinding, 3> bindings;
-//        bindings[0] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
-//        bindings[1] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
-//        bindings[2] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 2);
-//        createDescriptorSetLayout(bindings.data(), 3);
-//        createPipelineLayout();
-//    }
+    {
+        std::array<VkDescriptorSetLayoutBinding, 3> bindings;
+        bindings[0] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
+        bindings[1] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
+        bindings[2] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 2);
+        createDescriptorSetLayout(bindings.data(), 3);
+        VkDescriptorSetLayout pSetLayout[2] = {m_descriptorSetLayout, GltfLoader::m_imageDescriptorSetLayout};
+        createPipelineLayout(pSetLayout, 2, m_pipelineLayout, &m_shadowPushConstantRange, 1);
+    }
 }
 
 void ShadowMappingCascade::prepareDescriptorSetAndWrite()
 {
     std::array<VkDescriptorPoolSize, 2> poolSizes;
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = SHADOW_MAP_CASCADE_COUNT;
+    poolSizes[0].descriptorCount = SHADOW_MAP_CASCADE_COUNT + 2;
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = 1;
-    createDescriptorPool(poolSizes.data(), static_cast<uint32_t>(poolSizes.size()), SHADOW_MAP_CASCADE_COUNT + 1);
+    poolSizes[1].descriptorCount = 2;
+    createDescriptorPool(poolSizes.data(), static_cast<uint32_t>(poolSizes.size()), SHADOW_MAP_CASCADE_COUNT + 2);
     
     {
         for(int i = 0; i < SHADOW_MAP_CASCADE_COUNT; ++i)
@@ -177,24 +186,30 @@ void ShadowMappingCascade::prepareDescriptorSetAndWrite()
         vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
     }
     
-//    {
-//        createDescriptorSet(m_descriptorSet);
-//
-//        VkDescriptorBufferInfo bufferInfo = {};
-//        bufferInfo.offset = 0;
-//        bufferInfo.range = VK_WHOLE_SIZE;
-//        bufferInfo.buffer = m_uniformBuffer;
-//
-//        VkDescriptorImageInfo imageInfo = {};
-//        imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-//        imageInfo.imageView = m_offscreenDepthImageView;
-//        imageInfo.sampler = m_offscreenDepthSampler;
-//
-//        std::array<VkWriteDescriptorSet, 2> writes = {};
-//        writes[0] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
-//        writes[1] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo);
-//        vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
-//    }
+    {
+        createDescriptorSet(m_descriptorSet);
+
+        VkDescriptorBufferInfo bufferInfo = {};
+        bufferInfo.offset = 0;
+        bufferInfo.range = VK_WHOLE_SIZE;
+        bufferInfo.buffer = m_uniformBuffer;
+
+        VkDescriptorImageInfo imageInfo = {};
+        imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+        imageInfo.imageView = m_offscreenDepthImageView;
+        imageInfo.sampler = m_offscreenDepthSampler;
+
+        VkDescriptorBufferInfo bufferInfo1 = {};
+        bufferInfo1.offset = 0;
+        bufferInfo1.range = VK_WHOLE_SIZE;
+        bufferInfo1.buffer = m_shadowReceiveUniformBuffer;
+
+        std::array<VkWriteDescriptorSet, 3> writes = {};
+        writes[0] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
+        writes[1] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo);
+        writes[2] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2, &bufferInfo1);
+        vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
+    }
 }
 
 void ShadowMappingCascade::createGraphicsPipeline()
@@ -278,84 +293,112 @@ void ShadowMappingCascade::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
     
     //scene.
-//    int enablePCF = 0;
-//    VkSpecializationMapEntry specializationMapEntry;
-//    specializationMapEntry.constantID = 0;
-//    specializationMapEntry.size = sizeof(int);
-//    specializationMapEntry.offset = 0;
-//
-//    VkSpecializationInfo specializationInfo = {};
-//    specializationInfo.dataSize = sizeof(int);
-//    specializationInfo.mapEntryCount = 1;
-//    specializationInfo.pMapEntries = &specializationMapEntry;
-//    specializationInfo.pData = &enablePCF;
-//
-//    createInfo.pVertexInputState = m_sceneLoader.getPipelineVertexInputState();
-//    rasterization.cullMode = VK_CULL_MODE_BACK_BIT;
-//    rasterization.depthBiasEnable = VK_FALSE;
-//    vertModule = Tools::createShaderModule( Tools::getShaderPath() + "shadowmapping/scene.vert.spv");
-//    fragModule = Tools::createShaderModule( Tools::getShaderPath() + "shadowmapping/scene.frag.spv");
-//    shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
-//    shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
-//    shaderStages[1].pSpecializationInfo = &specializationInfo;
-//    VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_graphicsPipeline));
-//    vkDestroyShaderModule(m_device, vertModule, nullptr);
-//    vkDestroyShaderModule(m_device, fragModule, nullptr);
+    int enablePCF = 0;
+    VkSpecializationMapEntry specializationMapEntry;
+    specializationMapEntry.constantID = 0;
+    specializationMapEntry.size = sizeof(int);
+    specializationMapEntry.offset = 0;
+
+    VkSpecializationInfo specializationInfo = {};
+    specializationInfo.dataSize = sizeof(int);
+    specializationInfo.mapEntryCount = 1;
+    specializationInfo.pMapEntries = &specializationMapEntry;
+    specializationInfo.pData = &enablePCF;
+
+    createInfo.pVertexInputState = m_terrainLoader.getPipelineVertexInputState();
+    createInfo.layout = m_pipelineLayout;
+    vertModule = Tools::createShaderModule( Tools::getShaderPath() + "shadowmappingcascade/scene.vert.spv");
+    fragModule = Tools::createShaderModule( Tools::getShaderPath() + "shadowmappingcascade/scene.frag.spv");
+    shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
+    shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
+    shaderStages[1].pSpecializationInfo = &specializationInfo;
+    VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_graphicsPipeline));
+    vkDestroyShaderModule(m_device, vertModule, nullptr);
+    vkDestroyShaderModule(m_device, fragModule, nullptr);
 }
 
 void ShadowMappingCascade::updateRenderData()
 {
-//    updateLightPos();
-//    updateShadowMapMVP();
-//    updateUniformMVP();
+    updateLightPos();
+    updateCascades();
+    updateShadowMapMVP();
+    updateUniformMVP();
 }
 
 void ShadowMappingCascade::recordRenderCommand(const VkCommandBuffer commandBuffer)
 {
-    VkViewport viewport = Tools::getViewport(0, 0, m_swapchainExtent.width/2, m_swapchainExtent.height/2);
+    VkViewport viewport = Tools::getViewport(0, 0, m_swapchainExtent.width, m_swapchainExtent.height);
     VkRect2D scissor;
     scissor.offset = {0, 0};
     scissor.extent = m_swapchainExtent;
     
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-    
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipeline);
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipelineLayout, 0, 1, &m_debugDescriptorSet, 0, nullptr);
-    
     PushConstantData pushConstBlock = { glm::vec4(0.0f), 0};
-    vkCmdPushConstants(commandBuffer, m_shadowPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushConstBlock);
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
     
-    viewport.x = viewport.width;
-    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-    pushConstBlock.cascadeIndex = 1;
-    vkCmdPushConstants(commandBuffer, m_shadowPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushConstBlock);
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    if(false)
+    {
+        viewport.width = m_swapchainExtent.width/2;
+        viewport.height = m_swapchainExtent.height/2;
+        
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipeline);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipelineLayout, 0, 1, &m_debugDescriptorSet, 0, nullptr);
+        vkCmdPushConstants(commandBuffer, m_shadowPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushConstBlock);
+        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+        
+        viewport.x = viewport.width;
+        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+        pushConstBlock.cascadeIndex = 1;
+        vkCmdPushConstants(commandBuffer, m_shadowPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushConstBlock);
+        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+        
+        viewport.x = 0;
+        viewport.y = viewport.height;
+        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+        pushConstBlock.cascadeIndex = 2;
+        vkCmdPushConstants(commandBuffer, m_shadowPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushConstBlock);
+        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+        
+        viewport.x = viewport.width;
+        viewport.y = viewport.height;
+        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+        pushConstBlock.cascadeIndex = 3;
+        vkCmdPushConstants(commandBuffer, m_shadowPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushConstBlock);
+        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+        
+        viewport.x = 0;
+        viewport.y = 0;
+        viewport.width = m_swapchainExtent.width;
+        viewport.height = m_swapchainExtent.height;
+        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    }
     
-    viewport.x = 0;
-    viewport.y = viewport.height;
-    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-    pushConstBlock.cascadeIndex = 2;
-    vkCmdPushConstants(commandBuffer, m_shadowPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushConstBlock);
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
     
-    viewport.x = viewport.width;
-    viewport.y = viewport.height;
-    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-    pushConstBlock.cascadeIndex = 3;
-    vkCmdPushConstants(commandBuffer, m_shadowPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushConstBlock);
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    // Floor
+//    PushConstantData pushConstBlock = { glm::vec4(0.0f), 0};
+    vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushConstBlock);
+    m_terrainLoader.bindBuffers(commandBuffer);
+    m_terrainLoader.draw(commandBuffer, m_pipelineLayout, 4);
     
-    viewport.x = 0;
-    viewport.y = 0;
-    viewport.width = m_swapchainExtent.width;
-    viewport.height = m_swapchainExtent.height;
-    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    // Trees
+    const std::vector<glm::vec3> positions =
+    {
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(1.25f, 0.25f, 1.25f),
+        glm::vec3(-1.25f, -0.2f, 1.25f),
+        glm::vec3(1.25f, 0.1f, -1.25f),
+        glm::vec3(-1.25f, -0.25f, -1.25f),
+    };
     
-//    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
-//    m_sceneLoader.bindBuffers(commandBuffer);
-//    m_sceneLoader.draw(commandBuffer);
+    for (auto position : positions)
+    {
+        pushConstBlock.position = {position, 1.0f};
+        vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushConstBlock);
+        m_treeLoader.bindBuffers(commandBuffer);
+        m_treeLoader.draw(commandBuffer, m_pipelineLayout, 4);
+    }
 }
 
 // ================= shadow mapping ======================
@@ -463,13 +506,12 @@ void ShadowMappingCascade::updateCascades()
         glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f, maxExtents.z - minExtents.z);
 
         // Store split distance and matrix in cascade
-        m_cascades[i].splitDepth = (nearClip + splitDist * clipRange) * -1.0f; // 这里为什么要乘 -1
+        m_cascades[i].splitDepth = (nearClip + splitDist * clipRange) * -1.0f; // view空间z轴朝向负轴.
         m_cascades[i].viewProjMatrix = lightOrthoMatrix * lightViewMatrix;
 
         lastSplitDist = cascadeSplits[i];
     }
 }
-
 
 void ShadowMappingCascade::updateShadowMapMVP()
 {
@@ -487,11 +529,18 @@ void ShadowMappingCascade::updateUniformMVP()
     mvp.projectionMatrix = m_camera.m_projMat;
     mvp.viewMatrix = m_camera.m_viewMat;
     mvp.modelMatrix = glm::mat4(1.0f);
-//    mvp.shadowMapMvp = m_shadowUniformMvp.shadowMVP;
-    mvp.lightPos = glm::vec4(m_lightPos, 1.0f);
-    mvp.zNear = m_zNear;
-    mvp.zFar = m_zFar;
     Tools::mapMemory(m_uniformMemory, sizeof(Uniform), &mvp);
+    
+    ShadowReceiveUniform shadowUniform = {};
+    for(int i = 0; i < SHADOW_MAP_CASCADE_COUNT; ++i)
+    {
+        shadowUniform.cascadeSplits[i] = m_cascades[i].splitDepth;
+        shadowUniform.cascadeViewProjMat[i] = m_cascades[i].viewProjMatrix;
+    }
+    shadowUniform.inverseViewMat = glm::inverse(m_camera.m_viewMat);
+    shadowUniform.lightDir = normalize(-m_lightPos);
+    shadowUniform.colorCascades = 0;
+    Tools::mapMemory(m_shadowReceiveUniformMemory, sizeof(ShadowReceiveUniform), &shadowUniform);
 }
 
 void ShadowMappingCascade::createOtherBuffer()
