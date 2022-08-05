@@ -51,9 +51,8 @@ protected:
 protected:
     // shadowmapping.
     glm::vec4 m_lightPos = glm::vec4(0.0f, -2.5f, 0.0f, 1.0);
-    float m_lightFOV = 45.0f;
-    float m_zNear = 1.0f;
-    float m_zFar = 96.0f;
+    float m_zNear = 0.1f;
+    float m_zFar = 512.0f;
     
     uint32_t m_shadowMapWidth = 1024;
     uint32_t m_shadowMapHeight = 1024;
@@ -86,6 +85,7 @@ protected:
     VkSampler m_cubeSampler;
     
     // debug
+    bool m_isShowDebug = false;
     VkPipeline m_debugPipeline;
     
     // scene

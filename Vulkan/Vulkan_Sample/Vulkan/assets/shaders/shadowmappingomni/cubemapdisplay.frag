@@ -6,6 +6,11 @@ layout (location = 0) in vec2 inUV;
 
 layout (location = 0) out vec4 outFragColor;
 
+
+//    []
+// [] [] [] []
+//    []
+
 void main() 
 {
 	outFragColor.rgb = vec3(0.05);
@@ -48,7 +53,26 @@ void main()
 	}
 
 	if ((samplePos.x != 0.0f) && (samplePos.y != 0.0f)) {
-		float dist = length(texture(shadowCubeMap, samplePos).xyz) * 0.005;
+		float dist = length(texture(shadowCubeMap, samplePos).xyz);
 		outFragColor = vec4(vec3(dist), 1.0);
 	}
+
+/*
+	outFragColor = vec4(0.0, 0.0, 0.0, 1.0);
+	if(y == 1)
+	{
+		if(x == 0) outFragColor = vec4(1.0, 0.0, 0.0, 1.0);
+		if(x == 1) outFragColor = vec4(1.0, 1.0, 1.0, 1.0);
+		if(x == 2) outFragColor = vec4(0.0, 1.0, 0.0, 1.0);
+		if(x == 3) outFragColor = vec4(0.0, 0.0, 1.0, 1.0);
+	}
+	else
+	{
+		if(x == 1)
+		{
+			if(y == 0) outFragColor = vec4(1.0, 1.0, 0.0, 1.0);
+			if(y == 2) outFragColor = vec4(0.0, 1.0, 1.0, 1.0);
+		}
+	}
+*/	
 }

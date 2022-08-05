@@ -27,7 +27,7 @@ void PointLightShadow::initCamera()
 {
     m_camera.setPosition(glm::vec3(0.0f, 0.5f, -15.0f));
     m_camera.setRotation(glm::vec3(-20.5f, -673.0f, 0.0f));
-    m_camera.setPerspective(45.0f, (float)m_width / (float)m_height, 0.1f, 512.0f);
+    m_camera.setPerspective(45.0f, (float)m_width / (float)m_height, m_zNear, m_zFar);
 }
 
 void PointLightShadow::setEnabledFeatures()
@@ -63,9 +63,9 @@ void PointLightShadow::clear()
 
     vkDestroyPipeline(m_device, m_debugPipeline, nullptr);
     
-//    vkFreeMemory(m_device, m_uniformMemory, nullptr);
-//    vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
-//    vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
+    vkFreeMemory(m_device, m_uniformMemory, nullptr);
+    vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
+    vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     
     m_sceneLoader.clear();
     m_cubeLoader.clear();
@@ -226,10 +226,10 @@ void PointLightShadow::createGraphicsPipeline()
     //debug.
     //dynamicStates.pop_back();
 //    rasterization.depthBiasEnable = VK_FALSE;
-//    VkPipelineVertexInputStateCreateInfo emptyInputState = {};
-//    emptyInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-//    createInfo.pVertexInputState = &emptyInputState;
-    createInfo.pVertexInputState = m_cubeLoader.getPipelineVertexInputState();
+    VkPipelineVertexInputStateCreateInfo emptyInputState = {};
+    emptyInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    createInfo.pVertexInputState = &emptyInputState;
+//    createInfo.pVertexInputState = m_cubeLoader.getPipelineVertexInputState();
     rasterization.cullMode = VK_CULL_MODE_NONE;
     createInfo.layout = m_pipelineLayout;
     createInfo.renderPass = m_renderPass;
@@ -242,29 +242,14 @@ void PointLightShadow::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
     
     //scene.
-//    int enablePCF = 0;
-//    VkSpecializationMapEntry specializationMapEntry;
-//    specializationMapEntry.constantID = 0;
-//    specializationMapEntry.size = sizeof(int);
-//    specializationMapEntry.offset = 0;
-//
-//    VkSpecializationInfo specializationInfo = {};
-//    specializationInfo.dataSize = sizeof(int);
-//    specializationInfo.mapEntryCount = 1;
-//    specializationInfo.pMapEntries = &specializationMapEntry;
-//    specializationInfo.pData = &enablePCF;
-//
-//    createInfo.pVertexInputState = m_sceneLoader.getPipelineVertexInputState();
-//    rasterization.cullMode = VK_CULL_MODE_BACK_BIT;
-//    rasterization.depthBiasEnable = VK_FALSE;
-//    vertModule = Tools::createShaderModule( Tools::getShaderPath() + "shadowmapping/scene.vert.spv");
-//    fragModule = Tools::createShaderModule( Tools::getShaderPath() + "shadowmapping/scene.frag.spv");
-//    shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
-//    shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
-//    shaderStages[1].pSpecializationInfo = &specializationInfo;
-//    VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_graphicsPipeline));
-//    vkDestroyShaderModule(m_device, vertModule, nullptr);
-//    vkDestroyShaderModule(m_device, fragModule, nullptr);
+    createInfo.pVertexInputState = m_cubeLoader.getPipelineVertexInputState();
+    vertModule = Tools::createShaderModule( Tools::getShaderPath() + "shadowmappingomni/scene.vert.spv");
+    fragModule = Tools::createShaderModule( Tools::getShaderPath() + "shadowmappingomni/scene.frag.spv");
+    shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
+    shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
+    VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_graphicsPipeline));
+    vkDestroyShaderModule(m_device, vertModule, nullptr);
+    vkDestroyShaderModule(m_device, fragModule, nullptr);
 }
 
 void PointLightShadow::updateRenderData()
@@ -284,13 +269,18 @@ void PointLightShadow::recordRenderCommand(const VkCommandBuffer commandBuffer)
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipeline);
-    m_cubeLoader.bindBuffers(commandBuffer);
-    m_cubeLoader.draw(commandBuffer);
     
-//    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
-//    m_sceneLoader.bindBuffers(commandBuffer);
-//    m_sceneLoader.draw(commandBuffer);
+    if(m_isShowDebug)
+    {
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_debugPipeline);
+        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    }
+    else
+    {
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+        m_sceneLoader.bindBuffers(commandBuffer);
+        m_sceneLoader.draw(commandBuffer);
+    }
 }
 
 // ================= shadow mapping ======================
@@ -301,7 +291,7 @@ void PointLightShadow::updateShadowMapMVP()
     m_lightPos.x = sin(glm::radians(passTime * 360.0f)) * 0.15f;
     m_lightPos.z = cos(glm::radians(passTime * 360.0f)) * 0.15f;
 //    passTime += 0.001f;
-    
+
     Uniform mvp = {};
     mvp.projectionMatrix = glm::perspective((float)(M_PI/2.0), 1.0f, m_zNear, m_zFar);
     mvp.viewMatrix = glm::mat4(1.0f);
@@ -474,7 +464,7 @@ void PointLightShadow::createOtherRenderPass(const VkCommandBuffer& commandBuffe
         pushConstBlock.viewMatrix = viewMatrix;
         
         std::array<VkClearValue, 2> clearValues = {};
-        clearValues[0].color = {0, 0, 0, 0};
+        clearValues[0].color = {0, 0, 0, 1.0f};
         clearValues[1].depthStencil = {1.0f, 0};
         
         VkRenderPassBeginInfo passBeginInfo = {};
