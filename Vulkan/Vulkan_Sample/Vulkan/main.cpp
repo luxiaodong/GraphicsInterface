@@ -22,6 +22,7 @@
 #include "sample/highdynamicrange/highdynamicrange.h"
 #include "sample/shadowmapping/shadowmapping.h"
 #include "sample/shadowmappingcascade/shadowmappingcascade.h"
+#include "sample/pointlightshadow/pointlightshadow.h"
 
 int main(int argc, const char * argv[])
 {
@@ -48,8 +49,10 @@ int main(int argc, const char * argv[])
 //    MultiSampling app("multisampling");
 //    HighDynamicRange app("highdynamicrange");
 //    ShadowMapping app("shadowmapping");
+//    ShadowMappingCascade app("shadowmappingcascade");
     
-    ShadowMappingCascade app("shadowmappingcascade");
+    PointLightShadow app("pointlightshadow");
+    
     try {
         app.run();
     } catch (const std::exception& e) {
