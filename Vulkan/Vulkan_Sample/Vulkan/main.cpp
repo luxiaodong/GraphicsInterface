@@ -24,6 +24,7 @@
 #include "sample/shadowmappingcascade/shadowmappingcascade.h"
 #include "sample/pointlightshadow/pointlightshadow.h"
 #include "sample/runtimemipmap/runtimemipmap.h"
+#include "sample/screenshot/screenshot.h"
 
 int main(int argc, const char * argv[])
 {
@@ -52,8 +53,9 @@ int main(int argc, const char * argv[])
 //    ShadowMapping app("shadowmapping");
 //    ShadowMappingCascade app("shadowmappingcascade");
 //    PointLightShadow app("pointlightshadow");
+//    RuntimeMipmap app("runtimemipmap");
     
-    RuntimeMipmap app("runtimemipmap");
+    ScreenShot app("screenshot");
     
     try {
         app.run();
