@@ -362,7 +362,7 @@ VkWriteDescriptorSet Tools::getWriteDescriptorSet(VkDescriptorSet descriptorSet,
     writeDescriptorSet.dstSet = descriptorSet;
     writeDescriptorSet.dstBinding = binding;
     writeDescriptorSet.dstArrayElement = 0;
-    writeDescriptorSet.descriptorCount = 1;
+    writeDescriptorSet.descriptorCount = count;
     writeDescriptorSet.descriptorType = descriptorType;
     writeDescriptorSet.pBufferInfo = bufferInfo;
     writeDescriptorSet.pImageInfo = nullptr;
@@ -377,7 +377,7 @@ VkWriteDescriptorSet Tools::getWriteDescriptorSet(VkDescriptorSet descriptorSet,
     writeDescriptorSet.dstSet = descriptorSet;
     writeDescriptorSet.dstBinding = binding;
     writeDescriptorSet.dstArrayElement = 0;
-    writeDescriptorSet.descriptorCount = 1;
+    writeDescriptorSet.descriptorCount = count;
     writeDescriptorSet.descriptorType = descriptorType;
     writeDescriptorSet.pBufferInfo = nullptr;
     writeDescriptorSet.pImageInfo = imageInfo;

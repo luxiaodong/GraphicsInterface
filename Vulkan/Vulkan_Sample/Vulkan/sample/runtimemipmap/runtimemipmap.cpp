@@ -66,7 +66,7 @@ void RuntimeMipmap::prepareVertex()
 
     m_mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_pTexture->m_width, m_pTexture->m_height)))) + 1;
     
-    Tools::createImageAndMemoryThenBind(m_pTexture->m_fromat, m_pTexture->m_width, m_pTexture->m_height, m_pTexture->m_mipLevels, m_mipLevels,
+    Tools::createImageAndMemoryThenBind(m_pTexture->m_fromat, m_pTexture->m_width, m_pTexture->m_height, m_mipLevels, 1,
                                         VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                                         VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                         m_image, m_imageMemory);
@@ -138,7 +138,7 @@ void RuntimeMipmap::generateMipmaps()
         
         VkImageMemoryBarrier barrier = {};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        barrier.image = m_pTexture->m_image;
+        barrier.image = m_image;
         barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -152,7 +152,7 @@ void RuntimeMipmap::generateMipmaps()
         for(uint32_t i = 1; i < m_mipLevels; ++i)
         {
             barrier.subresourceRange.baseMipLevel = i;
-            barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
             barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
             barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -173,7 +173,7 @@ void RuntimeMipmap::generateMipmaps()
             imageBlit.dstOffsets[0] = {0,0,0};
             imageBlit.dstOffsets[1] = { std::max((int)mipWidth>>1, 1), std::max((int)mipHeight>>1, 1), 1};
             
-            vkCmdBlitImage(cmd, m_pTexture->m_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_pTexture->m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageBlit, VK_FILTER_LINEAR);
+            vkCmdBlitImage(cmd, m_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageBlit, VK_FILTER_LINEAR);
             
             barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
             barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
@@ -194,7 +194,7 @@ void RuntimeMipmap::generateMipmaps()
         subresourceRange.baseMipLevel = 0;
         subresourceRange.levelCount = m_mipLevels;
         
-        Tools::setImageLayout(cmd, m_pTexture->m_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, subresourceRange);
+        Tools::setImageLayout(cmd, m_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, subresourceRange);
     }
     
     Tools::flushCommandBuffer(cmd, m_graphicsQueue, true);
