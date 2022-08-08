@@ -407,7 +407,7 @@ void Application::createSwapchain()
     VkSurfaceCapabilitiesKHR surfaceCapabilityKHR;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice, m_surfaceKHR, &surfaceCapabilityKHR);
     
-    m_surfaceFormatKHR.format = VK_FORMAT_B8G8R8A8_UNORM;
+    m_surfaceFormatKHR.format = VK_FORMAT_B8G8R8A8_UNORM; // 本电脑上不支持 VK_FORMAT_R8G8B8A8_UNORM
     m_surfaceFormatKHR.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
     m_swapchainExtent.width = m_width * 2;
     m_swapchainExtent.height = m_height * 2;

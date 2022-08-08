@@ -300,33 +300,42 @@ void ScreenShot::saveToFile()
         isColorSwizzle = true;
     }
     
-    unsigned char* img = new unsigned char[width * height * 3];
-    unsigned char* pOutImage = img;
-    
-    for(uint32_t j=0; j<height; ++j)
+    if(isColorSwizzle)
     {
-        unsigned char *row = (unsigned char*)pDstImage;
-        for(uint32_t i=0; i<width; ++i)
+        unsigned char* img = new unsigned char[width * height * 3];
+        unsigned char* pOutImage = img;
+        
+        for(uint32_t j=0; j<height; ++j)
         {
-            if(isColorSwizzle == true)
+            unsigned char *row = (unsigned char*)pDstImage;
+            for(uint32_t i=0; i<width; ++i)
             {
-                *pOutImage++ = *(row+2);
-                *pOutImage++ = *(row+1);
-                *pOutImage++ = *row;
+                uint32_t offset = i*4;
+                if(isColorSwizzle == true)
+                {
+                    *pOutImage++ = *(row+offset+2);
+                    *pOutImage++ = *(row+offset+1);
+                    *pOutImage++ = *(row+offset);
+                }
+                else
+                {
+                    *pOutImage++ = *(row+offset);
+                    *pOutImage++ = *(row+offset+1);
+                    *pOutImage++ = *(row+offset+2);
+                }
             }
-            else
-            {
-                *pOutImage++ = *row;
-                *pOutImage++ = *(row+1);
-                *pOutImage++ = *(row+2);
-            }
+            pDstImage += subResourceLayout.rowPitch;
         }
-        pDstImage += subResourceLayout.rowPitch;
+        
+        svpng(fopen("screenshot.png", "wb"), width, height, img, 0);
+        
+        delete[] img;
+    }
+    else
+    {
+        svpng(fopen("screenshot.png", "wb"), width, height, pDstImage, 1);
     }
     
-    svpng(fopen("/Users/luxiaodong/Desktop/screenshot.png", "wb"), width, height, img, 0);
-    
-    delete[] img;
     vkUnmapMemory(m_device, dstMemory);
     vkFreeMemory(m_device, dstMemory, nullptr);
     vkDestroyImage(m_device, dstImage, nullptr);
