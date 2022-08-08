@@ -143,12 +143,11 @@ void Application::render()
     //fence需要手动重置为未发出的信号
     vkWaitForFences(m_device, 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
     vkResetFences(m_device, 1, &m_inFlightFences[m_currentFrame]);
-    
-    uint32_t imageIndex = 0;
-    vkAcquireNextImageKHR(m_device, m_swapchainKHR, UINT64_MAX, m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &imageIndex);
 
-    VkCommandBuffer commandBuffer = m_commandBuffers[imageIndex];
-    beginRenderCommandAndPass(commandBuffer, imageIndex);
+    vkAcquireNextImageKHR(m_device, m_swapchainKHR, UINT64_MAX, m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &m_imageIndex);
+
+    VkCommandBuffer commandBuffer = m_commandBuffers[m_imageIndex];
+    beginRenderCommandAndPass(commandBuffer, m_imageIndex);
     recordRenderCommand(commandBuffer);
     
     if(m_pUi)
@@ -181,7 +180,7 @@ void Application::render()
     presentInfo.pWaitSemaphores = &m_renderFinishedSemaphores[m_currentFrame];
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = &m_swapchainKHR;
-    presentInfo.pImageIndices = &imageIndex;
+    presentInfo.pImageIndices = &m_imageIndex;
     presentInfo.pResults = nullptr;
     
     if(vkQueuePresentKHR(m_presentQueue, &presentInfo) != VK_SUCCESS)
@@ -422,7 +421,7 @@ void Application::createSwapchain()
     createInfo.imageColorSpace = m_surfaceFormatKHR.colorSpace;
     createInfo.imageExtent = m_swapchainExtent;
     createInfo.imageArrayLayers = 1;
-    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    createInfo.imageUsage = m_swapchainImageUsage;
     createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     createInfo.queueFamilyIndexCount = 0;
     createInfo.pQueueFamilyIndices = nullptr;

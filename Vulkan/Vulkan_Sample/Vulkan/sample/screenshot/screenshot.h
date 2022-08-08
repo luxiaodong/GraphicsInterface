@@ -23,6 +23,7 @@ public:
     
     virtual void updateRenderData();
     virtual void recordRenderCommand(const VkCommandBuffer commandBuffer);
+    virtual void keyboard(int key, int scancode, int action, int mods);
     
 protected:
     void prepareVertex();
@@ -30,6 +31,9 @@ protected:
     void prepareDescriptorSetLayoutAndPipelineLayout();
     void prepareDescriptorSetAndWrite();
     void createGraphicsPipeline();
+    
+private:
+    void saveToFile();
 
 protected:
     VkPipeline m_graphicsPipeline;
@@ -37,6 +41,8 @@ protected:
     
     VkBuffer m_uniformBuffer;
     VkDeviceMemory m_uniformMemory;
+    
+    bool m_useBlitImage = true;
     
 private:
     GltfLoader m_dragonLoader;

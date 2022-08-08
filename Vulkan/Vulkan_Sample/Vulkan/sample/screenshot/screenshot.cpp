@@ -1,8 +1,10 @@
 
 #include "screenshot.h"
+#include "svpng.inc"
 
 ScreenShot::ScreenShot(std::string title) : Application(title)
 {
+    m_swapchainImageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 }
 
 ScreenShot::~ScreenShot()
@@ -160,4 +162,172 @@ void ScreenShot::recordRenderCommand(const VkCommandBuffer commandBuffer)
     m_dragonLoader.bindBuffers(commandBuffer);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
     m_dragonLoader.draw(commandBuffer);
+}
+
+void ScreenShot::keyboard(int key, int scancode, int action, int mods)
+{
+    if(action != GLFW_RELEASE) return ;
+    if(key == GLFW_KEY_1)
+    {
+        std::cout << "key 1" << std::endl;
+        saveToFile();
+    }
+}
+
+void ScreenShot::saveToFile()
+{
+    uint32_t width = m_swapchainExtent.width;
+    uint32_t height = m_swapchainExtent.height;
+    
+    VkImage srcImage = m_swapchainImages[m_imageIndex];
+    VkImage dstImage;
+    VkDeviceMemory dstMemory;
+    
+    Tools::createImageAndMemoryThenBind(VK_FORMAT_R8G8B8A8_UNORM, width, height, 1, 1,
+                                        VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_IMAGE_TILING_LINEAR,
+                                        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                        dstImage, dstMemory);
+    
+    VkCommandBuffer cmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+    
+    Tools::setImageLayout(cmd, dstImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
+    
+    VkImageSubresourceRange subresourceRange = {};
+    subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    subresourceRange.baseArrayLayer = 0;
+    subresourceRange.layerCount = 1;
+    subresourceRange.levelCount = 1;
+    subresourceRange.baseMipLevel = 0;
+    
+    VkImageMemoryBarrier barrier = {};
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.subresourceRange = subresourceRange;
+    barrier.image = srcImage;
+    barrier.oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    barrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+    
+    barrier.image = dstImage;
+    barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    barrier.srcAccessMask = 0;
+    barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+    
+    // Check blit support for source and destination
+    VkFormatProperties formatProps;
+
+    // Check if the device supports blitting from optimal images (the swapchain images are in optimal format)
+    vkGetPhysicalDeviceFormatProperties(m_physicalDevice, m_surfaceFormatKHR.format, &formatProps);
+    if (!(formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT)) {
+//        std::cerr << "Device does not support blitting from optimal tiled images, using copy instead of blit!" << std::endl;
+        m_useBlitImage = false;
+    }
+
+    // Check if the device supports blitting to linear images
+    vkGetPhysicalDeviceFormatProperties(m_physicalDevice, VK_FORMAT_R8G8B8A8_UNORM, &formatProps);
+    if (!(formatProps.linearTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT)) {
+//        std::cerr << "Device does not support blitting to linear tiled images, using copy instead of blit!" << std::endl;
+        m_useBlitImage = false;
+    }
+    
+    if(m_useBlitImage)
+    {
+        VkImageBlit imageBlit = {};
+        imageBlit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageBlit.srcSubresource.mipLevel = 0;
+        imageBlit.srcSubresource.baseArrayLayer = 0;
+        imageBlit.srcSubresource.layerCount = 1;
+        imageBlit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageBlit.dstSubresource.mipLevel = 0;
+        imageBlit.dstSubresource.baseArrayLayer = 0;
+        imageBlit.dstSubresource.layerCount = 1;
+        imageBlit.srcOffsets[0] = {0,0,0};
+        imageBlit.srcOffsets[1] = {(int)width, (int)height, 1};
+        imageBlit.dstOffsets[0] = {0,0,0};
+        imageBlit.dstOffsets[1] = {(int)width, (int)height, 1};
+        
+        vkCmdBlitImage(cmd, srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageBlit, VK_FILTER_LINEAR);
+    }
+    else
+    {
+        VkImageCopy imageCopyRegion{};
+        imageCopyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageCopyRegion.srcSubresource.layerCount = 1;
+        imageCopyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageCopyRegion.dstSubresource.layerCount = 1;
+        imageCopyRegion.extent.width = width;
+        imageCopyRegion.extent.height = height;
+        imageCopyRegion.extent.depth = 1;
+        vkCmdCopyImage(cmd, srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageCopyRegion);
+    }
+    
+    barrier.image = srcImage;
+    barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+    
+    barrier.image = dstImage;
+    barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+    barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    
+    Tools::flushCommandBuffer(cmd, m_graphicsQueue, true);
+    
+    // 获取数据的偏移地址.
+    VkImageSubresource subResource = {};
+    subResource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    subResource.mipLevel = 0;
+    subResource.arrayLayer = 0;
+    VkSubresourceLayout subResourceLayout;
+    vkGetImageSubresourceLayout(m_device, dstImage, &subResource, &subResourceLayout);
+    
+    unsigned char *pDstImage;
+    vkMapMemory(m_device, dstMemory, 0, VK_WHOLE_SIZE, 0, (void**)&pDstImage);
+    pDstImage += subResourceLayout.offset;
+    
+    // if source is BGR, convert to RGB.
+    bool isColorSwizzle = false;
+    if(m_surfaceFormatKHR.format == VK_FORMAT_B8G8R8A8_UNORM)
+    {
+        isColorSwizzle = true;
+    }
+    
+    unsigned char* img = new unsigned char[width * height * 3];
+    unsigned char* pOutImage = img;
+    
+    for(uint32_t j=0; j<height; ++j)
+    {
+        unsigned char *row = (unsigned char*)pDstImage;
+        for(uint32_t i=0; i<width; ++i)
+        {
+            if(isColorSwizzle == true)
+            {
+                *pOutImage++ = *(row+2);
+                *pOutImage++ = *(row+1);
+                *pOutImage++ = *row;
+            }
+            else
+            {
+                *pOutImage++ = *row;
+                *pOutImage++ = *(row+1);
+                *pOutImage++ = *(row+2);
+            }
+        }
+        pDstImage += subResourceLayout.rowPitch;
+    }
+    
+    svpng(fopen("/Users/luxiaodong/Desktop/screenshot.png", "wb"), width, height, img, 0);
+    
+    delete[] img;
+    vkUnmapMemory(m_device, dstMemory);
+    vkFreeMemory(m_device, dstMemory, nullptr);
+    vkDestroyImage(m_device, dstImage, nullptr);
 }

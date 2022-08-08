@@ -39,8 +39,8 @@ public:
     virtual void recordRenderCommand(const VkCommandBuffer commandBuffer) = 0;
     void endRenderCommandAndPass(const VkCommandBuffer commandBuffer);
     
-    void keyboard(int key, int scancode, int action, int mods);
-    void mouse(double x, double y);
+    virtual void keyboard(int key, int scancode, int action, int mods);
+    virtual void mouse(double x, double y);
     void resize(int width, int height);
     
 protected:
@@ -104,6 +104,8 @@ protected:
     VkPhysicalDeviceMemoryProperties m_deviceMemoryProperties;
     VkPhysicalDeviceFeatures m_deviceEnabledFeatures = {}; //上面是总的特征,这个是程序支持的特征.
     
+    VkImageUsageFlags m_swapchainImageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    
     VkSwapchainKHR m_swapchainKHR;
     VkExtent2D m_swapchainExtent;
     VkSurfaceFormatKHR m_surfaceFormatKHR;
@@ -135,4 +137,5 @@ protected:
     std::vector<VkFence> m_inFlightFences;
     
     uint32_t m_currentFrame = 0;
+    uint32_t m_imageIndex = 0;
 };

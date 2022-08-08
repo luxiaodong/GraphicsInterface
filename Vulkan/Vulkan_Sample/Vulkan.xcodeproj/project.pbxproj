@@ -20,6 +20,8 @@
 		B0A01088289BA9FC006A339B /* pointlightshadow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A01087289BA9FC006A339B /* pointlightshadow.cpp */; };
 		B0A0108D289D1589006A339B /* runtimemipmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A0108B289D1589006A339B /* runtimemipmap.cpp */; };
 		B0A01092289E591A006A339B /* screenshot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A01091289E591A006A339B /* screenshot.cpp */; };
+		B0A01095289E61B2006A339B /* svpng.c in Sources */ = {isa = PBXBuildFile; fileRef = B0A01094289E61B2006A339B /* svpng.c */; };
+		B0A01098289E621F006A339B /* svpng.inc in Sources */ = {isa = PBXBuildFile; fileRef = B0A01097289E621F006A339B /* svpng.inc */; };
 		B0A47F1F282E4D6200209D51 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A47F1E282E4D6200209D51 /* main.cpp */; };
 		B0A48A96282E5E0B00209D51 /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A48A95282E5E0B00209D51 /* libglfw3.a */; };
 		B0A48A98282E5EBF00209D51 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A48A97282E5EBF00209D51 /* CoreFoundation.framework */; };
@@ -110,6 +112,8 @@
 		B0A0108C289D1589006A339B /* runtimemipmap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = runtimemipmap.h; sourceTree = "<group>"; };
 		B0A01090289E591A006A339B /* screenshot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = screenshot.h; sourceTree = "<group>"; };
 		B0A01091289E591A006A339B /* screenshot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = screenshot.cpp; sourceTree = "<group>"; };
+		B0A01094289E61B2006A339B /* svpng.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = svpng.c; sourceTree = "<group>"; };
+		B0A01097289E621F006A339B /* svpng.inc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.pascal; path = svpng.inc; sourceTree = "<group>"; };
 		B0A47F1B282E4D6200209D51 /* Vulkan */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Vulkan; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0A47F1E282E4D6200209D51 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		B0A48A95282E5E0B00209D51 /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = ../3rdParty/glfw/lib/libglfw3.a; sourceTree = "<group>"; };
@@ -290,6 +294,8 @@
 		B0A0108F289E591A006A339B /* screenshot */ = {
 			isa = PBXGroup;
 			children = (
+				B0A01097289E621F006A339B /* svpng.inc */,
+				B0A01094289E61B2006A339B /* svpng.c */,
 				B0A01090289E591A006A339B /* screenshot.h */,
 				B0A01091289E591A006A339B /* screenshot.cpp */,
 			);
@@ -676,6 +682,7 @@
 				B0B5D0202875293B003A175D /* camera.cpp in Sources */,
 				B0B5D09B287920AD003A175D /* gltfNode.cpp in Sources */,
 				B0B5D0C0287EBB26003A175D /* pushconstants.cpp in Sources */,
+				B0A01095289E61B2006A339B /* svpng.c in Sources */,
 				B0B5D0ED28816280003A175D /* inputattachments.cpp in Sources */,
 				B0B5D0892876AC69003A175D /* swap.c in Sources */,
 				B0B5D09F287944F7003A175D /* mesh.cpp in Sources */,
@@ -700,6 +707,7 @@
 				B0B5D0FC2888F884003A175D /* particlefire.cpp in Sources */,
 				B0B5D0F728879E48003A175D /* offscreen.cpp in Sources */,
 				B0A0107928926B34006A339B /* highdynamicrange.cpp in Sources */,
+				B0A01098289E621F006A339B /* svpng.inc in Sources */,
 				B0B5D0E228813096003A175D /* texture3d.cpp in Sources */,
 				B0B5D02C28753328003A175D /* gltfLoader.cpp in Sources */,
 				B0B5D0862876AC3F003A175D /* checkheader.c in Sources */,
