@@ -22,9 +22,8 @@ void Pipelines::init()
 
 void Pipelines::initCamera()
 {
-    m_camera.setPosition(glm::vec3(2.0f, 4.0f, -9.0f));
+    m_camera.setPosition(glm::vec3(0.0f, 0.0f, -10.5f));
     m_camera.setRotation(glm::vec3(-25.0f, 15.0f, 0.0f));
-    m_camera.setRotationSpeed(0.5f);
     m_camera.setPerspective(60.0f, (float)(m_width/3.0f) / (float)m_height, 0.1f, 256.0f);
 }
 
@@ -63,7 +62,7 @@ void Pipelines::prepareVertex()
 
 void Pipelines::prepareUniform()
 {
-    VkDeviceSize uniformSize = sizeof(Pipelines::Uniform);
+    VkDeviceSize uniformSize = sizeof(Uniform);
 
     Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -87,7 +86,7 @@ void Pipelines::prepareDescriptorSetAndWrite()
 
     VkDescriptorBufferInfo bufferInfo = {};
     bufferInfo.offset = 0;
-    bufferInfo.range = sizeof(Pipelines::Uniform);
+    bufferInfo.range = sizeof(Uniform);
     bufferInfo.buffer = m_uniformBuffer;
 
     VkWriteDescriptorSet write = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
@@ -200,12 +199,12 @@ void Pipelines::createGraphicsPipeline()
 
 void Pipelines::updateRenderData()
 {
-    Pipelines::Uniform mvp = {};
+    Uniform mvp = {};
     mvp.modelMatrix = m_camera.m_viewMat;
     mvp.viewMatrix = glm::mat4(1.0f);
     mvp.projectionMatrix = m_camera.m_projMat;
     mvp.lightPos = glm::vec4(0.0f, 2.0f, 1.0f, 0.0f);
-    Tools::mapMemory(m_uniformMemory, sizeof(Pipelines::Uniform), &mvp);
+    Tools::mapMemory(m_uniformMemory, sizeof(Uniform), &mvp);
 }
 
 void Pipelines::recordRenderCommand(const VkCommandBuffer commandBuffer)

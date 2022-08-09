@@ -25,6 +25,7 @@
 #include "sample/pointlightshadow/pointlightshadow.h"
 #include "sample/runtimemipmap/runtimemipmap.h"
 #include "sample/screenshot/screenshot.h"
+#include "sample/orderindependenttransparency/orderindependenttransparency.h"
 
 int main(int argc, const char * argv[])
 {
@@ -54,8 +55,9 @@ int main(int argc, const char * argv[])
 //    ShadowMappingCascade app("shadowmappingcascade");
 //    PointLightShadow app("pointlightshadow");
 //    RuntimeMipmap app("runtimemipmap");
+//    ScreenShot app("screenshot");
     
-    ScreenShot app("screenshot");
+    OrderIndependentTransparency app("orderindependenttransparency");
     
     try {
         app.run();

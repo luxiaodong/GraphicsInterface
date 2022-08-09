@@ -22,6 +22,7 @@
 		B0A01092289E591A006A339B /* screenshot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A01091289E591A006A339B /* screenshot.cpp */; };
 		B0A01095289E61B2006A339B /* svpng.c in Sources */ = {isa = PBXBuildFile; fileRef = B0A01094289E61B2006A339B /* svpng.c */; };
 		B0A01098289E621F006A339B /* svpng.inc in Sources */ = {isa = PBXBuildFile; fileRef = B0A01097289E621F006A339B /* svpng.inc */; };
+		B0A0109D28A20665006A339B /* orderindependenttransparency.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A0109C28A20665006A339B /* orderindependenttransparency.cpp */; };
 		B0A47F1F282E4D6200209D51 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A47F1E282E4D6200209D51 /* main.cpp */; };
 		B0A48A96282E5E0B00209D51 /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A48A95282E5E0B00209D51 /* libglfw3.a */; };
 		B0A48A98282E5EBF00209D51 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A48A97282E5EBF00209D51 /* CoreFoundation.framework */; };
@@ -114,6 +115,8 @@
 		B0A01091289E591A006A339B /* screenshot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = screenshot.cpp; sourceTree = "<group>"; };
 		B0A01094289E61B2006A339B /* svpng.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = svpng.c; sourceTree = "<group>"; };
 		B0A01097289E621F006A339B /* svpng.inc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.pascal; path = svpng.inc; sourceTree = "<group>"; };
+		B0A0109B28A20665006A339B /* orderindependenttransparency.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = orderindependenttransparency.h; sourceTree = "<group>"; };
+		B0A0109C28A20665006A339B /* orderindependenttransparency.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = orderindependenttransparency.cpp; sourceTree = "<group>"; };
 		B0A47F1B282E4D6200209D51 /* Vulkan */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Vulkan; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0A47F1E282E4D6200209D51 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		B0A48A95282E5E0B00209D51 /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = ../3rdParty/glfw/lib/libglfw3.a; sourceTree = "<group>"; };
@@ -300,6 +303,15 @@
 				B0A01091289E591A006A339B /* screenshot.cpp */,
 			);
 			path = screenshot;
+			sourceTree = "<group>";
+		};
+		B0A0109A28A20665006A339B /* orderindependenttransparency */ = {
+			isa = PBXGroup;
+			children = (
+				B0A0109B28A20665006A339B /* orderindependenttransparency.h */,
+				B0A0109C28A20665006A339B /* orderindependenttransparency.cpp */,
+			);
+			path = orderindependenttransparency;
 			sourceTree = "<group>";
 		};
 		B0A47F12282E4D6200209D51 = {
@@ -571,6 +583,7 @@
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0A0109A28A20665006A339B /* orderindependenttransparency */,
 				B0A0108F289E591A006A339B /* screenshot */,
 				B0A0108A289D1589006A339B /* runtimemipmap */,
 				B0A01085289BA9FC006A339B /* pointlightshadow */,
@@ -673,6 +686,7 @@
 				B0B5D0B0287BFCCC003A175D /* descriptorsets.cpp in Sources */,
 				B0B5D0D428801610003A175D /* texturecubemapping.cpp in Sources */,
 				B0B5D0D92881110B003A175D /* texturecubemaparray.cpp in Sources */,
+				B0A0109D28A20665006A339B /* orderindependenttransparency.cpp in Sources */,
 				B09AEA2E2862A380006ED326 /* imgui_demo.cpp in Sources */,
 				B0E13A1C2861729300D1D2B6 /* triangle.cpp in Sources */,
 				B0B5D0802876ABAF003A175D /* memstream.c in Sources */,
