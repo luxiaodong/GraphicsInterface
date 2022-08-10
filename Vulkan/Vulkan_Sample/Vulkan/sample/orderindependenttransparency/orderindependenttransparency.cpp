@@ -28,9 +28,9 @@ void OrderIndependentTransparency::init()
 
 void OrderIndependentTransparency::initCamera()
 {
-    m_camera.setPosition(glm::vec3(0.0f, 0.0f, -10.5f));
-    m_camera.setRotation(glm::vec3(-25.0f, 15.0f, 0.0f));
-    m_camera.setPerspective(60.0f, (float)(m_width/3.0f) / (float)m_height, 0.1f, 256.0f);
+    m_camera.setPosition(glm::vec3(0.0f, 0.0f, -6.0f));
+    m_camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
+    m_camera.setPerspective(60.0f, (float)m_width/(float)m_height, 0.1f, 256.0f);
 }
 
 void OrderIndependentTransparency::setEnabledFeatures()
@@ -230,7 +230,7 @@ void OrderIndependentTransparency::createGraphicsPipeline()
     VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
     VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_FALSE, VK_FALSE, VK_COMPARE_OP_LESS_OR_EQUAL);
 
-    VkPipelineColorBlendAttachmentState colorBlendAttachment = Tools::getPipelineColorBlendAttachmentState(VK_FALSE, 0);
+    VkPipelineColorBlendAttachmentState colorBlendAttachment = Tools::getPipelineColorBlendAttachmentState(VK_FALSE);
     VkPipelineColorBlendStateCreateInfo colorBlend0 = Tools::getPipelineColorBlendStateCreateInfo(0, nullptr);
     VkPipelineColorBlendStateCreateInfo colorBlend1 = Tools::getPipelineColorBlendStateCreateInfo(1, &colorBlendAttachment);
 
@@ -264,6 +264,10 @@ void OrderIndependentTransparency::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
  
     //color
+    VkPipelineVertexInputStateCreateInfo emptyInput = {};
+    emptyInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    rasterization.cullMode = VK_CULL_MODE_FRONT_BIT;
+    createInfo.pVertexInputState = &emptyInput;
     createInfo.renderPass = m_renderPass;
     createInfo.layout = m_pipelineLayout;
     createInfo.pColorBlendState = &colorBlend1;
@@ -301,35 +305,16 @@ void OrderIndependentTransparency::recordRenderCommand(const VkCommandBuffer com
 //
 void OrderIndependentTransparency::createOtherBuffer()
 {
-//    std::vector<VkFormat> candidates = {};
-//    for(int i = 1; i < 180; ++i)
-//    {
-//        VkFormatProperties props;
-//        vkGetPhysicalDeviceFormatProperties(m_physicalDevice, (VkFormat)i, &props);
-//        if( props.linearTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT )
-//        {
-//            std::cout<< i << std::endl;
-//        }
-//
-//        if ( props.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT )
-//        {
-//            std::cout<< i << std::endl;
-//        }
-//    }
-//
-//    Tools::findSupportedFormat(candidates, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT);
-//
     Tools::createImageAndMemoryThenBind(m_geometryFormat, m_swapchainExtent.width, m_swapchainExtent.height, 1, 1,
                                         VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
                                         VK_IMAGE_TILING_LINEAR, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                         m_geometryImage, m_geometryMemory);
-//
+
     Tools::createImageView(m_geometryImage, m_geometryFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, m_geometryImageView);
     
     VkCommandBuffer cmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
     Tools::setImageLayout(cmd, m_geometryImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
     Tools::flushCommandBuffer(cmd, m_graphicsQueue, true);
-
 }
 
 void OrderIndependentTransparency::createGeometryRenderPass()
