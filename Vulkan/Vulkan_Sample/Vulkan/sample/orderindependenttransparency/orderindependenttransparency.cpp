@@ -206,7 +206,6 @@ void OrderIndependentTransparency::prepareDescriptorSetAndWrite()
         writes[1] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, &bufferInfo4);
         vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
     }
-
 }
 
 void OrderIndependentTransparency::createGraphicsPipeline()
@@ -229,7 +228,7 @@ void OrderIndependentTransparency::createGraphicsPipeline()
     VkPipelineDynamicStateCreateInfo dynamic = Tools::getPipelineDynamicStateCreateInfo(dynamicStates);
     VkPipelineRasterizationStateCreateInfo rasterization = Tools::getPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE);
     VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
-    VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
+    VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_FALSE, VK_FALSE, VK_COMPARE_OP_LESS_OR_EQUAL);
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment = Tools::getPipelineColorBlendAttachmentState(VK_FALSE, 0);
     VkPipelineColorBlendStateCreateInfo colorBlend0 = Tools::getPipelineColorBlendStateCreateInfo(0, nullptr);
@@ -302,9 +301,27 @@ void OrderIndependentTransparency::recordRenderCommand(const VkCommandBuffer com
 //
 void OrderIndependentTransparency::createOtherBuffer()
 {
+//    std::vector<VkFormat> candidates = {};
+//    for(int i = 1; i < 180; ++i)
+//    {
+//        VkFormatProperties props;
+//        vkGetPhysicalDeviceFormatProperties(m_physicalDevice, (VkFormat)i, &props);
+//        if( props.linearTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT )
+//        {
+//            std::cout<< i << std::endl;
+//        }
+//
+//        if ( props.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT )
+//        {
+//            std::cout<< i << std::endl;
+//        }
+//    }
+//
+//    Tools::findSupportedFormat(candidates, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT);
+//
     Tools::createImageAndMemoryThenBind(m_geometryFormat, m_swapchainExtent.width, m_swapchainExtent.height, 1, 1,
                                         VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
-                                        VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                        VK_IMAGE_TILING_LINEAR, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                         m_geometryImage, m_geometryMemory);
 //
     Tools::createImageView(m_geometryImage, m_geometryFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, m_geometryImageView);
