@@ -85,7 +85,6 @@ protected:
     
     // sphere
     VkPipeline m_pipeline;
-    VkDescriptorSet m_descriptorSet;
     
 private:
     GltfLoader m_ufoLoader;

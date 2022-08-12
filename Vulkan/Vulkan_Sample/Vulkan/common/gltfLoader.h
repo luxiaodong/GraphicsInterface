@@ -61,6 +61,8 @@ private:
     void loadImages();
     void loadSkins();
     void loadAnimations();
+    
+    void calculateSceneDimensions();
 
 private:
     void drawNode(VkCommandBuffer commandBuffer, GltfNode* node, const VkPipelineLayout& pipelineLayout, int method);
@@ -89,6 +91,10 @@ public:
     std::vector<Vertex> m_vertexData;
     std::vector<uint32_t> m_indexData;
     std::vector<glm::mat4> m_jointMatrices;
+    
+    glm::vec3 m_min;
+    glm::vec3 m_max;
+    float m_radius;
 
 private:
     VkQueue m_graphicsQueue;

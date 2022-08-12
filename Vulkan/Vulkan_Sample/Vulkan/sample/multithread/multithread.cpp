@@ -34,10 +34,7 @@ void MultiThread::initCamera()
     assert(m_threadCount > 0);
     std::cout << "thread count = " << m_threadCount << std::endl;
     m_threadPool.setThreadCount(m_threadCount);
-    m_objectCountPerThread = 512 / m_threadCount;
-    
-    m_threadCount = 4;
-    m_objectCountPerThread = 2;
+    m_objectCountPerThread = 256 / m_threadCount;
 }
 
 void MultiThread::setEnabledFeatures()
@@ -48,6 +45,16 @@ void MultiThread::clear()
 {
 //    vkFreeMemory(m_device, m_uniformMemory, nullptr);
 //    vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
+
+    for (uint32_t i = 0; i < m_threadCount; i++)
+    {
+        ThreadData *threadData = m_threadDatas[i];
+        vkFreeCommandBuffers(m_device, threadData->commandPool, static_cast<uint32_t>(threadData->commandBuffer.size()), threadData->commandBuffer.data());
+        vkDestroyCommandPool(m_device, threadData->commandPool, nullptr);
+        delete threadData;
+    }
+    
+    vkDestroyPipeline(m_device, m_ufoPipeline, nullptr);
     vkDestroyPipeline(m_device, m_pipeline, nullptr);
 
     m_ufoLoader.clear();
@@ -161,7 +168,7 @@ void MultiThread::updateRenderData()
     m_frustum.update(mvp.projectionMatrix * mvp.viewMatrix);
 }
 
-void MultiThread::recordRenderCommand(const VkCommandBuffer commandBuffer)
+void MultiThread::recordRenderCommand(const VkCommandBuffer primaryCommandBuffer)
 {
     std::vector<VkCommandBuffer> commandBuffers;
     
@@ -196,6 +203,8 @@ void MultiThread::recordRenderCommand(const VkCommandBuffer commandBuffer)
             }
         }
     }
+ 
+    vkCmdExecuteCommands(primaryCommandBuffer, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 }
 
 void MultiThread::createSecondaryCommandBuffer()
@@ -251,7 +260,6 @@ void MultiThread::prepareMultiThread()
             threadData->objectData[j].rotationDir = (Tools::random01()*100.0f < 50.0f) ? 1.0f : -1.0f;
             threadData->objectData[j].rotationSpeed = (2.0f + Tools::random01()*4.0f) * threadData->objectData[j].rotationDir;
             threadData->objectData[j].scale = 0.75f + Tools::random01()*0.5f;
-            
             threadData->pushConstBlock[j].color = glm::vec3(Tools::random01(), Tools::random01(), Tools::random01());
         }
     }
@@ -272,7 +280,6 @@ void MultiThread::updateSecondaryCommandBuffers(VkCommandBufferInheritanceInfo i
     scissor.extent = m_swapchainExtent;
     vkCmdSetViewport(m_secondaryCommandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(m_secondaryCommandBuffer, 0, 1, &scissor);
-    
     vkCmdBindPipeline(m_secondaryCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
     
     glm::mat4 mvp = m_camera.m_projMat * m_camera.m_viewMat;
@@ -292,7 +299,8 @@ void MultiThread::threadRenderCode(uint32_t threadIndex, uint32_t cmdBufferIndex
     ObjectData* objectData = &threadData->objectData[cmdBufferIndex];
 
     // Check visibility against view frustum using a simple sphere check based on the radius of the mesh
-    objectData->visible = m_frustum.checkSphere(objectData->pos, 1.0f * 0.5f); // models.ufo.dimensions.radius
+    objectData->visible = m_frustum.checkSphere(objectData->pos,  m_ufoLoader.m_radius * 0.5f); // models.ufo.dimensions.radius
+    // objectData->visible = false;
     if(objectData->visible == false) return ;
 
     VkCommandBufferBeginInfo beginInfo = {};
@@ -310,17 +318,16 @@ void MultiThread::threadRenderCode(uint32_t threadIndex, uint32_t cmdBufferIndex
     vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
     vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
     
-        // Update
-//        if (!paused) {
-//            objectData->rotation.y += 2.5f * objectData->rotationSpeed * frameTimer;
-//            if (objectData->rotation.y > 360.0f) {
-//                objectData->rotation.y -= 360.0f;
-//            }
-//            objectData->deltaT += 0.15f * frameTimer;
-//            if (objectData->deltaT > 1.0f)
-//                objectData->deltaT -= 1.0f;
-//            objectData->pos.y = sin(glm::radians(objectData->deltaT * 360.0f)) * 2.5f;
-//        }
+    static float frameTimer = 0.005f;
+    objectData->rotation.y += 2.5f * objectData->rotationSpeed * frameTimer;
+    if (objectData->rotation.y > 360.0f) {
+        objectData->rotation.y -= 360.0f;
+    }
+    objectData->deltaT += 0.15f * frameTimer;
+    if (objectData->deltaT > 1.0f)
+        objectData->deltaT -= 1.0f;
+    objectData->pos.y = sin(glm::radians(objectData->deltaT * 360.0f)) * 2.5f;
+//    frameTimer += 0.0001f;
 
     objectData->model = glm::translate(glm::mat4(1.0f), objectData->pos);
     objectData->model = glm::rotate(objectData->model, -sinf(glm::radians(objectData->deltaT * 360.0f)) * 0.25f, glm::vec3(objectData->rotationDir, 0.0f, 0.0f));

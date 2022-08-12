@@ -183,6 +183,8 @@ void GltfLoader::load(std::string fileName)
     this->loadSkins();
     this->loadAnimations();
     
+    this->calculateSceneDimensions();
+    
     if ((m_loadFlags & GltfFileLoadFlags::PreTransformVertices) || (m_loadFlags & GltfFileLoadFlags::PreMultiplyVertexColors) || (m_loadFlags & GltfFileLoadFlags::FlipY))
     {
         const bool preTransform = m_loadFlags & GltfFileLoadFlags::PreTransformVertices;
@@ -744,6 +746,8 @@ void GltfLoader::loadMesh(Mesh* newMesh, const tinygltf::Mesh &mesh)
         newPrimitive->m_vertexCount = vertexCount;
         newPrimitive->m_indexOffset = indexOffset;
         newPrimitive->m_indexCount = indexCount;
+        newPrimitive->m_min = posMin;
+        newPrimitive->m_max = posMax;
         if(primitive.material > - 1)
         {
             newPrimitive->m_material = m_materials[primitive.material];
@@ -879,6 +883,31 @@ void GltfLoader::createJointMatrixBuffer()
     {
         skin->createJointMatrixBuffer();
     }
+}
+
+void GltfLoader::calculateSceneDimensions()
+{
+    m_min = glm::vec3(FLT_MAX);
+    m_max = glm::vec3(-FLT_MAX);
+    for(auto node : m_linearNodes)
+    {
+        if(node->m_mesh)
+        {
+            for(Primitive* primitive : node->m_mesh->m_primitives)
+            {
+                glm::vec4 locMin = glm::vec4(primitive->m_min, 1.0) * node->m_worldMatrix;
+                glm::vec4 locMax = glm::vec4(primitive->m_max, 1.0) * node->m_worldMatrix;
+                if (locMin.x < m_min.x) { m_min.x = locMin.x; }
+                if (locMin.y < m_min.y) { m_min.y = locMin.y; }
+                if (locMin.z < m_min.z) { m_min.z = locMin.z; }
+                if (locMax.x > m_max.x) { m_max.x = locMax.x; }
+                if (locMax.y > m_max.y) { m_max.y = locMax.y; }
+                if (locMax.z > m_max.z) { m_max.z = locMax.z; }
+            }
+        }
+    }
+    
+    m_radius = glm::distance(m_min, m_max)/2.0f;
 }
 
 void GltfLoader::createMaterialBuffer()

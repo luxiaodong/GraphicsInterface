@@ -16,4 +16,6 @@ public:
     uint32_t m_indexOffset;
     uint32_t m_indexCount;
     Material* m_material;
+    glm::vec3 m_min;
+    glm::vec3 m_max;
 };
