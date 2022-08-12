@@ -128,6 +128,7 @@ protected:
     
     std::vector<VkAttachmentDescription> m_attachmentDescriptions;
     VkRenderPass m_renderPass;
+    VkSubpassContents m_subpassContents = VK_SUBPASS_CONTENTS_INLINE;
     
     std::vector<VkFramebuffer> m_framebuffers;
     std::vector<VkCommandBuffer> m_commandBuffers;
@@ -138,4 +139,6 @@ protected:
     
     uint32_t m_currentFrame = 0;
     uint32_t m_imageIndex = 0;
+    
+    
 };

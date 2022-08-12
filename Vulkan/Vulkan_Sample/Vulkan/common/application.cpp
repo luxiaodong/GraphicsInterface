@@ -747,7 +747,7 @@ void Application::beginRenderCommandAndPass(const VkCommandBuffer commandBuffer,
     passBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
     passBeginInfo.pClearValues = clearValues.data();
     
-    vkCmdBeginRenderPass(commandBuffer, &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(commandBuffer, &passBeginInfo, m_subpassContents);
 }
 
 void Application::endRenderCommandAndPass(const VkCommandBuffer commandBuffer)

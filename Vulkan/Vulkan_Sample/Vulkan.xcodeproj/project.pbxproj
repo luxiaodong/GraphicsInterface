@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		B066A145286213A600763515 /* assets in CopyFiles */ = {isa = PBXBuildFile; fileRef = B066A1422862125900763515 /* assets */; };
+		B066DE1E28A4FF5D00726A95 /* thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE1D28A4FF5D00726A95 /* thread.cpp */; };
+		B066DE2328A5074600726A95 /* multithread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE2128A5074600726A95 /* multithread.cpp */; };
+		B066DE2728A5FDD800726A95 /* frustum.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE2628A5FDD800726A95 /* frustum.cpp */; };
 		B09AEA292862A380006ED326 /* imgui_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA152862A380006ED326 /* imgui_widgets.cpp */; };
 		B09AEA2C2862A380006ED326 /* imgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA1E2862A380006ED326 /* imgui.cpp */; };
 		B09AEA2D2862A380006ED326 /* imgui_tables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA232862A380006ED326 /* imgui_tables.cpp */; };
@@ -88,6 +91,12 @@
 
 /* Begin PBXFileReference section */
 		B066A1422862125900763515 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
+		B066DE1C28A4FF5D00726A95 /* thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = thread.h; sourceTree = "<group>"; };
+		B066DE1D28A4FF5D00726A95 /* thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = thread.cpp; sourceTree = "<group>"; };
+		B066DE2128A5074600726A95 /* multithread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = multithread.cpp; sourceTree = "<group>"; };
+		B066DE2228A5074600726A95 /* multithread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = multithread.h; sourceTree = "<group>"; };
+		B066DE2528A5FDD700726A95 /* frustum.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = frustum.h; sourceTree = "<group>"; };
+		B066DE2628A5FDD800726A95 /* frustum.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = frustum.cpp; sourceTree = "<group>"; };
 		B09AEA122862A380006ED326 /* imgui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui.h; sourceTree = "<group>"; };
 		B09AEA132862A380006ED326 /* imstb_textedit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imstb_textedit.h; sourceTree = "<group>"; };
 		B09AEA142862A380006ED326 /* imconfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imconfig.h; sourceTree = "<group>"; };
@@ -221,6 +230,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B066DE2028A5074600726A95 /* multithread */ = {
+			isa = PBXGroup;
+			children = (
+				B066DE2128A5074600726A95 /* multithread.cpp */,
+				B066DE2228A5074600726A95 /* multithread.h */,
+			);
+			path = multithread;
+			sourceTree = "<group>";
+		};
 		B09AE9F82862A380006ED326 /* imgui */ = {
 			isa = PBXGroup;
 			children = (
@@ -361,6 +379,10 @@
 		B0B5D0162875293B003A175D /* common */ = {
 			isa = PBXGroup;
 			children = (
+				B066DE2628A5FDD800726A95 /* frustum.cpp */,
+				B066DE2528A5FDD700726A95 /* frustum.h */,
+				B066DE1D28A4FF5D00726A95 /* thread.cpp */,
+				B066DE1C28A4FF5D00726A95 /* thread.h */,
 				B0B5D0DB28812D06003A175D /* noise.cpp */,
 				B0B5D0DC28812D06003A175D /* noise.h */,
 				B0B5D0B3287C1992003A175D /* texture.cpp */,
@@ -583,6 +605,7 @@
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B066DE2028A5074600726A95 /* multithread */,
 				B0A0109A28A20665006A339B /* orderindependenttransparency */,
 				B0A0108F289E591A006A339B /* screenshot */,
 				B0A0108A289D1589006A339B /* runtimemipmap */,
@@ -688,12 +711,14 @@
 				B0B5D0D92881110B003A175D /* texturecubemaparray.cpp in Sources */,
 				B0A0109D28A20665006A339B /* orderindependenttransparency.cpp in Sources */,
 				B09AEA2E2862A380006ED326 /* imgui_demo.cpp in Sources */,
+				B066DE1E28A4FF5D00726A95 /* thread.cpp in Sources */,
 				B0E13A1C2861729300D1D2B6 /* triangle.cpp in Sources */,
 				B0B5D0802876ABAF003A175D /* memstream.c in Sources */,
 				B0A47F1F282E4D6200209D51 /* main.cpp in Sources */,
 				B0B5D1222890D870003A175D /* gltfscenerendering.cpp in Sources */,
 				B0A010832897DD0D006A339B /* shadowmappingcascade.cpp in Sources */,
 				B0B5D0202875293B003A175D /* camera.cpp in Sources */,
+				B066DE2728A5FDD800726A95 /* frustum.cpp in Sources */,
 				B0B5D09B287920AD003A175D /* gltfNode.cpp in Sources */,
 				B0B5D0C0287EBB26003A175D /* pushconstants.cpp in Sources */,
 				B0A01095289E61B2006A339B /* svpng.c in Sources */,
@@ -706,6 +731,7 @@
 				B0B5D0B5287C1992003A175D /* texture.cpp in Sources */,
 				B0A0108D289D1589006A339B /* runtimemipmap.cpp in Sources */,
 				B0B5D0DD28812D06003A175D /* noise.cpp in Sources */,
+				B066DE2328A5074600726A95 /* multithread.cpp in Sources */,
 				B0B5D0282875297A003A175D /* pipelines.cpp in Sources */,
 				B0B5D0CA287FC9EC003A175D /* texturemapping.cpp in Sources */,
 				B0A01092289E591A006A339B /* screenshot.cpp in Sources */,
@@ -877,6 +903,7 @@
 		B0A47F23282E4D6200209D51 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_ENTITLEMENTS = Vulkan/../../Vulkan.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = HFN6J88ER4;
@@ -903,6 +930,10 @@
 					"$(SRCROOT)/../3rdParty/VulkanSDK/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.1;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"'-std=c++17'",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -910,6 +941,7 @@
 		B0A47F24282E4D6200209D51 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_ENTITLEMENTS = Vulkan/../../Vulkan.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = HFN6J88ER4;
@@ -936,6 +968,11 @@
 					"$(SRCROOT)/../3rdParty/VulkanSDK/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.1;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-DNDEBUG",
+					"'-std=c++17'",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

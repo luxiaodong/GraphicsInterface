@@ -26,6 +26,7 @@
 #include "sample/runtimemipmap/runtimemipmap.h"
 #include "sample/screenshot/screenshot.h"
 #include "sample/orderindependenttransparency/orderindependenttransparency.h"
+#include "sample/multithread/multithread.h"
 
 int main(int argc, const char * argv[])
 {
@@ -56,8 +57,9 @@ int main(int argc, const char * argv[])
 //    PointLightShadow app("pointlightshadow");
 //    RuntimeMipmap app("runtimemipmap");
 //    ScreenShot app("screenshot");
+//    OrderIndependentTransparency app("orderindependenttransparency");
     
-    OrderIndependentTransparency app("orderindependenttransparency");
+    MultiThread app("multithreading");
     
     try {
         app.run();
