@@ -65,7 +65,7 @@ void Descriptorsets::prepareVertex()
 
 void Descriptorsets::prepareUniform()
 {
-    VkDeviceSize uniformSize = sizeof(Descriptorsets::Uniform);
+    VkDeviceSize uniformSize = sizeof(Uniform);
     
     for(int i = 0; i < 2; ++i)
     {
@@ -99,7 +99,7 @@ void Descriptorsets::prepareDescriptorSetAndWrite()
         
         VkDescriptorBufferInfo bufferInfo = {};
         bufferInfo.offset = 0;
-        bufferInfo.range = sizeof(Descriptorsets::Uniform);
+        bufferInfo.range = sizeof(Uniform);
         bufferInfo.buffer = m_cube[i].uniformBuffer;
         
         VkDescriptorImageInfo imageInfo = m_cube[i].pTextrue->getDescriptorImageInfo();
@@ -136,7 +136,7 @@ void Descriptorsets::createGraphicsPipeline()
     VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
     VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
 
-    VkPipelineColorBlendAttachmentState colorBlendAttachment = Tools::getPipelineColorBlendAttachmentState(VK_FALSE, VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
+    VkPipelineColorBlendAttachmentState colorBlendAttachment = Tools::getPipelineColorBlendAttachmentState(VK_FALSE);
     VkPipelineColorBlendStateCreateInfo colorBlend = Tools::getPipelineColorBlendStateCreateInfo(1, &colorBlendAttachment);
     
     std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
@@ -181,7 +181,7 @@ void Descriptorsets::updateRenderData()
         m_cube[i].matrix.modelMatrix = glm::rotate(m_cube[i].matrix.modelMatrix, glm::radians(m_cube[i].rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
         m_cube[i].matrix.modelMatrix = glm::rotate(m_cube[i].matrix.modelMatrix, glm::radians(m_cube[i].rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
         m_cube[i].matrix.modelMatrix = glm::scale(m_cube[i].matrix.modelMatrix, glm::vec3(0.2f));
-        Tools::mapMemory(m_cube[i].uniformMemory, sizeof(Descriptorsets::Uniform), &m_cube[i].matrix);
+        Tools::mapMemory(m_cube[i].uniformMemory, sizeof(Uniform), &m_cube[i].matrix);
     }
 }
 
