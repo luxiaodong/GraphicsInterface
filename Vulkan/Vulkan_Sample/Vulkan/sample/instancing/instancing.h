@@ -4,8 +4,6 @@
 #include "common/application.h"
 #include "common/gltfLoader.h"
 
-#define INSTANCE_COUNT 4096
-
 class Instancing : public Application
 {
 public:

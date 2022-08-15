@@ -28,6 +28,7 @@
 #include "sample/orderindependenttransparency/orderindependenttransparency.h"
 #include "sample/multithread/multithread.h"
 #include "sample/instancing/instancing.h"
+#include "sample/indirectdraw/indirectdraw.h"
 
 int main(int argc, const char * argv[])
 {
@@ -60,9 +61,9 @@ int main(int argc, const char * argv[])
 //    ScreenShot app("screenshot");
 //    OrderIndependentTransparency app("orderindependenttransparency");
 //    MultiThread app("multithreading");
+//    Instancing app("instancing");
     
-    Instancing app("instancing");
-    
+    IndirectDraw app("indirectdraw");
     try {
         app.run();
     } catch (const std::exception& e) {

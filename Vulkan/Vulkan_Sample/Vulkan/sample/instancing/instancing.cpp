@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <random>
 
+#define INSTANCE_COUNT 4096
+
 Instancing::Instancing(std::string title) : Application(title)
 {
 }
