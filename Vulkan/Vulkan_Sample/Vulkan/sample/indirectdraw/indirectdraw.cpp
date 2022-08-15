@@ -50,6 +50,8 @@ void IndirectDraw::clear()
     vkDestroyPipeline(m_device, m_plantsPipeline, nullptr);
     vkDestroyBuffer(m_device, m_instanceBuffer, nullptr);
     vkFreeMemory(m_device, m_instanceMemory, nullptr);
+    vkDestroyBuffer(m_device, m_indirectBuffer, nullptr);
+    vkFreeMemory(m_device, m_indirectMemory, nullptr);
     
     m_skysphereLoader.clear();
     m_groundLoader.clear();
@@ -122,11 +124,35 @@ void IndirectDraw::prepareIndirectData()
     }
     
     VkDeviceSize instanceSize = sizeof(VkDrawIndexedIndirectCommand) * m_indirectCommands.size();
-    Tools::createBufferAndMemoryThenBind(instanceSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                         m_indirectBuffer, m_indirectMemory);
+//    Tools::createBufferAndMemoryThenBind(instanceSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
+//                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+//                                         m_indirectBuffer, m_indirectMemory);
+//
+//    Tools::mapMemory(m_indirectMemory, instanceSize, m_indirectCommands.data());
     
-    Tools::mapMemory(m_indirectMemory, instanceSize, m_indirectCommands.data());
+    VkBuffer stageBuffer;
+    VkDeviceMemory stageMemory;
+    Tools::createBufferAndMemoryThenBind(instanceSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                         stageBuffer, stageMemory);
+    
+    Tools::mapMemory(stageMemory, instanceSize, m_indirectCommands.data());
+    
+    Tools::createBufferAndMemoryThenBind(instanceSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
+                                         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                         m_indirectBuffer, m_indirectMemory);
+ 
+    VkCommandBuffer cmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+    
+    VkBufferCopy bufferCopy = {};
+    bufferCopy.srcOffset = 0;
+    bufferCopy.dstOffset = 0;
+    bufferCopy.size = instanceSize;
+    vkCmdCopyBuffer(cmd, stageBuffer, m_indirectBuffer, 1, &bufferCopy);
+    Tools::flushCommandBuffer(cmd, m_graphicsQueue, true);
+    
+    vkFreeMemory(m_device, stageMemory, nullptr);
+    vkDestroyBuffer(m_device, stageBuffer, nullptr);
 }
 
 void IndirectDraw::prepareInstanceData()
@@ -231,6 +257,7 @@ void IndirectDraw::createGraphicsPipeline()
     createInfo.subpass = 0;
     
     // sky
+    depthStencil.depthWriteEnable = VK_FALSE;
     rasterization.cullMode = VK_CULL_MODE_FRONT_BIT;
     createInfo.pVertexInputState = m_skysphereLoader.getPipelineVertexInputState();
     VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "indirectdraw/skysphere.vert.spv");
@@ -242,6 +269,7 @@ void IndirectDraw::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
     
     // ground
+    depthStencil.depthWriteEnable = VK_TRUE;
     rasterization.cullMode = VK_CULL_MODE_BACK_BIT;
     createInfo.pVertexInputState = m_groundLoader.getPipelineVertexInputState();
     vertModule = Tools::createShaderModule( Tools::getShaderPath() + "indirectdraw/ground.vert.spv");
@@ -311,11 +339,21 @@ void IndirectDraw::recordRenderCommand(const VkCommandBuffer commandBuffer)
     m_groundLoader.bindBuffers(commandBuffer);
     m_groundLoader.draw(commandBuffer);
     
-//    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_instanceRockPipeline);
-//    const VkDeviceSize offsets[1] = {0};
-//    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_rocksLoader.m_vertexBuffer, offsets);
-//    vkCmdBindVertexBuffers(commandBuffer, 1, 1, &m_instanceBuffer, offsets);
-//    vkCmdBindIndexBuffer(commandBuffer, m_rocksLoader.m_indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-//    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(m_rocksLoader.m_indexData.size()), INSTANCE_COUNT, 0, 0, 0);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_plantsPipeline);
+    const VkDeviceSize offsets[1] = {0};
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_plantsLoader.m_vertexBuffer, offsets);
+    vkCmdBindVertexBuffers(commandBuffer, 1, 1, &m_instanceBuffer, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, m_plantsLoader.m_indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    
+    if(m_deviceEnabledFeatures.multiDrawIndirect)
+    {
+        vkCmdDrawIndexedIndirect(commandBuffer, m_indirectBuffer, 0, static_cast<uint32_t>(m_indirectCommands.size()), sizeof(VkDrawIndexedIndirectCommand));
+    }
+    else
+    {
+        for (auto j = 0; j < m_indirectCommands.size(); j++)
+        {
+            vkCmdDrawIndexedIndirect(commandBuffer, m_indirectBuffer, j * sizeof(VkDrawIndexedIndirectCommand), 1, sizeof(VkDrawIndexedIndirectCommand));
+        }
+    }
 }
-
