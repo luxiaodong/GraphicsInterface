@@ -26,7 +26,7 @@ void MultiThread::init()
 
 void MultiThread::initCamera()
 {
-    m_camera.setPosition(glm::vec3(0.0f, -0.0f, -32.5f));
+    m_camera.setPosition(glm::vec3(0.0f, 0.0f,-32.5f));
     m_camera.setRotation(glm::vec3(0.0f));
     m_camera.setPerspective(60.0f, (float)m_width/(float)m_height, 0.1f, 256.0f);
     
@@ -34,7 +34,7 @@ void MultiThread::initCamera()
     assert(m_threadCount > 0);
     std::cout << "thread count = " << m_threadCount << std::endl;
     m_threadPool.setThreadCount(m_threadCount);
-    m_objectCountPerThread = 256 / m_threadCount;
+    m_objectCountPerThread = 512 / m_threadCount;
 }
 
 void MultiThread::setEnabledFeatures()
@@ -116,7 +116,7 @@ void MultiThread::createGraphicsPipeline()
     VkPipelineDynamicStateCreateInfo dynamic = Tools::getPipelineDynamicStateCreateInfo(dynamicStates);
     VkPipelineRasterizationStateCreateInfo rasterization = Tools::getPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE);
     VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
-    VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_FALSE, VK_FALSE, VK_COMPARE_OP_LESS_OR_EQUAL);
+    VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
     VkPipelineColorBlendAttachmentState colorBlendAttachment = Tools::getPipelineColorBlendAttachmentState(VK_FALSE);
     VkPipelineColorBlendStateCreateInfo colorBlend = Tools::getPipelineColorBlendStateCreateInfo(1, &colorBlendAttachment);
 
