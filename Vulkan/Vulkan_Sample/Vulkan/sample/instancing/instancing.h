@@ -4,6 +4,8 @@
 #include "common/application.h"
 #include "common/gltfLoader.h"
 
+#define INSTANCE_COUNT 4096
+
 class Instancing : public Application
 {
 public:
@@ -13,6 +15,13 @@ public:
         glm::vec4 lightPos = glm::vec4(0.0f, -5.0f, 0.0f, 1.0f);
         float locSpeed = 0.0f;
         float globSpeed = 0.0f;
+    };
+    
+    struct InstanceData {
+        glm::vec3 pos;
+        glm::vec3 rot;
+        float scale;
+        uint32_t texIndex;
     };
 
     Instancing(std::string title);
@@ -32,6 +41,7 @@ protected:
     void prepareDescriptorSetLayoutAndPipelineLayout();
     void prepareDescriptorSetAndWrite();
     void createGraphicsPipeline();
+    void prepareInstanceData();
     
 private:
     // background
@@ -46,6 +56,8 @@ private:
     // instanced rock
     VkPipeline m_instanceRockPipeline;
     VkDescriptorSet m_instanceRockdescriptorSet;
+    VkBuffer m_instanceBuffer;
+    VkDeviceMemory m_instanceMemory;
 
 private:
     GltfLoader m_planetLoader;

@@ -96,7 +96,7 @@ public:
     glm::vec3 m_max;
     float m_radius;
 
-private:
+public:
     VkQueue m_graphicsQueue;
     VkBuffer m_vertexBuffer;
     VkDeviceMemory m_vertexMemory;
