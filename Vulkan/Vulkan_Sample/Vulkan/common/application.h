@@ -38,6 +38,7 @@ public:
     void beginRenderCommandAndPass(const VkCommandBuffer commandBuffer, int frameBufferIndex);
     virtual void recordRenderCommand(const VkCommandBuffer commandBuffer) = 0;
     void endRenderCommandAndPass(const VkCommandBuffer commandBuffer);
+    virtual void queueResult();
     
     virtual void keyboard(int key, int scancode, int action, int mods);
     virtual void mouse(double x, double y);

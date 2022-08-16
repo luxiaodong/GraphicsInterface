@@ -26,6 +26,8 @@ public:
 
     virtual void updateRenderData();
     virtual void recordRenderCommand(const VkCommandBuffer commandBuffer);
+    virtual void queueResult();
+    virtual void createOtherRenderPass(const VkCommandBuffer& commandBuffer);
 
 protected:
     void prepareVertex();
@@ -33,6 +35,8 @@ protected:
     void prepareDescriptorSetLayoutAndPipelineLayout();
     void prepareDescriptorSetAndWrite();
     void createGraphicsPipeline();
+    
+    void prepareOcclusionQuery();
     
 private:
     VkBuffer m_sphereBuffer;
@@ -50,6 +54,10 @@ private:
     VkDescriptorSet m_teapotDescriptorSet;
     VkDescriptorSet m_descriptorSet;
     
+    // Pool that stores all occlusion queries
+    VkQueryPool m_queryPool;
+    uint64_t m_passedSamples[2] = { 1,1 };
+
 private:
     GltfLoader m_sphereLoader;
     GltfLoader m_teapotLoader;

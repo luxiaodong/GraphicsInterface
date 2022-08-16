@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <random>
 
-#define INSTANCE_COUNT 4096
-
 OcclusionQuery::OcclusionQuery(std::string title) : Application(title)
 {
 }
@@ -47,6 +45,8 @@ void OcclusionQuery::clear()
     vkDestroyPipeline(m_device, m_solidPipeline, nullptr);
     vkDestroyPipeline(m_device, m_occluderPipeline, nullptr);
     
+    vkDestroyQueryPool(m_device, m_queryPool, nullptr);
+    
     m_planeLoader.clear();
     m_teapotLoader.clear();
     m_sphereLoader.clear();
@@ -68,6 +68,17 @@ void OcclusionQuery::prepareVertex()
     m_sphereLoader.loadFromFile(Tools::getModelPath() + "sphere.gltf", m_graphicsQueue, flags);
     m_sphereLoader.createVertexAndIndexBuffer();
     m_sphereLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal, VertexComponent::Color});
+    
+    prepareOcclusionQuery();
+}
+
+void OcclusionQuery::prepareOcclusionQuery()
+{
+    VkQueryPoolCreateInfo queryPoolInfo = {};
+    queryPoolInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+    queryPoolInfo.queryType = VK_QUERY_TYPE_OCCLUSION;
+    queryPoolInfo.queryCount = 2;
+    VK_CHECK_RESULT(vkCreateQueryPool(m_device, &queryPoolInfo, NULL, &m_queryPool));
 }
 
 void OcclusionQuery::prepareUniform()
@@ -84,29 +95,7 @@ void OcclusionQuery::prepareUniform()
     Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                          m_occluderBuffer, m_occluderMemory);
-    
-    Uniform mvp = {};
-    mvp.projectionMatrix = m_camera.m_projMat;
-    mvp.viewMatrix = m_camera.m_viewMat;
-    mvp.visible = true;
-    
-    // Sphere
-    mvp.modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 3.0f));
-    mvp.color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-//    mvp.visible = (passedSamples[1] > 0) ? 1.0f : 0.0f;
-    Tools::mapMemory(m_sphereMemory, uniformSize, &mvp);
-    
-    // Teapot
-    mvp.modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
-    mvp.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-//    mvp.visible = (passedSamples[0] > 0) ? 1.0f : 0.0f;
-    Tools::mapMemory(m_teapotMemory, uniformSize, &mvp);
-    
-    // Occluder
-    mvp.modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(6.0f));
-    mvp.color = glm::vec4(0.0f, 0.0f, 1.0f, 0.5f);
-    mvp.visible = true;
-    Tools::mapMemory(m_occluderMemory, uniformSize, &mvp);
+
 }
 
 void OcclusionQuery::prepareDescriptorSetLayoutAndPipelineLayout()
@@ -232,6 +221,30 @@ void OcclusionQuery::createGraphicsPipeline()
 
 void OcclusionQuery::updateRenderData()
 {
+    VkDeviceSize uniformSize = sizeof(Uniform);
+
+    Uniform mvp = {};
+    mvp.projectionMatrix = m_camera.m_projMat;
+    mvp.viewMatrix = m_camera.m_viewMat;
+    mvp.visible = true;
+    
+    // Sphere
+    mvp.modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 3.0f));
+    mvp.color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+    mvp.visible = (m_passedSamples[1] > 0) ? 1.0f : 0.0f;
+    Tools::mapMemory(m_sphereMemory, uniformSize, &mvp);
+    
+    // Teapot
+    mvp.modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
+    mvp.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    mvp.visible = (m_passedSamples[0] > 0) ? 1.0f : 0.0f;
+    Tools::mapMemory(m_teapotMemory, uniformSize, &mvp);
+    
+    // Occluder
+    mvp.modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(6.0f));
+    mvp.color = glm::vec4(0.0f, 0.0f, 1.0f, 0.5f);
+    mvp.visible = true;
+    Tools::mapMemory(m_occluderMemory, uniformSize, &mvp);
 }
 
 void OcclusionQuery::recordRenderCommand(const VkCommandBuffer commandBuffer)
@@ -244,18 +257,70 @@ void OcclusionQuery::recordRenderCommand(const VkCommandBuffer commandBuffer)
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     
+    // Occlusion pass
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_occluderPipeline);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
+    m_planeLoader.bindBuffers(commandBuffer);
+    m_planeLoader.draw(commandBuffer);
+
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_teapotDescriptorSet, 0, nullptr);
+    vkCmdBeginQuery(commandBuffer, m_queryPool, 0, 0);
+    m_teapotLoader.bindBuffers(commandBuffer);
+    m_teapotLoader.draw(commandBuffer);
+    vkCmdEndQuery(commandBuffer, m_queryPool, 0);
+    
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_sphereDescriptorSet, 0, nullptr);
+    vkCmdBeginQuery(commandBuffer, m_queryPool, 1, 0);
+    m_sphereLoader.bindBuffers(commandBuffer);
+    m_sphereLoader.draw(commandBuffer);
+    vkCmdEndQuery(commandBuffer, m_queryPool, 1);
+
+    // 加了下面的代码,导致上面的查询数值变化. 不理解?
+    
+    // clear color && depth
+    VkClearAttachment clearAttachments[2] = {};
+    clearAttachments[0].aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    clearAttachments[0].clearValue.color = {0.0f, 0.0f, 0.0f, 1.0f};
+    clearAttachments[0].colorAttachment = 0;
+    clearAttachments[1].aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+    clearAttachments[1].clearValue.depthStencil = { 1.0f, 0 };
+
+    VkClearRect clearRect = {};
+    clearRect.layerCount = 1;
+    clearRect.rect.offset = { 0, 0 };
+    clearRect.rect.extent = { m_swapchainExtent.width, m_swapchainExtent.height};
+    vkCmdClearAttachments(commandBuffer,2, clearAttachments, 1, &clearRect);
+
+    // render object
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_solidPipeline);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_teapotDescriptorSet, 0, nullptr);
+    m_teapotLoader.bindBuffers(commandBuffer);
+    m_teapotLoader.draw(commandBuffer);
+
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_sphereDescriptorSet, 0, nullptr);
     m_sphereLoader.bindBuffers(commandBuffer);
     m_sphereLoader.draw(commandBuffer);
 
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_teapotDescriptorSet, 0, nullptr);
-    m_teapotLoader.bindBuffers(commandBuffer);
-    m_teapotLoader.draw(commandBuffer);
-    
     // Occluder
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_occluderPipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
     m_planeLoader.bindBuffers(commandBuffer);
     m_planeLoader.draw(commandBuffer);
+}
+
+void OcclusionQuery::createOtherRenderPass(const VkCommandBuffer& commandBuffer)
+{
+    vkCmdResetQueryPool(commandBuffer, m_queryPool, 0, 2);
+}
+
+void OcclusionQuery::queueResult()
+{
+    // We use vkGetQueryResults to copy the results into a host visible buffer
+    // Store results a 64 bit values and wait until the results have been finished
+    // If you don't want to wait, you can use VK_QUERY_RESULT_WITH_AVAILABILITY_BIT
+    // which also returns the state of the result (ready) in the result
+    vkGetQueryPoolResults(m_device, m_queryPool, 0, 2, sizeof(m_passedSamples), m_passedSamples, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
+
+    std::cout << "Teapot : " << m_passedSamples[0] << std::endl;
+    std::cout << "Sphere : " << m_passedSamples[1] << std::endl;
 }

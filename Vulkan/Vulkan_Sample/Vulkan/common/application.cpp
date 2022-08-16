@@ -131,6 +131,9 @@ void Application::logic()
 void Application::updateRenderData()
 {}
 
+void Application::queueResult()
+{}
+
 void Application::render()
 {
     updateRenderData();
@@ -173,6 +176,8 @@ void Application::render()
     {
         throw std::runtime_error("failed to queue submit!");
     }
+    
+    queueResult();
     
     VkPresentInfoKHR presentInfo = {};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
