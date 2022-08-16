@@ -14,6 +14,7 @@
 		B066DE2C28A9E44600726A95 /* instancing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE2A28A9E44600726A95 /* instancing.cpp */; };
 		B066DE3128AA211500726A95 /* indirectdraw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE2F28AA211500726A95 /* indirectdraw.cpp */; };
 		B066DE3628AB316F00726A95 /* occlusionquery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE3428AB316F00726A95 /* occlusionquery.cpp */; };
+		B066DE3B28AB7D3300726A95 /* pipelinestatistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE3928AB7D3200726A95 /* pipelinestatistics.cpp */; };
 		B09AEA292862A380006ED326 /* imgui_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA152862A380006ED326 /* imgui_widgets.cpp */; };
 		B09AEA2C2862A380006ED326 /* imgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA1E2862A380006ED326 /* imgui.cpp */; };
 		B09AEA2D2862A380006ED326 /* imgui_tables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA232862A380006ED326 /* imgui_tables.cpp */; };
@@ -106,6 +107,8 @@
 		B066DE3028AA211500726A95 /* indirectdraw.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = indirectdraw.h; sourceTree = "<group>"; };
 		B066DE3428AB316F00726A95 /* occlusionquery.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = occlusionquery.cpp; sourceTree = "<group>"; };
 		B066DE3528AB316F00726A95 /* occlusionquery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = occlusionquery.h; sourceTree = "<group>"; };
+		B066DE3928AB7D3200726A95 /* pipelinestatistics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pipelinestatistics.cpp; sourceTree = "<group>"; };
+		B066DE3A28AB7D3200726A95 /* pipelinestatistics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pipelinestatistics.h; sourceTree = "<group>"; };
 		B09AEA122862A380006ED326 /* imgui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui.h; sourceTree = "<group>"; };
 		B09AEA132862A380006ED326 /* imstb_textedit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imstb_textedit.h; sourceTree = "<group>"; };
 		B09AEA142862A380006ED326 /* imconfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imconfig.h; sourceTree = "<group>"; };
@@ -273,6 +276,15 @@
 				B066DE3528AB316F00726A95 /* occlusionquery.h */,
 			);
 			path = occlusionquery;
+			sourceTree = "<group>";
+		};
+		B066DE3828AB7D3200726A95 /* pipelinestatistics */ = {
+			isa = PBXGroup;
+			children = (
+				B066DE3928AB7D3200726A95 /* pipelinestatistics.cpp */,
+				B066DE3A28AB7D3200726A95 /* pipelinestatistics.h */,
+			);
+			path = pipelinestatistics;
 			sourceTree = "<group>";
 		};
 		B09AE9F82862A380006ED326 /* imgui */ = {
@@ -641,6 +653,7 @@
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B066DE3828AB7D3200726A95 /* pipelinestatistics */,
 				B066DE3328AB316F00726A95 /* occlusionquery */,
 				B066DE2E28AA211500726A95 /* indirectdraw */,
 				B066DE2928A9E44600726A95 /* instancing */,
@@ -783,6 +796,7 @@
 				B0B5D10B288A7935003A175D /* separatevertexattributes.cpp in Sources */,
 				B0B5D0BA287D50A3003A175D /* dynamicuniformbuffer.cpp in Sources */,
 				B0B5D09728783317003A175D /* gltfModel.cpp in Sources */,
+				B066DE3B28AB7D3300726A95 /* pipelinestatistics.cpp in Sources */,
 				B09AEA2D2862A380006ED326 /* imgui_tables.cpp in Sources */,
 				B0B5D0FC2888F884003A175D /* particlefire.cpp in Sources */,
 				B0B5D0F728879E48003A175D /* offscreen.cpp in Sources */,

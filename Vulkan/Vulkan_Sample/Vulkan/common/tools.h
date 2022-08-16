@@ -80,6 +80,7 @@ public:
     
     static VkPipelineVertexInputStateCreateInfo getPipelineVertexInputStateCreateInfo(std::vector<VkVertexInputBindingDescription> &bindingDescriptions, std::vector<VkVertexInputAttributeDescription> &attributeDescriptions);
     static VkPipelineInputAssemblyStateCreateInfo getPipelineInputAssemblyStateCreateInfo(VkPrimitiveTopology topology, VkBool32 primitiveRestartEnable);
+    static VkPipelineTessellationStateCreateInfo getPipelineTessellationStateCreateInfo(uint32_t patchControlPoints);
     static VkViewport getViewport(float x, float y, float width, float height);
     static VkPipelineViewportStateCreateInfo getPipelineViewportStateCreateInfo( std::vector<VkViewport>& viewPorts, std::vector<VkRect2D>& scissors);
     static VkPipelineRasterizationStateCreateInfo getPipelineRasterizationStateCreateInfo(VkPolygonMode polygonMode, VkCullModeFlagBits cullMode, VkFrontFace frontFace);

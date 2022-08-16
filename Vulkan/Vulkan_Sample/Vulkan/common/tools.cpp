@@ -451,6 +451,15 @@ VkPipelineInputAssemblyStateCreateInfo Tools::getPipelineInputAssemblyStateCreat
     return createInfo;
 }
 
+VkPipelineTessellationStateCreateInfo Tools::getPipelineTessellationStateCreateInfo(uint32_t patchControlPoints)
+{
+    VkPipelineTessellationStateCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.patchControlPoints = patchControlPoints;
+    return createInfo;
+}
+
 VkViewport Tools::getViewport(float x, float y, float width, float height)
 {
     VkViewport viewport;

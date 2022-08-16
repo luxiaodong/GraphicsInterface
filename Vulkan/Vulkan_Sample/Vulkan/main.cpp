@@ -30,6 +30,7 @@
 #include "sample/instancing/instancing.h"
 #include "sample/indirectdraw/indirectdraw.h"
 #include "sample/occlusionquery/occlusionquery.h"
+#include "sample/pipelinestatistics/pipelinestatistics.h"
 
 int main(int argc, const char * argv[])
 {
@@ -64,7 +65,8 @@ int main(int argc, const char * argv[])
 //    MultiThread app("multithreading");
 //    Instancing app("instancing");
 //    IndirectDraw app("indirectdraw");
-    OcclusionQuery app("occlusionquery");
+//    OcclusionQuery app("occlusionquery");
+    PipelineStatistics app("pipelinestatistics");
     try {
         app.run();
     } catch (const std::exception& e) {
