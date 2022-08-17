@@ -1,0 +1,1 @@
+gcc main.cpp -std=c++17 -I../../3rdParty/VulkanSDK/include/ -I../../3rdParty/glfw/include -I../../3rdParty/glm -L../../3rdParty/glfw/lib -lglfw3 -L../../3rdParty/VulkanSDK/lib -lvulkan.1  -framework Cocoa -framework IOKit -framework CoreFoundation -framework CoreGraphics -lstdc++
