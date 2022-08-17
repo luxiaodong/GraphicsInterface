@@ -32,6 +32,7 @@
 #include "sample/occlusionquery/occlusionquery.h"
 #include "sample/pipelinestatistics/pipelinestatistics.h"
 #include "sample/pbrbasic/pbrbasic.h"
+#include "sample/pbribl/pbribl.h"
 
 int main(int argc, const char * argv[])
 {
@@ -61,15 +62,16 @@ int main(int argc, const char * argv[])
 //    ShadowMappingCascade app("shadowmappingcascade");
 //    PointLightShadow app("pointlightshadow");
 //    RuntimeMipmap app("runtimemipmap");
-//    ScreenShot app("screenshot");
+    ScreenShot app("screenshot");
 //    OrderIndependentTransparency app("orderindependenttransparency");
 //    MultiThread app("multithreading");
 //    Instancing app("instancing");
 //    IndirectDraw app("indirectdraw");
 //    OcclusionQuery app("occlusionquery");
 //    PipelineStatistics app("pipelinestatistics");
+//    PbrBasic app("pbrbasic");
     
-    PbrBasic app("pbrbasic");
+//    PbrIbl app("pbribl");
 
     try {
         app.run();

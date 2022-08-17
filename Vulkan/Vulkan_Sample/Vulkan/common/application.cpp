@@ -62,6 +62,7 @@ void Application::init()
     Tools::m_device = m_device;
     Tools::m_deviceEnabledFeatures = m_deviceEnabledFeatures;
     Tools::m_deviceProperties = m_deviceProperties;
+    Tools::m_graphicsQueue = m_graphicsQueue;
     createCommandPool();
     Tools::m_commandPool = m_commandPool;
     
@@ -94,6 +95,8 @@ void Application::setSampleCount()
 
 void Application::loop()
 {
+    this->betweenInitAndLoop();
+    
     glfwSetWindowUserPointer(m_window, this);
     glfwSetKeyCallback(m_window, keyboardCallback);
     glfwSetCursorPosCallback(m_window, mouseCallback);
@@ -127,6 +130,9 @@ void Application::logic()
         m_pUi->updateUI(m_averageFPS);
     }
 }
+
+void Application::betweenInitAndLoop()
+{}
 
 void Application::updateRenderData()
 {}

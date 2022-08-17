@@ -16,6 +16,9 @@
 		B066DE3628AB316F00726A95 /* occlusionquery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE3428AB316F00726A95 /* occlusionquery.cpp */; };
 		B066DE3B28AB7D3300726A95 /* pipelinestatistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE3928AB7D3200726A95 /* pipelinestatistics.cpp */; };
 		B066DE4B28AC955700726A95 /* pbrbasic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE4A28AC955700726A95 /* pbrbasic.cpp */; };
+		B066DE5628ACBE6B00726A95 /* pbribl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE5428ACBE6B00726A95 /* pbribl.cpp */; };
+		B066DE5B28ACD54300726A95 /* svpng.inc in Sources */ = {isa = PBXBuildFile; fileRef = B066DE5928ACD54300726A95 /* svpng.inc */; };
+		B066DE5C28ACD54300726A95 /* svpng.c in Sources */ = {isa = PBXBuildFile; fileRef = B066DE5A28ACD54300726A95 /* svpng.c */; };
 		B09AEA292862A380006ED326 /* imgui_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA152862A380006ED326 /* imgui_widgets.cpp */; };
 		B09AEA2C2862A380006ED326 /* imgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA1E2862A380006ED326 /* imgui.cpp */; };
 		B09AEA2D2862A380006ED326 /* imgui_tables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA232862A380006ED326 /* imgui_tables.cpp */; };
@@ -28,8 +31,6 @@
 		B0A01088289BA9FC006A339B /* pointlightshadow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A01087289BA9FC006A339B /* pointlightshadow.cpp */; };
 		B0A0108D289D1589006A339B /* runtimemipmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A0108B289D1589006A339B /* runtimemipmap.cpp */; };
 		B0A01092289E591A006A339B /* screenshot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A01091289E591A006A339B /* screenshot.cpp */; };
-		B0A01095289E61B2006A339B /* svpng.c in Sources */ = {isa = PBXBuildFile; fileRef = B0A01094289E61B2006A339B /* svpng.c */; };
-		B0A01098289E621F006A339B /* svpng.inc in Sources */ = {isa = PBXBuildFile; fileRef = B0A01097289E621F006A339B /* svpng.inc */; };
 		B0A0109D28A20665006A339B /* orderindependenttransparency.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A0109C28A20665006A339B /* orderindependenttransparency.cpp */; };
 		B0A47F1F282E4D6200209D51 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A47F1E282E4D6200209D51 /* main.cpp */; };
 		B0A48A96282E5E0B00209D51 /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A48A95282E5E0B00209D51 /* libglfw3.a */; };
@@ -112,6 +113,10 @@
 		B066DE3A28AB7D3200726A95 /* pipelinestatistics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pipelinestatistics.h; sourceTree = "<group>"; };
 		B066DE4928AC955700726A95 /* pbrbasic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pbrbasic.h; sourceTree = "<group>"; };
 		B066DE4A28AC955700726A95 /* pbrbasic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pbrbasic.cpp; sourceTree = "<group>"; };
+		B066DE5428ACBE6B00726A95 /* pbribl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pbribl.cpp; sourceTree = "<group>"; };
+		B066DE5528ACBE6B00726A95 /* pbribl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pbribl.h; sourceTree = "<group>"; };
+		B066DE5928ACD54300726A95 /* svpng.inc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.pascal; path = svpng.inc; sourceTree = "<group>"; };
+		B066DE5A28ACD54300726A95 /* svpng.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = svpng.c; sourceTree = "<group>"; };
 		B09AEA122862A380006ED326 /* imgui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui.h; sourceTree = "<group>"; };
 		B09AEA132862A380006ED326 /* imstb_textedit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imstb_textedit.h; sourceTree = "<group>"; };
 		B09AEA142862A380006ED326 /* imconfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imconfig.h; sourceTree = "<group>"; };
@@ -137,8 +142,6 @@
 		B0A0108C289D1589006A339B /* runtimemipmap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = runtimemipmap.h; sourceTree = "<group>"; };
 		B0A01090289E591A006A339B /* screenshot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = screenshot.h; sourceTree = "<group>"; };
 		B0A01091289E591A006A339B /* screenshot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = screenshot.cpp; sourceTree = "<group>"; };
-		B0A01094289E61B2006A339B /* svpng.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = svpng.c; sourceTree = "<group>"; };
-		B0A01097289E621F006A339B /* svpng.inc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.pascal; path = svpng.inc; sourceTree = "<group>"; };
 		B0A0109B28A20665006A339B /* orderindependenttransparency.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = orderindependenttransparency.h; sourceTree = "<group>"; };
 		B0A0109C28A20665006A339B /* orderindependenttransparency.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = orderindependenttransparency.cpp; sourceTree = "<group>"; };
 		B0A47F1B282E4D6200209D51 /* Vulkan */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Vulkan; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -299,6 +302,15 @@
 			path = pbrbasic;
 			sourceTree = "<group>";
 		};
+		B066DE5328ACBE6B00726A95 /* pbribl */ = {
+			isa = PBXGroup;
+			children = (
+				B066DE5428ACBE6B00726A95 /* pbribl.cpp */,
+				B066DE5528ACBE6B00726A95 /* pbribl.h */,
+			);
+			path = pbribl;
+			sourceTree = "<group>";
+		};
 		B09AE9F82862A380006ED326 /* imgui */ = {
 			isa = PBXGroup;
 			children = (
@@ -375,8 +387,6 @@
 		B0A0108F289E591A006A339B /* screenshot */ = {
 			isa = PBXGroup;
 			children = (
-				B0A01097289E621F006A339B /* svpng.inc */,
-				B0A01094289E61B2006A339B /* svpng.c */,
 				B0A01090289E591A006A339B /* screenshot.h */,
 				B0A01091289E591A006A339B /* screenshot.cpp */,
 			);
@@ -441,6 +451,8 @@
 			children = (
 				B066DE2628A5FDD800726A95 /* frustum.cpp */,
 				B066DE2528A5FDD700726A95 /* frustum.h */,
+				B066DE5A28ACD54300726A95 /* svpng.c */,
+				B066DE5928ACD54300726A95 /* svpng.inc */,
 				B066DE1D28A4FF5D00726A95 /* thread.cpp */,
 				B066DE1C28A4FF5D00726A95 /* thread.h */,
 				B0B5D0DB28812D06003A175D /* noise.cpp */,
@@ -665,6 +677,7 @@
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B066DE5328ACBE6B00726A95 /* pbribl */,
 				B066DE4828AC955700726A95 /* pbrbasic */,
 				B066DE3828AB7D3200726A95 /* pipelinestatistics */,
 				B066DE3328AB316F00726A95 /* occlusionquery */,
@@ -787,7 +800,6 @@
 				B066DE2728A5FDD800726A95 /* frustum.cpp in Sources */,
 				B0B5D09B287920AD003A175D /* gltfNode.cpp in Sources */,
 				B0B5D0C0287EBB26003A175D /* pushconstants.cpp in Sources */,
-				B0A01095289E61B2006A339B /* svpng.c in Sources */,
 				B0B5D0ED28816280003A175D /* inputattachments.cpp in Sources */,
 				B0B5D0892876AC69003A175D /* swap.c in Sources */,
 				B0B5D09F287944F7003A175D /* mesh.cpp in Sources */,
@@ -795,15 +807,18 @@
 				B09AEA292862A380006ED326 /* imgui_widgets.cpp in Sources */,
 				B0A0107E2893DA76006A339B /* shadowmapping.cpp in Sources */,
 				B0B5D0B5287C1992003A175D /* texture.cpp in Sources */,
+				B066DE5628ACBE6B00726A95 /* pbribl.cpp in Sources */,
 				B0A0108D289D1589006A339B /* runtimemipmap.cpp in Sources */,
 				B0B5D0DD28812D06003A175D /* noise.cpp in Sources */,
 				B066DE2328A5074600726A95 /* multithread.cpp in Sources */,
 				B0B5D0282875297A003A175D /* pipelines.cpp in Sources */,
 				B0B5D0CA287FC9EC003A175D /* texturemapping.cpp in Sources */,
 				B0A01092289E591A006A339B /* screenshot.cpp in Sources */,
+				B066DE5B28ACD54300726A95 /* svpng.inc in Sources */,
 				B0B5D0832876ABC0003A175D /* filestream.c in Sources */,
 				B0B5D0CF287FEC3F003A175D /* texturearray.cpp in Sources */,
 				B0A01074289228EE006A339B /* multisampling.cpp in Sources */,
+				B066DE5C28ACD54300726A95 /* svpng.c in Sources */,
 				B0B5D0C5287ECA78003A175D /* specializationconstants.cpp in Sources */,
 				B0B5D01F2875293B003A175D /* ui.cpp in Sources */,
 				B0B5D10B288A7935003A175D /* separatevertexattributes.cpp in Sources */,
@@ -814,7 +829,6 @@
 				B0B5D0FC2888F884003A175D /* particlefire.cpp in Sources */,
 				B0B5D0F728879E48003A175D /* offscreen.cpp in Sources */,
 				B0A0107928926B34006A339B /* highdynamicrange.cpp in Sources */,
-				B0A01098289E621F006A339B /* svpng.inc in Sources */,
 				B0B5D0E228813096003A175D /* texture3d.cpp in Sources */,
 				B066DE3628AB316F00726A95 /* occlusionquery.cpp in Sources */,
 				B0B5D02C28753328003A175D /* gltfLoader.cpp in Sources */,

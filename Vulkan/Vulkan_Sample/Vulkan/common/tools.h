@@ -49,6 +49,7 @@ public:
 
     static VkPhysicalDevice m_physicalDevice;
     static VkDevice m_device;
+    static VkQueue m_graphicsQueue;
     static VkPhysicalDeviceFeatures m_deviceEnabledFeatures;
     static VkPhysicalDeviceProperties m_deviceProperties;
     static VkCommandPool m_commandPool;
@@ -97,4 +98,5 @@ public:
     static VkAttachmentDescription getAttachmentDescription(VkFormat format, VkSampleCountFlagBits samples, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp, VkAttachmentLoadOp stencilLoadOp, VkAttachmentStoreOp stencilStoreOp, VkImageLayout initialLayout, VkImageLayout finalLayout);
     
     static VkSampleCountFlagBits getMaxUsableSampleCount();
+    static void saveImage(const VkImage& srcImage, VkFormat srcFormat, uint32_t width, uint32_t height,const std::string filePath);
 };

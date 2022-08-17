@@ -33,8 +33,8 @@ public:
     void loop();
     void logic();
     void render();
-    virtual void updateRenderData() = 0;
-    
+    virtual void betweenInitAndLoop();
+    virtual void updateRenderData();
     void beginRenderCommandAndPass(const VkCommandBuffer commandBuffer, int frameBufferIndex);
     virtual void recordRenderCommand(const VkCommandBuffer commandBuffer) = 0;
     void endRenderCommandAndPass(const VkCommandBuffer commandBuffer);

@@ -1,10 +1,12 @@
 
 #include "tools.h"
+#include "common/svpng.inc"
 #include <stdlib.h>
 #include <random>
 
 VkPhysicalDevice Tools::m_physicalDevice = VK_NULL_HANDLE;
 VkDevice Tools::m_device = VK_NULL_HANDLE;
+VkQueue Tools::m_graphicsQueue = VK_NULL_HANDLE;
 VkCommandPool Tools::m_commandPool = VK_NULL_HANDLE;
 VkPhysicalDeviceFeatures Tools::m_deviceEnabledFeatures = {};
 VkPhysicalDeviceProperties Tools::m_deviceProperties = {};
@@ -744,4 +746,159 @@ VkSampleCountFlagBits Tools::getMaxUsableSampleCount()
     if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
 
     return VK_SAMPLE_COUNT_1_BIT;
+}
+
+void Tools::saveImage(const VkImage& srcImage, VkFormat srcFormat, uint32_t width, uint32_t height, const std::string filePath)
+{
+//    VkImage srcImage = m_swapchainImages[m_imageIndex];
+    VkImage dstImage;
+    VkDeviceMemory dstMemory;
+    
+    Tools::createImageAndMemoryThenBind(VK_FORMAT_R8G8B8A8_UNORM, width, height, 1, 1,
+                                        VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_IMAGE_TILING_LINEAR,
+                                        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                        dstImage, dstMemory);
+    
+    VkCommandBuffer cmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+    
+    Tools::setImageLayout(cmd, dstImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
+    
+    VkImageSubresourceRange subresourceRange = {};
+    subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    subresourceRange.baseArrayLayer = 0;
+    subresourceRange.layerCount = 1;
+    subresourceRange.levelCount = 1;
+    subresourceRange.baseMipLevel = 0;
+    
+    VkImageMemoryBarrier barrier = {};
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.subresourceRange = subresourceRange;
+    barrier.image = srcImage;
+    barrier.oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    barrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+    
+    barrier.image = dstImage;
+    barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    barrier.srcAccessMask = 0;
+    barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+    
+    bool useBlitImage = true;
+    
+    VkFormatProperties formatProps;
+    vkGetPhysicalDeviceFormatProperties(m_physicalDevice, srcFormat, &formatProps);
+    if (!(formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT)) useBlitImage = false;
+
+    vkGetPhysicalDeviceFormatProperties(m_physicalDevice, VK_FORMAT_B8G8R8A8_UNORM, &formatProps);
+    if (!(formatProps.linearTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT)) useBlitImage = false;
+    
+    if(useBlitImage)
+    {
+        VkImageBlit imageBlit = {};
+        imageBlit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageBlit.srcSubresource.mipLevel = 0;
+        imageBlit.srcSubresource.baseArrayLayer = 0;
+        imageBlit.srcSubresource.layerCount = 1;
+        imageBlit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageBlit.dstSubresource.mipLevel = 0;
+        imageBlit.dstSubresource.baseArrayLayer = 0;
+        imageBlit.dstSubresource.layerCount = 1;
+        imageBlit.srcOffsets[0] = {0,0,0};
+        imageBlit.srcOffsets[1] = {(int)width, (int)height, 1};
+        imageBlit.dstOffsets[0] = {0,0,0};
+        imageBlit.dstOffsets[1] = {(int)width, (int)height, 1};
+        
+        vkCmdBlitImage(cmd, srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageBlit, VK_FILTER_LINEAR);
+    }
+    else
+    {
+        VkImageCopy imageCopyRegion{};
+        imageCopyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageCopyRegion.srcSubresource.layerCount = 1;
+        imageCopyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageCopyRegion.dstSubresource.layerCount = 1;
+        imageCopyRegion.extent.width = width;
+        imageCopyRegion.extent.height = height;
+        imageCopyRegion.extent.depth = 1;
+        vkCmdCopyImage(cmd, srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageCopyRegion);
+    }
+    
+    barrier.image = srcImage;
+    barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+    
+    barrier.image = dstImage;
+    barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+    barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    
+    Tools::flushCommandBuffer(cmd, m_graphicsQueue, true);
+    
+    // 获取数据的偏移地址.
+    VkImageSubresource subResource = {};
+    subResource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    subResource.mipLevel = 0;
+    subResource.arrayLayer = 0;
+    VkSubresourceLayout subResourceLayout;
+    vkGetImageSubresourceLayout(m_device, dstImage, &subResource, &subResourceLayout);
+    
+    unsigned char *pDstImage;
+    vkMapMemory(m_device, dstMemory, 0, VK_WHOLE_SIZE, 0, (void**)&pDstImage);
+    pDstImage += subResourceLayout.offset;
+    
+    // if source is BGR, convert to RGB.
+    bool isColorSwizzle = false;
+    if(srcFormat == VK_FORMAT_B8G8R8A8_UNORM)
+    {
+        isColorSwizzle = true;
+    }
+    
+    if(isColorSwizzle)
+    {
+        unsigned char* img = new unsigned char[width * height * 3];
+        unsigned char* pOutImage = img;
+        
+        for(uint32_t j=0; j<height; ++j)
+        {
+            unsigned char *row = (unsigned char*)pDstImage;
+            for(uint32_t i=0; i<width; ++i)
+            {
+                uint32_t offset = i*4;
+                if(isColorSwizzle == true)
+                {
+                    *pOutImage++ = *(row+offset+2);
+                    *pOutImage++ = *(row+offset+1);
+                    *pOutImage++ = *(row+offset);
+                }
+                else
+                {
+                    *pOutImage++ = *(row+offset);
+                    *pOutImage++ = *(row+offset+1);
+                    *pOutImage++ = *(row+offset+2);
+                }
+            }
+            pDstImage += subResourceLayout.rowPitch;
+        }
+        
+        svpng(fopen(filePath.c_str(), "wb"), width, height, img, 0);
+        delete[] img;
+    }
+    else
+    {
+        svpng(fopen(filePath.c_str(), "wb"), width, height, pDstImage, 1);
+    }
+    
+    vkUnmapMemory(m_device, dstMemory);
+    vkFreeMemory(m_device, dstMemory, nullptr);
+    vkDestroyImage(m_device, dstImage, nullptr);
 }
