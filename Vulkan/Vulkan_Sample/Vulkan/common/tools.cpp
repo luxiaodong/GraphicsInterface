@@ -748,7 +748,7 @@ VkSampleCountFlagBits Tools::getMaxUsableSampleCount()
     return VK_SAMPLE_COUNT_1_BIT;
 }
 
-void Tools::saveImage(const VkImage& srcImage, VkFormat srcFormat, uint32_t width, uint32_t height, const std::string filePath)
+void Tools::saveImage(const VkImage& srcImage, VkFormat srcFormat, VkImageLayout oldlayout, uint32_t width, uint32_t height, const std::string filePath)
 {
 //    VkImage srcImage = m_swapchainImages[m_imageIndex];
     VkImage dstImage;
@@ -776,7 +776,7 @@ void Tools::saveImage(const VkImage& srcImage, VkFormat srcFormat, uint32_t widt
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.subresourceRange = subresourceRange;
     barrier.image = srcImage;
-    barrier.oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    barrier.oldLayout = oldlayout;
     barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
     barrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
     barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
@@ -831,7 +831,7 @@ void Tools::saveImage(const VkImage& srcImage, VkFormat srcFormat, uint32_t widt
     
     barrier.image = srcImage;
     barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-    barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    barrier.newLayout = oldlayout;
     barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
     barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
     vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);

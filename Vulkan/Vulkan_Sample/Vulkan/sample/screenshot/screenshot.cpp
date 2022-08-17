@@ -178,5 +178,5 @@ void ScreenShot::saveToFile()
     VkImage srcImage = m_swapchainImages[m_imageIndex];
     uint32_t width = m_swapchainExtent.width;
     uint32_t height = m_swapchainExtent.height;
-    Tools::saveImage(srcImage, m_surfaceFormatKHR.format, width, height, "screenshot.png");
+    Tools::saveImage(srcImage, m_surfaceFormatKHR.format, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, width, height, "screenshot.png");
 }

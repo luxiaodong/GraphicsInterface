@@ -98,5 +98,5 @@ public:
     static VkAttachmentDescription getAttachmentDescription(VkFormat format, VkSampleCountFlagBits samples, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp, VkAttachmentLoadOp stencilLoadOp, VkAttachmentStoreOp stencilStoreOp, VkImageLayout initialLayout, VkImageLayout finalLayout);
     
     static VkSampleCountFlagBits getMaxUsableSampleCount();
-    static void saveImage(const VkImage& srcImage, VkFormat srcFormat, uint32_t width, uint32_t height,const std::string filePath);
+    static void saveImage(const VkImage& srcImage, VkFormat srcFormat, VkImageLayout oldlayout, uint32_t width, uint32_t height,const std::string filePath);
 };

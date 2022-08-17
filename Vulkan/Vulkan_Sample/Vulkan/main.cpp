@@ -62,7 +62,7 @@ int main(int argc, const char * argv[])
 //    ShadowMappingCascade app("shadowmappingcascade");
 //    PointLightShadow app("pointlightshadow");
 //    RuntimeMipmap app("runtimemipmap");
-    ScreenShot app("screenshot");
+//    ScreenShot app("screenshot");
 //    OrderIndependentTransparency app("orderindependenttransparency");
 //    MultiThread app("multithreading");
 //    Instancing app("instancing");
@@ -71,7 +71,7 @@ int main(int argc, const char * argv[])
 //    PipelineStatistics app("pipelinestatistics");
 //    PbrBasic app("pbrbasic");
     
-//    PbrIbl app("pbribl");
+    PbrIbl app("pbribl");
 
     try {
         app.run();

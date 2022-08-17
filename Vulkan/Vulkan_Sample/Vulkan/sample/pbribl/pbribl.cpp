@@ -220,71 +220,202 @@ void PbrIbl::betweenInitAndLoop()
 void PbrIbl::generateBrdfLut()
 {
     // 一个函数搞定所有.
-//    
-//    VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "pbribl/genbrdflut.vert.spv");
-//    VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "pbribl/genbrdflut.frag.spv");
-//
-//    VkPipelineShaderStageCreateInfo vertShader = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
-//    VkPipelineShaderStageCreateInfo fragShader = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
-//
-//    VkPipelineVertexInputStateCreateInfo vertexInput = {};
-//    vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-//    vertexInput.vertexBindingDescriptionCount = static_cast<uint32_t>(m_vertexInputBindDes.size());
-//    vertexInput.pVertexBindingDescriptions = m_vertexInputBindDes.data();
-//    vertexInput.vertexAttributeDescriptionCount = static_cast<uint32_t>(m_vertexInputAttrDes.size());
-//    vertexInput.pVertexAttributeDescriptions = m_vertexInputAttrDes.data();
-//
-//    VkPipelineInputAssemblyStateCreateInfo inputAssembly = Tools::getPipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_FALSE);
-//
-//    VkPipelineViewportStateCreateInfo viewport = {};
-//    viewport.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-//    viewport.flags = 0;
-//    viewport.viewportCount = 1;
-//    viewport.pViewports = nullptr;
-//    viewport.scissorCount = 1;
-//    viewport.pScissors = nullptr;
-//
-//    std::vector<VkDynamicState> dynamicStates = {
-//        VK_DYNAMIC_STATE_VIEWPORT,
-//        VK_DYNAMIC_STATE_SCISSOR
-//    };
-//
-//    VkPipelineDynamicStateCreateInfo dynamic = Tools::getPipelineDynamicStateCreateInfo(dynamicStates);
-//    VkPipelineRasterizationStateCreateInfo rasterization = Tools::getPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
-//    VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
-//    VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
-//
-//    VkPipelineColorBlendAttachmentState colorBlendAttachment = Tools::getPipelineColorBlendAttachmentState(VK_FALSE, VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
-//    VkPipelineColorBlendStateCreateInfo colorBlend = Tools::getPipelineColorBlendStateCreateInfo(1, &colorBlendAttachment);
-//
-//    std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-//    shaderStages.push_back(vertShader);
-//    shaderStages.push_back(fragShader);
-//
-//    VkGraphicsPipelineCreateInfo createInfo = Tools::getGraphicsPipelineCreateInfo(shaderStages, m_pipelineLayout, m_renderPass);
-//
-//    createInfo.pVertexInputState = &vertexInput;
-//    createInfo.pInputAssemblyState = &inputAssembly;
-//    createInfo.pTessellationState = nullptr;
-//    createInfo.pViewportState = &viewport;
-//    createInfo.pRasterizationState = &rasterization;
-//    createInfo.pMultisampleState = &multisample;
-//    createInfo.pDepthStencilState = &depthStencil;
-//    createInfo.pColorBlendState = &colorBlend;
-//    createInfo.pDynamicState = &dynamic;
-//    createInfo.subpass = 0;
-//
-//    if( vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS )
-//    {
-//        throw std::runtime_error("failed to create graphics pipeline!");
-//    }
-//
-//    vkDestroyShaderModule(m_device, vertModule, nullptr);
-//    vkDestroyShaderModule(m_device, fragModule, nullptr);
-//
-//
+    int width = m_swapchainExtent.width;
+    int height = m_swapchainExtent.height;
     
+    VkFormat format = m_surfaceFormatKHR.format;
+    VkImage frameImage;
+    VkDeviceMemory frameMemory;
+    VkImageView frameImageView;
+    {
+        Tools::createImageAndMemoryThenBind(format, width, height, 1, 1,
+                                            VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+                                            VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                            frameImage, frameMemory);
+        
+        Tools::createImageView(frameImage, format, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, frameImageView);
+        
+        VkCommandBuffer cmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+        Tools::setImageLayout(cmd, frameImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
+        Tools::flushCommandBuffer(cmd, m_graphicsQueue, true);
+    }
     
+    VkRenderPass lutRenderPass;
+    {
+        VkAttachmentDescription attachmentDescription;
+        attachmentDescription.flags = 0;
+        attachmentDescription.format = format;
+        attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+        attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        
+        VkAttachmentReference attachmentReference;
+        attachmentReference.attachment = 0;
+        attachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+     
+        VkSubpassDescription subpassDescription = {};
+        subpassDescription.flags = 0;
+        subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpassDescription.inputAttachmentCount = 0;
+        subpassDescription.pInputAttachments = nullptr;
+        subpassDescription.colorAttachmentCount = 1;
+        subpassDescription.pColorAttachments = &attachmentReference;
+        subpassDescription.pResolveAttachments = nullptr;
+        subpassDescription.pDepthStencilAttachment = nullptr;
+        subpassDescription.preserveAttachmentCount = 0;
+        subpassDescription.pPreserveAttachments = nullptr;
+        
+        std::array<VkSubpassDependency, 2> dependencies;
+        dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+        dependencies[0].dstSubpass = 0;
+        dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+        dependencies[1].srcSubpass = 0;
+        dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+        dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+        
+        VkRenderPassCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        createInfo.flags = 0;
+        createInfo.attachmentCount = 1;
+        createInfo.pAttachments = &attachmentDescription;
+        createInfo.subpassCount = 1;
+        createInfo.pSubpasses = &subpassDescription;
+        createInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+        createInfo.pDependencies = dependencies.data();
+        
+        VK_CHECK_RESULT( vkCreateRenderPass(m_device, &createInfo, nullptr, &lutRenderPass) );
+    }
+    
+    VkFramebuffer lutFrameBuffer;
+    {
+        VkFramebufferCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        createInfo.renderPass = lutRenderPass;
+        createInfo.attachmentCount = 1;
+        createInfo.pAttachments = &frameImageView;
+        createInfo.width = width;
+        createInfo.height = height;
+        createInfo.layers = 1;
+        
+        VK_CHECK_RESULT(vkCreateFramebuffer(m_device, &createInfo, nullptr, &lutFrameBuffer));
+    }
+    
+    VkPipelineLayout lutPipelineLayout;
+    {
+        VkPipelineLayoutCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        vkCreatePipelineLayout(m_device, &createInfo, nullptr, &lutPipelineLayout);
+    }
+    
+    VkPipeline lutPipeline;
+    {
+        VkViewport vp;
+        vp.x = 0;
+        vp.y = 0;
+        vp.width = width;
+        vp.height = height;
+        vp.minDepth = 0;
+        vp.maxDepth = 1;
+        
+        VkRect2D scissor;
+        scissor.offset = {0, 0};
+        scissor.extent.width = width;
+        scissor.extent.height = height;
+        
+        VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "pbribl/genbrdflut.vert.spv");
+        VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "pbribl/genbrdflut.frag.spv");
+        VkPipelineShaderStageCreateInfo vertShader = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
+        VkPipelineShaderStageCreateInfo fragShader = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
+        
+        VkPipelineVertexInputStateCreateInfo vertexInput = {};
+        vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        VkPipelineInputAssemblyStateCreateInfo inputAssembly = Tools::getPipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_FALSE);
+        VkPipelineViewportStateCreateInfo viewport = {};
+        viewport.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+        viewport.flags = 0;
+        viewport.viewportCount = 1;
+        viewport.pViewports = &vp;
+        viewport.scissorCount = 1;
+        viewport.pScissors = &scissor;
+        VkPipelineRasterizationStateCreateInfo rasterization = Tools::getPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
+        VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
+        VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
+        VkPipelineColorBlendAttachmentState colorBlendAttachment = Tools::getPipelineColorBlendAttachmentState(VK_FALSE);
+        VkPipelineColorBlendStateCreateInfo colorBlend = Tools::getPipelineColorBlendStateCreateInfo(1, &colorBlendAttachment);
+        std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+        shaderStages.push_back(vertShader);
+        shaderStages.push_back(fragShader);
+
+        VkGraphicsPipelineCreateInfo createInfo = Tools::getGraphicsPipelineCreateInfo(shaderStages, lutPipelineLayout, lutRenderPass);
+        createInfo.pVertexInputState = &vertexInput;
+        createInfo.pInputAssemblyState = &inputAssembly;
+        createInfo.pTessellationState = nullptr;
+        createInfo.pViewportState = &viewport;
+        createInfo.pRasterizationState = &rasterization;
+        createInfo.pMultisampleState = &multisample;
+        createInfo.pDepthStencilState = &depthStencil;
+        createInfo.pColorBlendState = &colorBlend;
+        createInfo.subpass = 0;
+        
+        VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &lutPipeline));
+        vkDestroyShaderModule(m_device, vertModule, nullptr);
+        vkDestroyShaderModule(m_device, fragModule, nullptr);
+    }
+    
+    VkCommandBuffer commandBuffer = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+    {
+//        VkCommandBufferBeginInfo beginInfo = {};
+//        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+//        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+//        beginInfo.pInheritanceInfo = nullptr;
+//        VK_CHECK_RESULT(vkBeginCommandBuffer(commandBuffer, &beginInfo));
+//        {
+            VkClearValue clearColor = {0, 0, 0, 0};
+            VkRenderPassBeginInfo passBeginInfo = {};
+            passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            passBeginInfo.renderPass = lutRenderPass;
+            passBeginInfo.framebuffer = lutFrameBuffer;
+            passBeginInfo.renderArea.offset = {0, 0};
+            passBeginInfo.renderArea.extent.width = width;
+            passBeginInfo.renderArea.extent.height = height;
+            passBeginInfo.clearValueCount = 1;
+            passBeginInfo.pClearValues = &clearColor;
+            vkCmdBeginRenderPass(commandBuffer, &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+            {
+                vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lutPipeline);
+                vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+            }
+            
+            vkCmdEndRenderPass(commandBuffer);
+//        }
+//        VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+    }
+    Tools::flushCommandBuffer(commandBuffer, m_graphicsQueue, true);
+    
+    vkDeviceWaitIdle(m_device);
+    
+    Tools::saveImage(frameImage, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, width, height, "screenshot.png");
+    
+    vkDestroyPipeline(m_device, lutPipeline, nullptr);
+    vkDestroyFramebuffer(m_device, lutFrameBuffer, nullptr);
+    vkDestroyRenderPass(m_device, lutRenderPass, nullptr);
+    vkDestroyPipelineLayout(m_device, lutPipelineLayout, nullptr);
+    vkFreeMemory(m_device, frameMemory, nullptr);
+    vkDestroyImage(m_device, frameImage, nullptr);
+    vkDestroyImageView(m_device, frameImageView, nullptr);
 }
 
 void PbrIbl::selectPbrMaterial()
