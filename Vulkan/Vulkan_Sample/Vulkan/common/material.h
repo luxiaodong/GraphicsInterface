@@ -4,6 +4,28 @@
 #include "tools.h"
 #include "texture.h"
 
+struct PbrMaterial
+{
+    // Parameter block used as push constant block
+    struct PushBlock
+    {
+        float roughness;
+        float metallic;
+        float r, g, b;
+    } params;
+    
+    std::string name;
+    PbrMaterial() {};
+    PbrMaterial(std::string n, glm::vec3 c, float r, float m) : name(n)
+    {
+        params.roughness = r;
+        params.metallic = m;
+        params.r = c.r;
+        params.g = c.g;
+        params.b = c.b;
+    };
+};
+
 class Material
 {
 public:

@@ -15,6 +15,7 @@
 		B066DE3128AA211500726A95 /* indirectdraw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE2F28AA211500726A95 /* indirectdraw.cpp */; };
 		B066DE3628AB316F00726A95 /* occlusionquery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE3428AB316F00726A95 /* occlusionquery.cpp */; };
 		B066DE3B28AB7D3300726A95 /* pipelinestatistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE3928AB7D3200726A95 /* pipelinestatistics.cpp */; };
+		B066DE4B28AC955700726A95 /* pbrbasic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE4A28AC955700726A95 /* pbrbasic.cpp */; };
 		B09AEA292862A380006ED326 /* imgui_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA152862A380006ED326 /* imgui_widgets.cpp */; };
 		B09AEA2C2862A380006ED326 /* imgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA1E2862A380006ED326 /* imgui.cpp */; };
 		B09AEA2D2862A380006ED326 /* imgui_tables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B09AEA232862A380006ED326 /* imgui_tables.cpp */; };
@@ -109,6 +110,8 @@
 		B066DE3528AB316F00726A95 /* occlusionquery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = occlusionquery.h; sourceTree = "<group>"; };
 		B066DE3928AB7D3200726A95 /* pipelinestatistics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pipelinestatistics.cpp; sourceTree = "<group>"; };
 		B066DE3A28AB7D3200726A95 /* pipelinestatistics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pipelinestatistics.h; sourceTree = "<group>"; };
+		B066DE4928AC955700726A95 /* pbrbasic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pbrbasic.h; sourceTree = "<group>"; };
+		B066DE4A28AC955700726A95 /* pbrbasic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pbrbasic.cpp; sourceTree = "<group>"; };
 		B09AEA122862A380006ED326 /* imgui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui.h; sourceTree = "<group>"; };
 		B09AEA132862A380006ED326 /* imstb_textedit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imstb_textedit.h; sourceTree = "<group>"; };
 		B09AEA142862A380006ED326 /* imconfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imconfig.h; sourceTree = "<group>"; };
@@ -285,6 +288,15 @@
 				B066DE3A28AB7D3200726A95 /* pipelinestatistics.h */,
 			);
 			path = pipelinestatistics;
+			sourceTree = "<group>";
+		};
+		B066DE4828AC955700726A95 /* pbrbasic */ = {
+			isa = PBXGroup;
+			children = (
+				B066DE4928AC955700726A95 /* pbrbasic.h */,
+				B066DE4A28AC955700726A95 /* pbrbasic.cpp */,
+			);
+			path = pbrbasic;
 			sourceTree = "<group>";
 		};
 		B09AE9F82862A380006ED326 /* imgui */ = {
@@ -653,6 +665,7 @@
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B066DE4828AC955700726A95 /* pbrbasic */,
 				B066DE3828AB7D3200726A95 /* pipelinestatistics */,
 				B066DE3328AB316F00726A95 /* occlusionquery */,
 				B066DE2E28AA211500726A95 /* indirectdraw */,
@@ -814,6 +827,7 @@
 				B0B5D08C2876AC95003A175D /* hashlist.c in Sources */,
 				B0A01088289BA9FC006A339B /* pointlightshadow.cpp in Sources */,
 				B0B5D11D288F8C1D003A175D /* animation.cpp in Sources */,
+				B066DE4B28AC955700726A95 /* pbrbasic.cpp in Sources */,
 				B0B5D0212875293B003A175D /* tools.cpp in Sources */,
 				B0B5D0F228864606003A175D /* subpasses.cpp in Sources */,
 				B0B5D0A728794942003A175D /* primitive.cpp in Sources */,

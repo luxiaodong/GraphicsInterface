@@ -31,6 +31,7 @@
 #include "sample/indirectdraw/indirectdraw.h"
 #include "sample/occlusionquery/occlusionquery.h"
 #include "sample/pipelinestatistics/pipelinestatistics.h"
+#include "sample/pbrbasic/pbrbasic.h"
 
 int main(int argc, const char * argv[])
 {
@@ -66,7 +67,10 @@ int main(int argc, const char * argv[])
 //    Instancing app("instancing");
 //    IndirectDraw app("indirectdraw");
 //    OcclusionQuery app("occlusionquery");
-    PipelineStatistics app("pipelinestatistics");
+//    PipelineStatistics app("pipelinestatistics");
+    
+    PbrBasic app("pbrbasic");
+
     try {
         app.run();
     } catch (const std::exception& e) {
