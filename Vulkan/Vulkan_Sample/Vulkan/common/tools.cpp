@@ -10,8 +10,21 @@ VkQueue Tools::m_graphicsQueue = VK_NULL_HANDLE;
 VkCommandPool Tools::m_commandPool = VK_NULL_HANDLE;
 VkPhysicalDeviceFeatures Tools::m_deviceEnabledFeatures = {};
 VkPhysicalDeviceProperties Tools::m_deviceProperties = {};
+bool Tools::m_isLowEndian = false;
 
 std::default_random_engine rndEngine;
+
+void Tools::init()
+{
+    // 检查大小端
+    union w
+    {
+        int a;
+        char b;
+    }c;
+    c.a = 1;
+    Tools::m_isLowEndian = (c.b == 1);  // 小端返回TRUE,大端返回FALSE
+}
 
 void Tools::seed()
 {
@@ -857,10 +870,10 @@ void Tools::saveImage(const VkImage& srcImage, VkFormat srcFormat, VkImageLayout
     pDstImage += subResourceLayout.offset;
     
     // if source is BGR, convert to RGB.
-    bool isColorSwizzle = false;
-    if(srcFormat == VK_FORMAT_B8G8R8A8_UNORM)
+    bool isColorSwizzle = true;
+    if(srcFormat == VK_FORMAT_R8G8B8A8_UNORM)
     {
-        isColorSwizzle = true;
+        isColorSwizzle = false;
     }
     
     if(isColorSwizzle)
@@ -870,21 +883,23 @@ void Tools::saveImage(const VkImage& srcImage, VkFormat srcFormat, VkImageLayout
         
         for(uint32_t j=0; j<height; ++j)
         {
-            unsigned char *row = (unsigned char*)pDstImage;
             for(uint32_t i=0; i<width; ++i)
             {
-                uint32_t offset = i*4;
-                if(isColorSwizzle == true)
+                if(VK_FORMAT_B8G8R8A8_UNORM == srcFormat)
                 {
-                    *pOutImage++ = *(row+offset+2);
-                    *pOutImage++ = *(row+offset+1);
-                    *pOutImage++ = *(row+offset);
+                    uint32_t offset = i*4;
+                    *pOutImage++ = *(pDstImage+offset+2);
+                    *pOutImage++ = *(pDstImage+offset+1);
+                    *pOutImage++ = *(pDstImage+offset);
                 }
-                else
+                else if(VK_FORMAT_R16G16_SFLOAT == srcFormat)
                 {
-                    *pOutImage++ = *(row+offset);
-                    *pOutImage++ = *(row+offset+1);
-                    *pOutImage++ = *(row+offset+2);
+                    uint32_t offset = i*4;
+                    float r = Tools::float16(*(pDstImage+offset+1), *(pDstImage+offset));
+                    float g = Tools::float16(*(pDstImage+offset+3), *(pDstImage+offset+2));
+                    *pOutImage++ = r*255;
+                    *pOutImage++ = g*255;
+                    *pOutImage++ = 0;
                 }
             }
             pDstImage += subResourceLayout.rowPitch;
@@ -895,10 +910,27 @@ void Tools::saveImage(const VkImage& srcImage, VkFormat srcFormat, VkImageLayout
     }
     else
     {
-        svpng(fopen(filePath.c_str(), "wb"), width, height, pDstImage, 1);
+        svpng(fopen(filePath.c_str(), "wb"), width, height, pDstImage, 0);
     }
     
     vkUnmapMemory(m_device, dstMemory);
     vkFreeMemory(m_device, dstMemory, nullptr);
     vkDestroyImage(m_device, dstImage, nullptr);
+}
+
+float Tools::float16(unsigned char high, unsigned char low)
+{
+    if(Tools::m_isLowEndian == false)
+    {
+        std::swap(high, low);
+    }
+    
+    //1 + 5 + 10
+    int sign = 0x80 & high;
+    int exp = ((0x7c & high) >> 2) - 15;
+    int precision = (high & 0x3);
+    precision = (precision << 8) + low;
+    float p = (1 + precision*1.0f/1024) * pow(2.0f, exp);
+    if (sign) p = -p;
+    return p;
 }

@@ -53,7 +53,9 @@ public:
     static VkPhysicalDeviceFeatures m_deviceEnabledFeatures;
     static VkPhysicalDeviceProperties m_deviceProperties;
     static VkCommandPool m_commandPool;
+    static bool m_isLowEndian;
     
+    static void init();
     static void seed();
     static float random01();
     static uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
@@ -99,4 +101,5 @@ public:
     
     static VkSampleCountFlagBits getMaxUsableSampleCount();
     static void saveImage(const VkImage& srcImage, VkFormat srcFormat, VkImageLayout oldlayout, uint32_t width, uint32_t height,const std::string filePath);
+    static float float16(unsigned char high, unsigned char low);
 };

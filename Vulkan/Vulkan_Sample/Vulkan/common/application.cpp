@@ -48,6 +48,7 @@ void Application::run()
 
 void Application::init()
 {
+    Tools::init();
     initCamera();
 
     createWindow();

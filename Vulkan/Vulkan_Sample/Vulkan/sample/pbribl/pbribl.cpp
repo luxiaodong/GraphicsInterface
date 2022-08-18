@@ -219,11 +219,13 @@ void PbrIbl::betweenInitAndLoop()
 
 void PbrIbl::generateBrdfLut()
 {
-    // 一个函数搞定所有.
-    int width = m_swapchainExtent.width;
-    int height = m_swapchainExtent.height;
+//    int width = m_swapchainExtent.width;
+//    int height = m_swapchainExtent.height;
     
-    VkFormat format = m_surfaceFormatKHR.format;
+    int width = 1024;
+    int height = 1024;
+    
+    VkFormat format = VK_FORMAT_R16G16_SFLOAT;
     VkImage frameImage;
     VkDeviceMemory frameMemory;
     VkImageView frameImageView;
@@ -375,34 +377,20 @@ void PbrIbl::generateBrdfLut()
     }
     
     VkCommandBuffer commandBuffer = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-    {
-//        VkCommandBufferBeginInfo beginInfo = {};
-//        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-//        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-//        beginInfo.pInheritanceInfo = nullptr;
-//        VK_CHECK_RESULT(vkBeginCommandBuffer(commandBuffer, &beginInfo));
-//        {
-            VkClearValue clearColor = {0, 0, 0, 0};
-            VkRenderPassBeginInfo passBeginInfo = {};
-            passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            passBeginInfo.renderPass = lutRenderPass;
-            passBeginInfo.framebuffer = lutFrameBuffer;
-            passBeginInfo.renderArea.offset = {0, 0};
-            passBeginInfo.renderArea.extent.width = width;
-            passBeginInfo.renderArea.extent.height = height;
-            passBeginInfo.clearValueCount = 1;
-            passBeginInfo.pClearValues = &clearColor;
-            vkCmdBeginRenderPass(commandBuffer, &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-            {
-                vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lutPipeline);
-                vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-            }
-            
-            vkCmdEndRenderPass(commandBuffer);
-//        }
-//        VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
-    }
+    VkClearValue clearColor = {0, 0, 0, 0};
+    VkRenderPassBeginInfo passBeginInfo = {};
+    passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    passBeginInfo.renderPass = lutRenderPass;
+    passBeginInfo.framebuffer = lutFrameBuffer;
+    passBeginInfo.renderArea.offset = {0, 0};
+    passBeginInfo.renderArea.extent.width = width;
+    passBeginInfo.renderArea.extent.height = height;
+    passBeginInfo.clearValueCount = 1;
+    passBeginInfo.pClearValues = &clearColor;
+    vkCmdBeginRenderPass(commandBuffer, &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lutPipeline);
+    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    vkCmdEndRenderPass(commandBuffer);
     Tools::flushCommandBuffer(commandBuffer, m_graphicsQueue, true);
     
     vkDeviceWaitIdle(m_device);
