@@ -58,6 +58,7 @@ void TextureCubeMapping::prepareVertex()
     m_skyboxLoader.createVertexAndIndexBuffer();
     m_skyboxLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal});
     m_pTexture = Texture::loadTextrue2D(Tools::getTexturePath() +  "cubemap_yokohama_rgba.ktx", m_graphicsQueue, VK_FORMAT_R8G8B8A8_UNORM, TextureCopyRegion::Cube);
+//    m_pTexture = Texture::loadTextrue2D(Tools::getTexturePath() +  "hdr/pisa_cube.ktx", m_graphicsQueue, VK_FORMAT_R16G16B16A16_SFLOAT, TextureCopyRegion::Cube);
     
     std::vector<std::string> filenames = { "sphere.gltf", "teapot.gltf", "torusknot.gltf", "venus.gltf" };
     m_objectLoader.loadFromFile(Tools::getModelPath() + filenames[0], m_graphicsQueue);

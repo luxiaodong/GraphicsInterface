@@ -766,8 +766,9 @@ void Tools::saveImage(const VkImage& srcImage, VkFormat srcFormat, VkImageLayout
 //    VkImage srcImage = m_swapchainImages[m_imageIndex];
     VkImage dstImage;
     VkDeviceMemory dstMemory;
+    VkFormat dstFormat = srcFormat;
     
-    Tools::createImageAndMemoryThenBind(VK_FORMAT_R8G8B8A8_UNORM, width, height, 1, 1,
+    Tools::createImageAndMemoryThenBind(dstFormat, width, height, 1, 1,
                                         VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_IMAGE_TILING_LINEAR,
                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                         dstImage, dstMemory);
@@ -869,30 +870,28 @@ void Tools::saveImage(const VkImage& srcImage, VkFormat srcFormat, VkImageLayout
     vkMapMemory(m_device, dstMemory, 0, VK_WHOLE_SIZE, 0, (void**)&pDstImage);
     pDstImage += subResourceLayout.offset;
     
-    // if source is BGR, convert to RGB.
-    bool isColorSwizzle = true;
-    if(srcFormat == VK_FORMAT_R8G8B8A8_UNORM)
+    if(dstFormat == VK_FORMAT_R8G8B8A8_UNORM)
     {
-        isColorSwizzle = false;
+        svpng(fopen(filePath.c_str(), "wb"), width, height, pDstImage, 1);
     }
-    
-    if(isColorSwizzle)
+    else
     {
-        unsigned char* img = new unsigned char[width * height * 3];
+        unsigned char* img = new unsigned char[width * height * 4];
         unsigned char* pOutImage = img;
         
         for(uint32_t j=0; j<height; ++j)
         {
             for(uint32_t i=0; i<width; ++i)
             {
-                if(VK_FORMAT_B8G8R8A8_UNORM == srcFormat)
+                if(VK_FORMAT_B8G8R8A8_UNORM == dstFormat)
                 {
                     uint32_t offset = i*4;
                     *pOutImage++ = *(pDstImage+offset+2);
                     *pOutImage++ = *(pDstImage+offset+1);
                     *pOutImage++ = *(pDstImage+offset);
+                    *pOutImage++ = *(pDstImage+offset+3);
                 }
-                else if(VK_FORMAT_R16G16_SFLOAT == srcFormat)
+                else if(VK_FORMAT_R16G16_SFLOAT == dstFormat)
                 {
                     uint32_t offset = i*4;
                     float r = Tools::float16(*(pDstImage+offset+1), *(pDstImage+offset));
@@ -900,17 +899,26 @@ void Tools::saveImage(const VkImage& srcImage, VkFormat srcFormat, VkImageLayout
                     *pOutImage++ = r*255;
                     *pOutImage++ = g*255;
                     *pOutImage++ = 0;
+                    *pOutImage++ = 255;
+                }
+                else if(VK_FORMAT_R16G16B16A16_SFLOAT == dstFormat)
+                {
+                    uint32_t offset = i*8;
+                    float r = Tools::float16(*(pDstImage+offset+1), *(pDstImage+offset));
+                    float g = Tools::float16(*(pDstImage+offset+3), *(pDstImage+offset+2));
+                    float b = Tools::float16(*(pDstImage+offset+5), *(pDstImage+offset+4));
+                    float a = Tools::float16(*(pDstImage+offset+7), *(pDstImage+offset+6));
+                    *pOutImage++ = r*255;
+                    *pOutImage++ = g*255;
+                    *pOutImage++ = b*255;
+                    *pOutImage++ = a*255;
                 }
             }
             pDstImage += subResourceLayout.rowPitch;
         }
         
-        svpng(fopen(filePath.c_str(), "wb"), width, height, img, 0);
+        svpng(fopen(filePath.c_str(), "wb"), width, height, img, 1);
         delete[] img;
-    }
-    else
-    {
-        svpng(fopen(filePath.c_str(), "wb"), width, height, pDstImage, 0);
     }
     
     vkUnmapMemory(m_device, dstMemory);

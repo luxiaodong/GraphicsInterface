@@ -40,8 +40,15 @@ protected:
     
     void selectPbrMaterial();
     void generateBrdfLut();
+    void generateIrradianceCube();
+    void generatePrefilteredCube();
 
 private:
+    // skybox
+    VkDescriptorSet m_skyboxDescriptorSet;
+    VkDescriptorSetLayout m_skyboxDescriptorSetLayout;
+    VkPipelineLayout m_skyboxPipelineLayout;
+    VkPipeline m_skyboxPipeline;
     
     VkBuffer m_uniformBuffer;
     VkDeviceMemory m_uniformMemory;
@@ -52,6 +59,10 @@ private:
     VkDescriptorSet m_descriptorSet;
 
     PbrMaterial m_pbrMaterial;
+    
 private:
     GltfLoader m_gltfLoader;
+    GltfLoader m_skyboxLoader;
+    
+    Texture* m_pEnvCube;
 };
