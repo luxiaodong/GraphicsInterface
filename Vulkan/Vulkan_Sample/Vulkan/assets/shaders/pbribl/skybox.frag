@@ -34,7 +34,6 @@ void main()
 	color = color * (1.0f / Uncharted2Tonemap(vec3(11.2f)));	
 	// Gamma correction
 	color = pow(color, vec3(1.0f / uboParams.gamma));
-	
-	color = vec3(1.0, 0.0, 0.0);
+
 	outColor = vec4(color, 1.0);
 }
