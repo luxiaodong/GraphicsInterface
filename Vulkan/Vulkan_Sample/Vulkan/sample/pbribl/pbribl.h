@@ -60,6 +60,12 @@ private:
     VkSampler m_irrSampler;
     uint32_t m_irrMaxLevels;
     
+    // filter
+    VkImage m_filterImage;
+    VkDeviceMemory m_filterMemory;
+    VkImageView m_filterImageView;
+    VkSampler m_filterSampler;
+    
     // skybox
     VkDescriptorSet m_skyboxDescriptorSet;
     VkDescriptorSetLayout m_skyboxDescriptorSetLayout;
