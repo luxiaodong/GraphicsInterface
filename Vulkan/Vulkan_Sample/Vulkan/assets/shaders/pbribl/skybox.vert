@@ -21,4 +21,8 @@ void main()
 {
 	outUVW = inPos;
 	gl_Position = ubo.projection * ubo.model * vec4(inPos.xyz, 1.0);
+
+//	vec2 uv = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);
+//	outUVW = vec3(uv, -1.0);
+//	gl_Position = vec4(uv * 2.0f - 1.0f, 0.0f, 1.0f);
 }

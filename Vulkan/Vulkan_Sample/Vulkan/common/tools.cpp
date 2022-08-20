@@ -896,6 +896,8 @@ void Tools::saveImage(const VkImage& srcImage, VkFormat srcFormat, VkImageLayout
                     uint32_t offset = i*4;
                     float r = Tools::float16(*(pDstImage+offset+1), *(pDstImage+offset));
                     float g = Tools::float16(*(pDstImage+offset+3), *(pDstImage+offset+2));
+                    if(r > 1) r = 1;
+                    if(g > 1) g = 1;
                     *pOutImage++ = r*255;
                     *pOutImage++ = g*255;
                     *pOutImage++ = 0;
@@ -908,6 +910,10 @@ void Tools::saveImage(const VkImage& srcImage, VkFormat srcFormat, VkImageLayout
                     float g = Tools::float16(*(pDstImage+offset+3), *(pDstImage+offset+2));
                     float b = Tools::float16(*(pDstImage+offset+5), *(pDstImage+offset+4));
                     float a = Tools::float16(*(pDstImage+offset+7), *(pDstImage+offset+6));
+                    if(r > 1) r = 1;
+                    if(g > 1) g = 1;
+                    if(b > 1) b = 1;
+                    if(a > 1) a = 1;
                     *pOutImage++ = r*255;
                     *pOutImage++ = g*255;
                     *pOutImage++ = b*255;

@@ -17,6 +17,8 @@ public:
     struct LightParams
     {
         glm::vec4 lights[4];
+        float exposure = 4.5f;
+        float gamma = 2.2f;
     };
     
     PbrIbl(std::string title);
@@ -38,12 +40,26 @@ protected:
     void prepareDescriptorSetAndWrite();
     void createGraphicsPipeline();
     
+protected:
     void selectPbrMaterial();
+    void createIrrImage();
     void generateBrdfLut();
     void generateIrradianceCube();
     void generatePrefilteredCube();
 
 private:
+    // lut
+    VkImage m_lutImage;
+    VkDeviceMemory m_lutMemory;
+    VkImageView m_lutImageView;
+    
+    // irr
+    VkImage m_irrImage;
+    VkDeviceMemory m_irrMemory;
+    VkImageView m_irrImageView;
+    VkSampler m_irrSampler;
+    uint32_t m_irrMaxLevels;
+    
     // skybox
     VkDescriptorSet m_skyboxDescriptorSet;
     VkDescriptorSetLayout m_skyboxDescriptorSetLayout;
