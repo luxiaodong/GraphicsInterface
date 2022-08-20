@@ -52,6 +52,7 @@ private:
     VkImage m_lutImage;
     VkDeviceMemory m_lutMemory;
     VkImageView m_lutImageView;
+    VkSampler m_lutSampler;
     
     // irr
     VkImage m_irrImage;

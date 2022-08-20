@@ -38,6 +38,8 @@ void PbrIbl::setEnabledFeatures()
 
 void PbrIbl::clear()
 {
+    vkDestroyPipeline(m_device, m_pipeline, nullptr);
+    
     vkDestroyPipeline(m_device, m_skyboxPipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_skyboxPipelineLayout, nullptr);
     vkDestroyDescriptorSetLayout(m_device, m_skyboxDescriptorSetLayout, nullptr);
@@ -61,6 +63,7 @@ void PbrIbl::clear()
     vkFreeMemory(m_device, m_lutMemory, nullptr);
     vkDestroyImage(m_device, m_lutImage, nullptr);
     vkDestroyImageView(m_device, m_lutImageView, nullptr);
+    vkDestroySampler(m_device, m_lutSampler, nullptr);
 
     m_pEnvCube->clear();
     delete m_pEnvCube;
@@ -75,7 +78,7 @@ void PbrIbl::prepareVertex()
     std::vector<std::string> fileNames = { "sphere.gltf", "teapot.gltf", "torusknot.gltf", "venus.gltf" };
     m_gltfLoader.loadFromFile(Tools::getModelPath() + fileNames[0], m_graphicsQueue, flags);
     m_gltfLoader.createVertexAndIndexBuffer();
-    m_gltfLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal, VertexComponent::Color});
+    m_gltfLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal, VertexComponent::UV});
     
     m_skyboxLoader.loadFromFile(Tools::getModelPath() + "cube.gltf", m_graphicsQueue, flags);
     m_skyboxLoader.createVertexAndIndexBuffer();
@@ -86,7 +89,6 @@ void PbrIbl::prepareVertex()
     
     m_irrMaxLevels = static_cast<uint32_t>(floor(log2(std::max(m_pEnvCube->m_width, m_pEnvCube->m_height))) + 1.0);
     m_irrMaxLevels = 1;
-    
     
     createIrrImage();
 }
@@ -125,9 +127,12 @@ void PbrIbl::prepareDescriptorSetLayoutAndPipelineLayout()
         pushConstantRange[1].offset = sizeof(glm::vec3);
         pushConstantRange[1].size = sizeof(PbrMaterial::PushBlock);
 
-        std::array<VkDescriptorSetLayoutBinding, 2> bindings;
+        std::array<VkDescriptorSetLayoutBinding, 5> bindings;
         bindings[0] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0);
         bindings[1] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
+        bindings[2] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 2);
+        bindings[3] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 3);
+        bindings[4] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 4);
         createDescriptorSetLayout(bindings.data(), static_cast<uint32_t>(bindings.size()));
         createPipelineLayout(pushConstantRange.data(), static_cast<uint32_t>(pushConstantRange.size()));
     }
@@ -137,10 +142,10 @@ void PbrIbl::prepareDescriptorSetAndWrite()
 {
     std::array<VkDescriptorPoolSize, 2> poolSizes;
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = 4;
+    poolSizes[0].descriptorCount = 6;
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = 1;
-    createDescriptorPool(poolSizes.data(), static_cast<uint32_t>(poolSizes.size()), 2);
+    poolSizes[1].descriptorCount = 4;
+    createDescriptorPool(poolSizes.data(), static_cast<uint32_t>(poolSizes.size()), 3);
 
     {
         createDescriptorSet(&m_skyboxDescriptorSetLayout, 1, m_skyboxDescriptorSet);
@@ -155,10 +160,6 @@ void PbrIbl::prepareDescriptorSetAndWrite()
         bufferInfo1.buffer = m_lightBuffer;
         
         VkDescriptorImageInfo imageInfo = m_pEnvCube->getDescriptorImageInfo();
-//        VkDescriptorImageInfo imageInfo = {};
-//        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-//        imageInfo.imageView = m_filterImageView;
-//        imageInfo.sampler = m_filterSampler;
         
         std::array<VkWriteDescriptorSet, 3> writes = {};
         writes[0] = Tools::getWriteDescriptorSet(m_skyboxDescriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
@@ -178,10 +179,28 @@ void PbrIbl::prepareDescriptorSetAndWrite()
         bufferInfo1.offset = 0;
         bufferInfo1.range = sizeof(LightParams);
         bufferInfo1.buffer = m_lightBuffer;
+        
+        VkDescriptorImageInfo imageInfo1 = {};
+        imageInfo1.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo1.imageView = m_irrImageView;
+        imageInfo1.sampler = m_irrSampler;
+        
+        VkDescriptorImageInfo imageInfo2 = {};
+        imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo2.imageView = m_lutImageView;
+        imageInfo2.sampler = m_lutSampler;
+        
+        VkDescriptorImageInfo imageInfo3 = {};
+        imageInfo3.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo3.imageView = m_filterImageView;
+        imageInfo3.sampler = m_filterSampler;
 
-        std::array<VkWriteDescriptorSet, 2> writes = {};
+        std::array<VkWriteDescriptorSet, 5> writes = {};
         writes[0] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
         writes[1] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, &bufferInfo1);
+        writes[2] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, &imageInfo1);
+        writes[3] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3, &imageInfo2);
+        writes[4] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4, &imageInfo3);
         vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
     }
 }
@@ -224,9 +243,10 @@ void PbrIbl::createGraphicsPipeline()
     createInfo.pColorBlendState = &colorBlend;
     createInfo.pDynamicState = &dynamic;
     createInfo.subpass = 0;
-
-    VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "pbrbasic/pbr.vert.spv");
-    VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "pbrbasic/pbr.frag.spv");
+    
+    // pbribl
+    VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "pbribl/pbribl.vert.spv");
+    VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "pbribl/pbribl.frag.spv");
     shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
     shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_pipeline));
@@ -237,7 +257,6 @@ void PbrIbl::createGraphicsPipeline()
     createInfo.layout = m_skyboxPipelineLayout;
     createInfo.pVertexInputState = m_skyboxLoader.getPipelineVertexInputState();
     rasterization.cullMode = VK_CULL_MODE_NONE;
-    
     depthStencil.depthWriteEnable = VK_FALSE;
     depthStencil.depthTestEnable = VK_FALSE;
     vertModule = Tools::createShaderModule( Tools::getShaderPath() + "pbribl/skybox.vert.spv");
@@ -291,12 +310,22 @@ void PbrIbl::recordRenderCommand(const VkCommandBuffer commandBuffer)
     m_skyboxLoader.bindBuffers(commandBuffer);
     m_skyboxLoader.draw(commandBuffer);
 
-    
     // render object
-//    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
-//    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
-//    m_gltfLoader.bindBuffers(commandBuffer);
-//
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
+    m_gltfLoader.bindBuffers(commandBuffer);
+
+    uint32_t objcount = 10;
+    for (uint32_t x = 0; x < objcount; x++)
+    {
+        glm::vec3 pos = glm::vec3(float(x - (objcount / 2.0f)) * 2.15f, 0.0f, 0.0f);
+        m_pbrMaterial.params.roughness = 1.0f - glm::clamp((float)x / (float)objcount, 0.005f, 1.0f);
+        m_pbrMaterial.params.metallic = glm::clamp((float)x / (float)objcount, 0.005f, 1.0f);
+        vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::vec3), &pos);
+        vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::vec3), sizeof(PbrMaterial::PushBlock), &m_pbrMaterial);
+        m_gltfLoader.draw(commandBuffer);
+    }
+    
 //    int GRID_DIM = 7;
 //    for (uint32_t y = 0; y < GRID_DIM; y++)
 //    {
@@ -310,10 +339,31 @@ void PbrIbl::recordRenderCommand(const VkCommandBuffer commandBuffer)
 //            m_gltfLoader.draw(commandBuffer);
 //        }
 //    }
+    
 }
 
 void PbrIbl::createIrrImage()
 {
+    {
+        int width = 1024;
+        int height = 1024;
+        VkFormat format = VK_FORMAT_R16G16_SFLOAT;
+        
+        Tools::createImageAndMemoryThenBind(format, width, height, 1, 1,
+                                            VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                                            VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                            m_lutImage, m_lutMemory);
+        
+        Tools::createImageView(m_lutImage, format, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, m_lutImageView);
+        
+        Tools::createTextureSampler(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, 1, m_lutSampler);
+        
+        VkCommandBuffer cmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+        Tools::setImageLayout(cmd, m_lutImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
+        Tools::flushCommandBuffer(cmd, m_graphicsQueue, true);
+    }
+    
+    
     uint32_t width = m_pEnvCube->m_width;
     uint32_t height = m_pEnvCube->m_height;
     VkFormat format = m_pEnvCube->m_fromat;
@@ -322,9 +372,7 @@ void PbrIbl::createIrrImage()
                                         VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
                                         VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                         m_irrImage, m_irrMemory, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
-    
     Tools::createImageView(m_irrImage, format, VK_IMAGE_ASPECT_COLOR_BIT, m_irrMaxLevels, 6, m_irrImageView, VK_IMAGE_VIEW_TYPE_CUBE);
-    
     Tools::createTextureSampler(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, m_irrMaxLevels, m_irrSampler);
     
     
@@ -332,10 +380,9 @@ void PbrIbl::createIrrImage()
                                         VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
                                         VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                         m_filterImage, m_filterMemory, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
-    
     Tools::createImageView(m_filterImage, format, VK_IMAGE_ASPECT_COLOR_BIT, m_irrMaxLevels, 6, m_filterImageView, VK_IMAGE_VIEW_TYPE_CUBE);
-    
     Tools::createTextureSampler(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, m_irrMaxLevels, m_filterSampler);
+    
     
     VkCommandBuffer cmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
     VkImageSubresourceRange subresourceRange = {};
@@ -353,33 +400,19 @@ void PbrIbl::createIrrImage()
 
 void PbrIbl::betweenInitAndLoop()
 {
-//    generateBrdfLut();
-//    generateIrradianceCube();
-//    generatePrefilteredCube();
-//    vkDeviceWaitIdle(m_device);
+    generateBrdfLut();
+    generateIrradianceCube();
+    generatePrefilteredCube();
+    vkDeviceWaitIdle(m_device);
 }
 
 void PbrIbl::generateBrdfLut()
 {
     int width = 1024;
     int height = 1024;
-    
     VkFormat format = VK_FORMAT_R16G16_SFLOAT;
-    VkImage frameImage;
-    VkDeviceMemory frameMemory;
-    VkImageView frameImageView;
-    {
-        Tools::createImageAndMemoryThenBind(format, width, height, 1, 1,
-                                            VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
-                                            VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                            frameImage, frameMemory);
-        
-        Tools::createImageView(frameImage, format, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, frameImageView);
-        
-        VkCommandBuffer cmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-        Tools::setImageLayout(cmd, frameImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
-        Tools::flushCommandBuffer(cmd, m_graphicsQueue, true);
-    }
+    VkImage frameImage = m_lutImage;
+    VkImageView frameImageView = m_lutImageView;
     
     VkRenderPass lutRenderPass;
     {
@@ -530,22 +563,17 @@ void PbrIbl::generateBrdfLut()
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lutPipeline);
     vkCmdDraw(commandBuffer, 3, 1, 0, 0);
     vkCmdEndRenderPass(commandBuffer);
+    
+    Tools::setImageLayout(commandBuffer, m_lutImage, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
+    
     Tools::flushCommandBuffer(commandBuffer, m_graphicsQueue, true);
     
-    Tools::saveImage(frameImage, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, width, height, "screenshot.png");
+    Tools::saveImage(frameImage, format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, width, height, "screenshot.png");
     
     vkDestroyPipeline(m_device, lutPipeline, nullptr);
     vkDestroyFramebuffer(m_device, lutFrameBuffer, nullptr);
     vkDestroyRenderPass(m_device, lutRenderPass, nullptr);
     vkDestroyPipelineLayout(m_device, lutPipelineLayout, nullptr);
-
-    m_lutImage = frameImage;
-    m_lutMemory = frameMemory;
-    m_lutImageView = frameImageView;
-
-//    vkFreeMemory(m_device, frameMemory, nullptr);
-//    vkDestroyImage(m_device, frameImage, nullptr);
-//    vkDestroyImageView(m_device, frameImageView, nullptr);
 }
 
 void PbrIbl::generateIrradianceCube()
@@ -1164,7 +1192,7 @@ void PbrIbl::generatePrefilteredCube()
     
     Tools::flushCommandBuffer(commandBuffer, m_graphicsQueue, true);
     
-    Tools::saveImage(frameImage, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, width, height, "screenshot.png");
+//    Tools::saveImage(frameImage, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, width, height, "screenshot.png");
     
     vkDestroyPipeline(m_device, filterPipeline, nullptr);
     vkDestroyFramebuffer(m_device, filterFrameBuffer, nullptr);

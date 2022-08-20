@@ -20,10 +20,10 @@ layout (binding = 1) uniform UBOParams {
 layout(push_constant) uniform PushConsts {
 	layout(offset = 12) float roughness;
 	layout(offset = 16) float metallic;
-	layout(offset = 20) float specular;
-	layout(offset = 24) float r;
-	layout(offset = 28) float g;
-	layout(offset = 32) float b;
+//	layout(offset = 20) float specular;
+	layout(offset = 20) float r;
+	layout(offset = 24) float g;
+	layout(offset = 28) float b;
 } material;
 
 layout (binding = 2) uniform samplerCube samplerIrradiance;
