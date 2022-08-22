@@ -73,6 +73,8 @@ private:
     VkPipelineLayout m_skyboxPipelineLayout;
     VkPipeline m_skyboxPipeline;
     
+    VkBuffer m_skyboxBuffer;
+    VkDeviceMemory m_skyboxMemory;
     VkBuffer m_uniformBuffer;
     VkDeviceMemory m_uniformMemory;
     VkBuffer m_lightBuffer;

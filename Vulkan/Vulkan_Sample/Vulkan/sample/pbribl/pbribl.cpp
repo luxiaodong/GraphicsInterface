@@ -38,8 +38,6 @@ void PbrIbl::setEnabledFeatures()
 
 void PbrIbl::clear()
 {
-    vkDestroyPipeline(m_device, m_pipeline, nullptr);
-    
     vkDestroyPipeline(m_device, m_skyboxPipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_skyboxPipelineLayout, nullptr);
     vkDestroyDescriptorSetLayout(m_device, m_skyboxDescriptorSetLayout, nullptr);
@@ -48,6 +46,8 @@ void PbrIbl::clear()
     vkFreeMemory(m_device, m_uniformMemory, nullptr);
     vkDestroyBuffer(m_device, m_lightBuffer, nullptr);
     vkFreeMemory(m_device, m_lightMemory, nullptr);
+    vkDestroyBuffer(m_device, m_skyboxBuffer, nullptr);
+    vkFreeMemory(m_device, m_skyboxMemory, nullptr);
     vkDestroyPipeline(m_device, m_pipeline, nullptr);
     
     vkFreeMemory(m_device, m_filterMemory, nullptr);
@@ -88,7 +88,7 @@ void PbrIbl::prepareVertex()
     m_pEnvCube = Texture::loadTextrue2D(Tools::getTexturePath() +  "hdr/pisa_cube.ktx", m_graphicsQueue, VK_FORMAT_R16G16B16A16_SFLOAT, TextureCopyRegion::Cube);
     
     m_irrMaxLevels = static_cast<uint32_t>(floor(log2(std::max(m_pEnvCube->m_width, m_pEnvCube->m_height))) + 1.0);
-    m_irrMaxLevels = 1;
+//    m_irrMaxLevels = 1;
     
     createIrrImage();
 }
@@ -100,10 +100,16 @@ void PbrIbl::prepareUniform()
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                          m_uniformBuffer, m_uniformMemory);
 
+    Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                         m_skyboxBuffer, m_skyboxMemory);
+
     VkDeviceSize LightParamsSize = sizeof(LightParams);
     Tools::createBufferAndMemoryThenBind(LightParamsSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                          m_lightBuffer, m_lightMemory);
+    
+    updateRenderData();
 }
 
 void PbrIbl::prepareDescriptorSetLayoutAndPipelineLayout()
@@ -152,14 +158,18 @@ void PbrIbl::prepareDescriptorSetAndWrite()
         VkDescriptorBufferInfo bufferInfo = {};
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(Uniform);
-        bufferInfo.buffer = m_uniformBuffer;
+        bufferInfo.buffer = m_skyboxBuffer;
      
         VkDescriptorBufferInfo bufferInfo1 = {};
         bufferInfo1.offset = 0;
         bufferInfo1.range = sizeof(LightParams);
         bufferInfo1.buffer = m_lightBuffer;
         
-        VkDescriptorImageInfo imageInfo = m_pEnvCube->getDescriptorImageInfo();
+//        VkDescriptorImageInfo imageInfo = m_pEnvCube->getDescriptorImageInfo();
+        VkDescriptorImageInfo imageInfo = {};
+        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo.imageView = m_filterImageView;
+        imageInfo.sampler = m_filterSampler;
         
         std::array<VkWriteDescriptorSet, 3> writes = {};
         writes[0] = Tools::getWriteDescriptorSet(m_skyboxDescriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
@@ -255,6 +265,9 @@ void PbrIbl::createGraphicsPipeline()
     
     //skybox
     createInfo.layout = m_skyboxPipelineLayout;
+//    VkPipelineVertexInputStateCreateInfo emptyInputState = {};
+//    emptyInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+//    createInfo.pVertexInputState = &emptyInputState;
     createInfo.pVertexInputState = m_skyboxLoader.getPipelineVertexInputState();
     rasterization.cullMode = VK_CULL_MODE_NONE;
     depthStencil.depthWriteEnable = VK_FALSE;
@@ -280,7 +293,7 @@ void PbrIbl::updateRenderData()
     
     // skybox
     mvp.modelMatrix = glm::mat4(glm::mat3(m_camera.m_viewMat));
-    Tools::mapMemory(m_uniformMemory, uniformSize, &mvp);
+    Tools::mapMemory(m_skyboxMemory, uniformSize, &mvp);
     
     VkDeviceSize LightParamsSize = sizeof(LightParams);
     LightParams params = {};
@@ -309,6 +322,7 @@ void PbrIbl::recordRenderCommand(const VkCommandBuffer commandBuffer)
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_skyboxPipelineLayout, 0, 1, &m_skyboxDescriptorSet, 0, nullptr);
     m_skyboxLoader.bindBuffers(commandBuffer);
     m_skyboxLoader.draw(commandBuffer);
+//    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 
     // render object
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
@@ -325,21 +339,7 @@ void PbrIbl::recordRenderCommand(const VkCommandBuffer commandBuffer)
         vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::vec3), sizeof(PbrMaterial::PushBlock), &m_pbrMaterial);
         m_gltfLoader.draw(commandBuffer);
     }
-    
-//    int GRID_DIM = 7;
-//    for (uint32_t y = 0; y < GRID_DIM; y++)
-//    {
-//        for (uint32_t x = 0; x < GRID_DIM; x++)
-//        {
-//            glm::vec3 pos = glm::vec3(float(x - (GRID_DIM / 2.0f)) * 2.5f, 0.0f, float(y - (GRID_DIM / 2.0f)) * 2.5f);
-//            vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::vec3), &pos);
-//            m_pbrMaterial.params.metallic = glm::clamp((float)x / (float)(GRID_DIM - 1), 0.1f, 1.0f);
-//            m_pbrMaterial.params.roughness = glm::clamp((float)y / (float)(GRID_DIM - 1), 0.05f, 1.0f);
-//            vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::vec3), sizeof(PbrMaterial::PushBlock), &m_pbrMaterial);
-//            m_gltfLoader.draw(commandBuffer);
-//        }
-//    }
-    
+
 }
 
 void PbrIbl::createIrrImage()
@@ -408,6 +408,8 @@ void PbrIbl::betweenInitAndLoop()
 
 void PbrIbl::generateBrdfLut()
 {
+    auto tStart = std::chrono::high_resolution_clock::now();
+    
     int width = 1024;
     int height = 1024;
     VkFormat format = VK_FORMAT_R16G16_SFLOAT;
@@ -574,10 +576,15 @@ void PbrIbl::generateBrdfLut()
     vkDestroyFramebuffer(m_device, lutFrameBuffer, nullptr);
     vkDestroyRenderPass(m_device, lutRenderPass, nullptr);
     vkDestroyPipelineLayout(m_device, lutPipelineLayout, nullptr);
+    
+    auto tEnd = std::chrono::high_resolution_clock::now();
+    auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
+    std::cout << "Generating BRDF LUT took " << tDiff << " ms" << std::endl;
 }
 
 void PbrIbl::generateIrradianceCube()
 {
+    auto tStart = std::chrono::high_resolution_clock::now();
     uint32_t width = m_pEnvCube->m_width;
     uint32_t height = m_pEnvCube->m_height;
     
@@ -888,10 +895,15 @@ void PbrIbl::generateIrradianceCube()
     vkFreeMemory(m_device, frameMemory, nullptr);
     vkDestroyImage(m_device, frameImage, nullptr);
     vkDestroyImageView(m_device, frameImageView, nullptr);
+    
+    auto tEnd = std::chrono::high_resolution_clock::now();
+    auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
+    std::cout << "Generating irradiance cube with " << m_irrMaxLevels << " mip levels took " << tDiff << " ms" << std::endl;
 }
 
 void PbrIbl::generatePrefilteredCube()
 {
+    auto tStart = std::chrono::high_resolution_clock::now();
     uint32_t width = m_pEnvCube->m_width;
     uint32_t height = m_pEnvCube->m_height;
     VkFormat format = m_pEnvCube->m_fromat;
@@ -1105,7 +1117,7 @@ void PbrIbl::generatePrefilteredCube()
     glm::mat4 projMat = glm::perspective((float)(M_PI/2.0), 1.0f, 0.1f, 256.0f);
     for(uint32_t level = 0; level < m_irrMaxLevels; ++level)
     {
-        pushBlock.roughness = (float)level / (float)(m_irrMaxLevels - 1);
+        pushBlock.roughness = m_irrMaxLevels == 1 ? 0.0f : (float)level / (float)(m_irrMaxLevels - 1);
         uint32_t viewWidth = width >> level;
         uint32_t viewHeight = height >> level;
         for(int face = 0; face < 6; ++face)
@@ -1191,7 +1203,6 @@ void PbrIbl::generatePrefilteredCube()
     }
     
     Tools::flushCommandBuffer(commandBuffer, m_graphicsQueue, true);
-    
 //    Tools::saveImage(frameImage, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, width, height, "screenshot.png");
     
     vkDestroyPipeline(m_device, filterPipeline, nullptr);
@@ -1203,11 +1214,15 @@ void PbrIbl::generatePrefilteredCube()
     vkFreeMemory(m_device, frameMemory, nullptr);
     vkDestroyImage(m_device, frameImage, nullptr);
     vkDestroyImageView(m_device, frameImageView, nullptr);
+    
+    auto tEnd = std::chrono::high_resolution_clock::now();
+    auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
+    std::cout << "Generating pre-filtered enivornment cube with " << m_irrMaxLevels << " mip levels took " << tDiff << " ms" << std::endl;
 }
 
 void PbrIbl::selectPbrMaterial()
 {
-    m_pbrMaterial = PbrMaterial("Gold", glm::vec3(1.0f, 0.765557f, 0.336057f), 0.1f, 1.0f);
+//    m_pbrMaterial = PbrMaterial("Gold", glm::vec3(1.0f, 0.765557f, 0.336057f), 0.1f, 1.0f);
 //    m_pbrMaterial = PbrMaterial("Copper", glm::vec3(0.955008f, 0.637427f, 0.538163f), 0.1f, 1.0f);
 //    m_pbrMaterial = PbrMaterial("Chromium", glm::vec3(0.549585f, 0.556114f, 0.554256f), 0.1f, 1.0f);
 //    m_pbrMaterial = PbrMaterial("Nickel", glm::vec3(0.659777f, 0.608679f, 0.525649f), 0.1f, 1.0f);
@@ -1218,5 +1233,5 @@ void PbrIbl::selectPbrMaterial()
 //    m_pbrMaterial = PbrMaterial("White", glm::vec3(1.0f), 0.1f, 1.0f);
 //    m_pbrMaterial = PbrMaterial("Red", glm::vec3(1.0f, 0.0f, 0.0f), 0.1f, 1.0f);
 //    m_pbrMaterial = PbrMaterial("Blue", glm::vec3(0.0f, 0.0f, 1.0f), 0.1f, 1.0f);
-//    m_pbrMaterial = PbrMaterial("Black", glm::vec3(0.0f), 0.1f, 1.0f);
+    m_pbrMaterial = PbrMaterial("Black", glm::vec3(0.0f), 0.1f, 1.0f);
 }
