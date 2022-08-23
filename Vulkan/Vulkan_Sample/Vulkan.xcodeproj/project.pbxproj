@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		B0272D6728B3678C002D3602 /* pbrtexture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272D6628B3678C002D3602 /* pbrtexture.cpp */; };
 		B0272D6C28B47C3B002D3602 /* deferred.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272D6B28B47C3B002D3602 /* deferred.cpp */; };
+		B0272D7128B4C609002D3602 /* deferredmutisampling.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272D7028B4C609002D3602 /* deferredmutisampling.cpp */; };
 		B066A145286213A600763515 /* assets in CopyFiles */ = {isa = PBXBuildFile; fileRef = B066A1422862125900763515 /* assets */; };
 		B066DE1E28A4FF5D00726A95 /* thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE1D28A4FF5D00726A95 /* thread.cpp */; };
 		B066DE2328A5074600726A95 /* multithread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE2128A5074600726A95 /* multithread.cpp */; };
@@ -102,6 +103,8 @@
 		B0272D6628B3678C002D3602 /* pbrtexture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pbrtexture.cpp; sourceTree = "<group>"; };
 		B0272D6A28B47C3B002D3602 /* deferred.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = deferred.h; sourceTree = "<group>"; };
 		B0272D6B28B47C3B002D3602 /* deferred.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = deferred.cpp; sourceTree = "<group>"; };
+		B0272D6F28B4C609002D3602 /* deferredmutisampling.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = deferredmutisampling.h; sourceTree = "<group>"; };
+		B0272D7028B4C609002D3602 /* deferredmutisampling.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = deferredmutisampling.cpp; sourceTree = "<group>"; };
 		B066A1422862125900763515 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		B066DE1C28A4FF5D00726A95 /* thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = thread.h; sourceTree = "<group>"; };
 		B066DE1D28A4FF5D00726A95 /* thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = thread.cpp; sourceTree = "<group>"; };
@@ -270,6 +273,15 @@
 				B0272D6B28B47C3B002D3602 /* deferred.cpp */,
 			);
 			path = deferred;
+			sourceTree = "<group>";
+		};
+		B0272D6E28B4C609002D3602 /* deferredmutisampling */ = {
+			isa = PBXGroup;
+			children = (
+				B0272D6F28B4C609002D3602 /* deferredmutisampling.h */,
+				B0272D7028B4C609002D3602 /* deferredmutisampling.cpp */,
+			);
+			path = deferredmutisampling;
 			sourceTree = "<group>";
 		};
 		B066DE2028A5074600726A95 /* multithread */ = {
@@ -701,6 +713,7 @@
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0272D6E28B4C609002D3602 /* deferredmutisampling */,
 				B0272D6928B47C3B002D3602 /* deferred */,
 				B0272D6428B3678C002D3602 /* pbrtexture */,
 				B066DE5328ACBE6B00726A95 /* pbribl */,
@@ -822,6 +835,7 @@
 				B0A47F1F282E4D6200209D51 /* main.cpp in Sources */,
 				B0B5D1222890D870003A175D /* gltfscenerendering.cpp in Sources */,
 				B0A010832897DD0D006A339B /* shadowmappingcascade.cpp in Sources */,
+				B0272D7128B4C609002D3602 /* deferredmutisampling.cpp in Sources */,
 				B0B5D0202875293B003A175D /* camera.cpp in Sources */,
 				B066DE2728A5FDD800726A95 /* frustum.cpp in Sources */,
 				B0B5D09B287920AD003A175D /* gltfNode.cpp in Sources */,
