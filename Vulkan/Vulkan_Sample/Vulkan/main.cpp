@@ -34,6 +34,7 @@
 #include "sample/pbrbasic/pbrbasic.h"
 #include "sample/pbribl/pbribl.h"
 #include "sample/pbrtexture/pbrtexture.h"
+#include "sample/deferred/deferred.h"
 
 int main(int argc, const char * argv[])
 {
@@ -72,9 +73,10 @@ int main(int argc, const char * argv[])
 //    PipelineStatistics app("pipelinestatistics");
 //    PbrBasic app("pbrbasic");
 //    PbrIbl app("pbribl");
-    
-    PbrTexture app("pbrtexture");
+//    PbrTexture app("pbrtexture");
 
+    Deferred app("deferred");
+    
     try {
         app.run();
     } catch (const std::exception& e) {

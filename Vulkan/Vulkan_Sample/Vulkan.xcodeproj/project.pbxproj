@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		B0272D6728B3678C002D3602 /* pbrtexture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272D6628B3678C002D3602 /* pbrtexture.cpp */; };
+		B0272D6C28B47C3B002D3602 /* deferred.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272D6B28B47C3B002D3602 /* deferred.cpp */; };
 		B066A145286213A600763515 /* assets in CopyFiles */ = {isa = PBXBuildFile; fileRef = B066A1422862125900763515 /* assets */; };
 		B066DE1E28A4FF5D00726A95 /* thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE1D28A4FF5D00726A95 /* thread.cpp */; };
 		B066DE2328A5074600726A95 /* multithread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE2128A5074600726A95 /* multithread.cpp */; };
@@ -99,6 +100,8 @@
 /* Begin PBXFileReference section */
 		B0272D6528B3678C002D3602 /* pbrtexture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pbrtexture.h; sourceTree = "<group>"; };
 		B0272D6628B3678C002D3602 /* pbrtexture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pbrtexture.cpp; sourceTree = "<group>"; };
+		B0272D6A28B47C3B002D3602 /* deferred.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = deferred.h; sourceTree = "<group>"; };
+		B0272D6B28B47C3B002D3602 /* deferred.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = deferred.cpp; sourceTree = "<group>"; };
 		B066A1422862125900763515 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		B066DE1C28A4FF5D00726A95 /* thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = thread.h; sourceTree = "<group>"; };
 		B066DE1D28A4FF5D00726A95 /* thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = thread.cpp; sourceTree = "<group>"; };
@@ -258,6 +261,15 @@
 				B0272D6628B3678C002D3602 /* pbrtexture.cpp */,
 			);
 			path = pbrtexture;
+			sourceTree = "<group>";
+		};
+		B0272D6928B47C3B002D3602 /* deferred */ = {
+			isa = PBXGroup;
+			children = (
+				B0272D6A28B47C3B002D3602 /* deferred.h */,
+				B0272D6B28B47C3B002D3602 /* deferred.cpp */,
+			);
+			path = deferred;
 			sourceTree = "<group>";
 		};
 		B066DE2028A5074600726A95 /* multithread */ = {
@@ -689,6 +701,7 @@
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0272D6928B47C3B002D3602 /* deferred */,
 				B0272D6428B3678C002D3602 /* pbrtexture */,
 				B066DE5328ACBE6B00726A95 /* pbribl */,
 				B066DE4828AC955700726A95 /* pbrbasic */,
@@ -861,6 +874,7 @@
 				B0B5D0A728794942003A175D /* primitive.cpp in Sources */,
 				B0B5D0AB2879863A003A175D /* material.cpp in Sources */,
 				B0B5D115288E85C0003A175D /* gltfskinning.cpp in Sources */,
+				B0272D6C28B47C3B002D3602 /* deferred.cpp in Sources */,
 				B066DE2C28A9E44600726A95 /* instancing.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
