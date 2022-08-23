@@ -33,10 +33,15 @@ void DeferredMutiSampling::initCamera()
 
 void DeferredMutiSampling::setEnabledFeatures()
 {
-//    if(m_deviceFeatures.samplerAnisotropy)
-//    {
-//        m_deviceEnabledFeatures.samplerAnisotropy = VK_TRUE;
-//    }
+    if(m_deviceFeatures.sampleRateShading)
+    {
+        m_deviceEnabledFeatures.sampleRateShading = VK_TRUE;
+    }
+}
+
+void DeferredMutiSampling::setSampleCount()
+{
+    m_deferredSampleCount = Tools::getMaxUsableSampleCount();
 }
 
 void DeferredMutiSampling::clear()
@@ -235,8 +240,12 @@ void DeferredMutiSampling::createGraphicsPipeline()
 
     VkPipelineDynamicStateCreateInfo dynamic = Tools::getPipelineDynamicStateCreateInfo(dynamicStates);
     VkPipelineRasterizationStateCreateInfo rasterization = Tools::getPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE);
-    VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
+    VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(m_deferredSampleCount);
     VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
+    
+    multisample.alphaToCoverageEnable = VK_TRUE;
+    multisample.sampleShadingEnable = VK_TRUE;
+    multisample.minSampleShading = 0.25;
 
     std::array<VkPipelineColorBlendAttachmentState, 3> colorBlendAttachments;
     colorBlendAttachments[0] = Tools::getPipelineColorBlendAttachmentState(VK_FALSE);
@@ -266,8 +275,8 @@ void DeferredMutiSampling::createGraphicsPipeline()
     
     createInfo.layout = m_mrtPipelineLayout;
     createInfo.renderPass = m_gbufferRenderPass;
-    VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "deferred/mrt.vert.spv");
-    VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "deferred/mrt.frag.spv");
+    VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "deferredmultisampling/mrt.vert.spv");
+    VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "deferredmultisampling/mrt.frag.spv");
     shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
     shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_mrtPipeline));
@@ -279,16 +288,33 @@ void DeferredMutiSampling::createGraphicsPipeline()
     colorBlendAttachment = Tools::getPipelineColorBlendAttachmentState(VK_FALSE);
     VkPipelineColorBlendStateCreateInfo colorBlend1 = Tools::getPipelineColorBlendStateCreateInfo(1, &colorBlendAttachment);
     createInfo.pColorBlendState = &colorBlend1;
+    VkPipelineMultisampleStateCreateInfo multisample1 = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
+    createInfo.pMultisampleState = &multisample1;
     
     rasterization.cullMode = VK_CULL_MODE_FRONT_BIT;
     createInfo.layout = m_pipelineLayout;
     createInfo.renderPass = m_renderPass;
     depthStencil.depthTestEnable = VK_FALSE;
     depthStencil.depthWriteEnable = VK_FALSE;
-    vertModule = Tools::createShaderModule( Tools::getShaderPath() + "deferred/deferred.vert.spv");
-    fragModule = Tools::createShaderModule( Tools::getShaderPath() + "deferred/deferred.frag.spv");
+    vertModule = Tools::createShaderModule( Tools::getShaderPath() + "deferredmultisampling/deferred.vert.spv");
+    fragModule = Tools::createShaderModule( Tools::getShaderPath() + "deferredmultisampling/deferred.frag.spv");
     shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
     shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
+    
+    VkSpecializationMapEntry specializationEntry{};
+    specializationEntry.constantID = 0;
+    specializationEntry.offset = 0;
+    specializationEntry.size = sizeof(uint32_t);
+
+    uint32_t specializationData = m_deferredSampleCount;
+
+    VkSpecializationInfo specializationInfo;
+    specializationInfo.mapEntryCount = 1;
+    specializationInfo.pMapEntries = &specializationEntry;
+    specializationInfo.dataSize = sizeof(specializationData);
+    specializationInfo.pData = &specializationData;
+    shaderStages[1].pSpecializationInfo = &specializationInfo;
+    
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_pipeline));
     vkDestroyShaderModule(m_device, vertModule, nullptr);
     vkDestroyShaderModule(m_device, fragModule, nullptr);
@@ -322,7 +348,7 @@ void DeferredMutiSampling::updateRenderData()
     lightData.lights[5].color = glm::vec3(1.0f, 0.7f, 0.3f);
     lightData.lights[5].radius = 25.0f;
 
-    static float timer = 0.001f;
+    float timer = 0.1f;
     lightData.lights[0].position.x = sin(glm::radians(360.0f * timer)) * 5.0f;
     lightData.lights[0].position.z = cos(glm::radians(360.0f * timer)) * 5.0f;
     lightData.lights[1].position.x = -4.0f + sin(glm::radians(360.0f * timer) + 45.0f) * 2.0f;
@@ -367,7 +393,7 @@ void DeferredMutiSampling::createOtherBuffer()
     
     for(uint32_t i = 0; i < 3; ++i)
     {
-        Tools::createImageAndMemoryThenBind(m_gbufferColorFormat[i], m_gbufferWidth, m_gbufferHeight, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_gbufferColorImage[i], m_gbufferColorMemory[i]);
+        Tools::createImageAndMemoryThenBind(m_gbufferColorFormat[i], m_gbufferWidth, m_gbufferHeight, 1, 1, m_deferredSampleCount, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_gbufferColorImage[i], m_gbufferColorMemory[i]);
         
         Tools::createImageView(m_gbufferColorImage[i], m_gbufferColorFormat[i], VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, m_gbufferColorImageView[i]);
     }
@@ -376,7 +402,7 @@ void DeferredMutiSampling::createOtherBuffer()
     
     // depth
     Tools::createImageAndMemoryThenBind(m_gbufferDepthFormat, m_gbufferWidth, m_gbufferHeight, 1, 1,
-                                        VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                                        m_deferredSampleCount, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
                                         VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                         m_gbufferDepthImage, m_gbufferDepthMemory);
     
@@ -389,10 +415,10 @@ void DeferredMutiSampling::createDeferredRenderPass()
     
     for(uint32_t i = 0; i < 3; ++i)
     {
-        attachmentDescription[i] = Tools::getAttachmentDescription(m_gbufferColorFormat[i], VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        attachmentDescription[i] = Tools::getAttachmentDescription(m_gbufferColorFormat[i], m_deferredSampleCount, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
     
-    attachmentDescription[3] = Tools::getAttachmentDescription(m_gbufferDepthFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    attachmentDescription[3] = Tools::getAttachmentDescription(m_gbufferDepthFormat, m_deferredSampleCount, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     
     VkAttachmentReference colorAttachmentReference[3] = {};
     for(uint32_t i = 0; i < 3; ++i)
@@ -506,7 +532,7 @@ void DeferredMutiSampling::createOtherRenderPass(const VkCommandBuffer& commandB
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_mrtPipelineLayout, 0, 1, &m_objectDescriptorSet, 0, nullptr);
     m_objectLoader.bindBuffers(commandBuffer);
 //    m_objectLoader.draw(commandBuffer);
-    vkCmdDrawIndexed(commandBuffer, m_objectLoader.m_indexData.size(), 3, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(m_objectLoader.m_indexData.size()), 3, 0, 0, 0);
     
     vkCmdEndRenderPass(commandBuffer);
 }

@@ -34,6 +34,7 @@ public:
     virtual void init();
     virtual void initCamera();
     virtual void setEnabledFeatures();
+    virtual void setSampleCount();
     virtual void clear();
     
     virtual void updateRenderData();
@@ -71,6 +72,7 @@ protected:
     VkImageView m_gbufferDepthImageView;
     
     VkSampler m_gbufferColorSample;
+    VkSampleCountFlagBits m_deferredSampleCount = VK_SAMPLE_COUNT_1_BIT;
 
     //mrt.
     VkPipeline m_mrtPipeline;
