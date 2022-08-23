@@ -33,6 +33,7 @@
 #include "sample/pipelinestatistics/pipelinestatistics.h"
 #include "sample/pbrbasic/pbrbasic.h"
 #include "sample/pbribl/pbribl.h"
+#include "sample/pbrtexture/pbrtexture.h"
 
 int main(int argc, const char * argv[])
 {
@@ -70,8 +71,9 @@ int main(int argc, const char * argv[])
 //    OcclusionQuery app("occlusionquery");
 //    PipelineStatistics app("pipelinestatistics");
 //    PbrBasic app("pbrbasic");
+//    PbrIbl app("pbribl");
     
-    PbrIbl app("pbribl");
+    PbrTexture app("pbrtexture");
 
     try {
         app.run();
