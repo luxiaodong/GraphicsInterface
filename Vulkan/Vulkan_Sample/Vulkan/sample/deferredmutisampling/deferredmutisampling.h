@@ -98,29 +98,4 @@ private:
     Texture* m_pObjectNormal = nullptr;
     Texture* m_pFloorColor = nullptr;
     Texture* m_pFloorNormal = nullptr;
-    
-    
-    
-    
-    
-    
-    // skybox & object.
-    
-    VkBuffer m_exposureUniformBuffer;
-    VkDeviceMemory m_exposureUniformMemory;
-    
-    VkDescriptorSetLayout m_skyboxDescriptorSetLayout;
-    VkPipelineLayout m_skyboxPipelineLayout;
-    VkDescriptorSet m_skyboxDescriptorSet;
-    VkPipeline m_skyboxPipeline;
-    VkPipeline m_objectPipeline;
-    
-    
-    
-    // composition
-    VkPipeline m_compositionPipeline;
-    VkDescriptorSet m_compositionDescriptorSet;
-    
-
-    
 };

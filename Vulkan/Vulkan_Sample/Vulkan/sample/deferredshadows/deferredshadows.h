@@ -13,18 +13,26 @@ public:
         glm::mat4 modelMatrix;
         glm::mat4 viewMatrix;
         glm::vec4 instancePos[3];
+        int layer;
+    };
+    
+    struct ShadowUniform {
+        glm::mat4 shadowMvp[3];
+        glm::vec4 instancePos[3];
     };
     
     struct Light {
         glm::vec4 position;
-        glm::vec3 color;
-        float radius;
+        glm::vec4 target;
+        glm::vec4 color;
+        glm::mat4 shadowMvp;
     };
     
     struct LightData
     {
-        Light lights[6];
         glm::vec4 viewPos;
+        Light lights[3]; // 支持3盏灯
+        uint32_t useShadows = 1;
         int debugDisplayTarget = 0;
     };
     
@@ -49,8 +57,12 @@ protected:
 protected:
     void createDeferredRenderPass();
     void createDeferredFrameBuffer();
+    void createShadowMapRenderPass();
+    void createShadowMapFrameBuffer();
     virtual void createOtherRenderPass(const VkCommandBuffer& commandBuffer);
     virtual void createOtherBuffer();
+    void createGBufferRenderPass(const VkCommandBuffer& commandBuffer);
+    void createShadowMapRenderPass(const VkCommandBuffer& commandBuffer);
 
 protected:
     // 4份 attachment. positon, normal, albedoo, depth
@@ -58,7 +70,6 @@ protected:
     uint32_t m_deferredHeight;
     VkFramebuffer m_deferredFramebuffer;
     VkRenderPass m_deferredRenderPass;
-    VkPipeline m_deferredPipeline;
     
     VkFormat m_deferredColorFormat[3];
     VkImage m_deferredColorImage[3];
@@ -71,8 +82,20 @@ protected:
     VkImageView m_deferredDepthImageView;
     
     VkSampler m_deferredColorSample;
+    
+    // shadowmap
+    uint32_t m_shadowMapWidth = 1024;
+    uint32_t m_shadowMapHeight = 1024;
+    VkFramebuffer m_shadowMapFramebuffer;
+    VkRenderPass m_shadowMapRenderPass;
+    
+    VkFormat m_shadowMapFormat;
+    VkImage m_shadowMapImage;
+    VkDeviceMemory m_shadowMapMemory;
+    VkImageView m_shadowMapImageView;
+    VkSampler m_shadowMapSample;
 
-    //mrt.
+    //mrt
     VkPipeline m_mrtPipeline;
     VkBuffer m_mrtUniformBuffer;
     VkDeviceMemory m_mrtUniformMemory;
@@ -82,7 +105,15 @@ protected:
     VkDescriptorSet m_floorDescriptorSet;
     VkDescriptorSet m_objectDescriptorSet;
     
-    //
+    //shadow
+    VkPipeline m_shadowMapPipeline;
+    VkBuffer m_shadowMapUniformBuffer;
+    VkDeviceMemory m_shadowMapUniformMemory;
+    VkDescriptorSetLayout m_shadowMapDescriptorSetLayout;
+    VkPipelineLayout m_shadowMapPipelineLayout;
+    VkDescriptorSet m_shadowMapDescriptorSet;
+    
+    //deferred
     VkPipeline m_pipeline;
     VkBuffer m_lightUniformBuffer;
     VkDeviceMemory m_lightUniformMemory;
@@ -96,29 +127,4 @@ private:
     Texture* m_pObjectNormal = nullptr;
     Texture* m_pFloorColor = nullptr;
     Texture* m_pFloorNormal = nullptr;
-    
-    
-    
-    
-    
-    
-    // skybox & object.
-    
-    VkBuffer m_exposureUniformBuffer;
-    VkDeviceMemory m_exposureUniformMemory;
-    
-    VkDescriptorSetLayout m_skyboxDescriptorSetLayout;
-    VkPipelineLayout m_skyboxPipelineLayout;
-    VkDescriptorSet m_skyboxDescriptorSet;
-    VkPipeline m_skyboxPipeline;
-    VkPipeline m_objectPipeline;
-    
-    
-    
-    // composition
-    VkPipeline m_compositionPipeline;
-    VkDescriptorSet m_compositionDescriptorSet;
-    
-
-    
 };
