@@ -36,6 +36,7 @@
 #include "sample/pbrtexture/pbrtexture.h"
 #include "sample/deferred/deferred.h"
 #include "sample/deferredmutisampling/deferredmutisampling.h"
+#include "sample/deferredshadows/deferredshadows.h"
 
 int main(int argc, const char * argv[])
 {
@@ -76,8 +77,9 @@ int main(int argc, const char * argv[])
 //    PbrIbl app("pbribl");
 //    PbrTexture app("pbrtexture");
 //    Deferred app("deferred");
+//    DeferredMutiSampling app("deferredmutisampling");
     
-    DeferredMutiSampling app("deferredmutisampling");
+    DeferredShadows app("deferredshadows");
     
     try {
         app.run();
