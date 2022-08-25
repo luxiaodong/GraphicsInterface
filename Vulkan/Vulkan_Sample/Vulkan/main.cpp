@@ -37,6 +37,7 @@
 #include "sample/deferred/deferred.h"
 #include "sample/deferredmutisampling/deferredmutisampling.h"
 #include "sample/deferredshadows/deferredshadows.h"
+#include "sample/ssao/ssao.h"
 
 int main(int argc, const char * argv[])
 {
@@ -78,8 +79,9 @@ int main(int argc, const char * argv[])
 //    PbrTexture app("pbrtexture");
 //    Deferred app("deferred");
 //    DeferredMutiSampling app("deferredmutisampling");
+//    DeferredShadows app("deferredshadows");
     
-    DeferredShadows app("deferredshadows");
+    DeferredSsao app("ssao");
     
     try {
         app.run();

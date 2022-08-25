@@ -1,0 +1,87 @@
+
+#pragma once
+
+#include "common/application.h"
+#include "common/texture.h"
+#include "common/gltfLoader.h"
+
+class DeferredSsao : public Application
+{
+public:
+    struct Uniform {
+        glm::mat4 projectionMatrix;
+        glm::mat4 modelMatrix;
+        glm::mat4 viewMatrix;
+        float near = 0.1f;
+        float far = 64.0f;
+    };
+    
+    struct SsaoParams {
+        glm::mat4 projection;
+        int32_t ssao = true;
+        int32_t ssaoOnly = false;
+        int32_t ssaoBlur = true;
+    };
+    
+    DeferredSsao(std::string title);
+    virtual ~DeferredSsao();
+    
+    virtual void init();
+    virtual void initCamera();
+    virtual void setEnabledFeatures();
+    virtual void clear();
+    
+    virtual void updateRenderData();
+    virtual void recordRenderCommand(const VkCommandBuffer commandBuffer);
+    
+protected:
+    void prepareVertex();
+    void prepareUniform();
+    void prepareDescriptorSetLayoutAndPipelineLayout();
+    void prepareDescriptorSetAndWrite();
+    void createGraphicsPipeline();
+
+protected:
+    void createDeferredRenderPass();
+    void createDeferredFrameBuffer();
+    virtual void createOtherRenderPass(const VkCommandBuffer& commandBuffer);
+    virtual void createOtherBuffer();
+
+protected:
+    // 4份 attachment. positon, normal, albedoo, depth
+    uint32_t m_gbufferWidth;
+    uint32_t m_gbufferHeight;
+    VkFramebuffer m_gbufferFramebuffer;
+    VkRenderPass m_gbufferRenderPass;
+    
+    VkFormat m_gbufferColorFormat[3];
+    VkImage m_gbufferColorImage[3];
+    VkDeviceMemory m_gbufferColorMemory[3];
+    VkImageView m_gbufferColorImageView[3];
+    
+    VkFormat m_gbufferDepthFormat;
+    VkImage m_gbufferDepthImage;
+    VkDeviceMemory m_gbufferDepthMemory;
+    VkImageView m_gbufferDepthImageView;
+    
+    VkSampler m_gbufferColorSample;
+
+    // gbuffer
+    VkPipeline m_gbufferPipeline;
+    VkDescriptorSetLayout m_gbufferDescriptorSetLayout;
+    VkPipelineLayout m_gbufferPipelineLayout;
+    
+    // object
+    VkDescriptorSet m_objectDescriptorSet;
+    VkBuffer m_objectUniformBuffer;
+    VkDeviceMemory m_objectUniformMemory;
+    
+    //
+    VkPipeline m_pipeline;
+    VkDescriptorSet m_descriptorSet;
+    VkBuffer m_paramsUniformBuffer;
+    VkDeviceMemory m_paramsUniformMemory;
+    
+private:
+    GltfLoader m_objectLoader;
+};
