@@ -18,11 +18,13 @@ public:
     
 public:
     static Texture* loadTextrue2D(std::string fileName, VkQueue transferQueue, VkFormat format = VK_FORMAT_R8G8B8A8_UNORM, TextureCopyRegion copyRegion = TextureCopyRegion::MipLevel, VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    
     static Texture* loadTexture2D(tinygltf::Image &gltfimage, std::string path, VkQueue transferQueue);
     static Texture* loadTextureEmpty(VkQueue transferQueue);
+    
+    static Texture* loadTextrue2D(void* buffer, VkDeviceSize bufferSize, uint32_t width, uint32_t height, VkFormat format, VkQueue transferQueue);
+    
     static void fillTextrue(Texture* texture, ktxTexture* ktxTexture, VkQueue transferQueue, TextureCopyRegion copyRegion);
-    static void fillTextrue(Texture* texture, unsigned char* buffer, VkDeviceSize bufferSize, VkQueue transferQueue);
+    static void fillTextrue(Texture* texture, void* buffer, VkDeviceSize bufferSize, VkQueue transferQueue);
     
     void clear();
     VkDescriptorImageInfo getDescriptorImageInfo();

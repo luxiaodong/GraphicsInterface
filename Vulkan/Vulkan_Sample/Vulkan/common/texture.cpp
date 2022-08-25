@@ -103,7 +103,20 @@ Texture* Texture::loadTexture2D(tinygltf::Image &gltfimage, std::string path, Vk
     return loadTextrue2D(fileName, transferQueue);
 }
 
-void Texture::fillTextrue(Texture* texture, unsigned char* buffer, VkDeviceSize bufferSize, VkQueue transferQueue)
+Texture* Texture::loadTextrue2D(void* buffer, VkDeviceSize bufferSize, uint32_t width, uint32_t height, VkFormat format, VkQueue transferQueue)
+{
+    Texture* newTexture = new Texture();
+    newTexture->m_fromat = format;
+    newTexture->m_imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    newTexture->m_width = width;
+    newTexture->m_height = height;
+    newTexture->m_layerCount = 1;
+    newTexture->m_mipLevels = 1;
+    fillTextrue(newTexture, buffer, bufferSize, transferQueue);
+    return newTexture;
+}
+
+void Texture::fillTextrue(Texture* texture, void* buffer, VkDeviceSize bufferSize, VkQueue transferQueue)
 {
     // Get device properties for the requested texture format
     VkFormatProperties formatProperties;

@@ -1,6 +1,10 @@
 
 #include "ssao.h"
 
+#define SSAO_KERNEL_SIZE 32
+#define SSAO_RADIUS 0.3f
+#define SSAO_NOISE_DIM 8
+
 DeferredSsao::DeferredSsao(std::string title) : Application(title)
 {
 }
@@ -41,10 +45,15 @@ void DeferredSsao::setEnabledFeatures()
 
 void DeferredSsao::clear()
 {
+    vkDestroyPipeline(m_device, m_pipeline, nullptr);
+    
+    vkDestroyPipeline(m_device, m_ssaoPipeline, nullptr);
+    vkDestroyDescriptorSetLayout(m_device, m_ssaoDescriptorSetLayout, nullptr);
+    vkDestroyPipelineLayout(m_device, m_ssaoPipelineLayout, nullptr);
+    
     vkDestroyPipeline(m_device, m_gbufferPipeline, nullptr);
     vkDestroyDescriptorSetLayout(m_device, m_gbufferDescriptorSetLayout, nullptr);
     vkDestroyPipelineLayout(m_device, m_gbufferPipelineLayout, nullptr);
-    vkDestroyPipeline(m_device, m_pipeline, nullptr);
 
     vkDestroyRenderPass(m_device, m_gbufferRenderPass, nullptr);
     vkDestroyFramebuffer(m_device, m_gbufferFramebuffer, nullptr);
@@ -66,7 +75,11 @@ void DeferredSsao::clear()
     vkDestroyBuffer(m_device, m_objectUniformBuffer, nullptr);
     vkFreeMemory(m_device, m_paramsUniformMemory, nullptr);
     vkDestroyBuffer(m_device, m_paramsUniformBuffer, nullptr);
+    vkFreeMemory(m_device, m_sampleUniformMemory, nullptr);
+    vkDestroyBuffer(m_device, m_sampleUniformBuffer, nullptr);
     
+    m_pNoise->clear();
+    delete m_pNoise;
     m_objectLoader.clear();
     Application::clear();
 }
@@ -79,6 +92,15 @@ void DeferredSsao::prepareVertex()
     m_objectLoader.createVertexAndIndexBuffer();
     m_objectLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::UV, VertexComponent::Color, VertexComponent::Normal});
     m_objectLoader.createDescriptorPoolAndLayout();
+    
+    // Random noise
+    std::vector<glm::vec4> ssaoNoise(SSAO_NOISE_DIM * SSAO_NOISE_DIM);
+    for (uint32_t i = 0; i < static_cast<uint32_t>(ssaoNoise.size()); i++)
+    {
+        ssaoNoise[i] = glm::vec4(Tools::random01() * 2.0f - 1.0f, Tools::random01() * 2.0f - 1.0f, 0.0f, 0.0f);
+    }
+
+    m_pNoise = Texture::loadTextrue2D(ssaoNoise.data(), ssaoNoise.size() * sizeof(glm::vec4), SSAO_NOISE_DIM, SSAO_NOISE_DIM, VK_FORMAT_R32G32B32A32_SFLOAT, m_graphicsQueue);
 }
 
 void DeferredSsao::prepareUniform()
@@ -95,7 +117,26 @@ void DeferredSsao::prepareUniform()
     mvp.modelMatrix = glm::mat4(1.0f);
     Tools::mapMemory(m_objectUniformMemory, sizeof(Uniform), &mvp);
     
+    // ssao sample
+    uniformSize = sizeof(glm::vec4) * SSAO_KERNEL_SIZE;
+    Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                         m_sampleUniformBuffer, m_sampleUniformMemory);
     
+    std::vector<glm::vec4> ssaoSample( SSAO_KERNEL_SIZE );
+    for(uint32_t i = 0; i < SSAO_KERNEL_SIZE; ++i)
+    {
+        glm::vec3 sample(Tools::random01()*2.0 - 1.0, Tools::random01()*2.0 - 1.0, Tools::random01()*2.0 - 1.0);
+        sample = glm::normalize(sample);
+        sample *= Tools::random01();
+        float scale = i*1.0f/float(SSAO_KERNEL_SIZE);
+        scale = Tools::lerp(0.1f, 1.0f, scale * scale);
+        ssaoSample[i] = glm::vec4(sample * scale, 0.0f);
+    }
+    
+    Tools::mapMemory(m_sampleUniformMemory, uniformSize, ssaoSample.data());
+    
+    // ssao params
     uniformSize = sizeof(SsaoParams);
     Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -122,6 +163,18 @@ void DeferredSsao::prepareDescriptorSetLayoutAndPipelineLayout()
     }
     
     {
+        std::array<VkDescriptorSetLayoutBinding, 5> bindings;
+        bindings[0] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
+        bindings[1] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
+        bindings[2] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 2);
+        bindings[3] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 3);
+        bindings[4] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 4);
+        VkDescriptorSetLayoutCreateInfo createInfo = Tools::getDescriptorSetLayoutCreateInfo(bindings.data(), static_cast<uint32_t>(bindings.size()));
+        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_device, &createInfo, nullptr, &m_ssaoDescriptorSetLayout));
+        createPipelineLayout(&m_ssaoDescriptorSetLayout, 1, m_ssaoPipelineLayout);
+    }
+    
+    {
         std::array<VkDescriptorSetLayoutBinding, 6> bindings;
         bindings[0] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
         bindings[1] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
@@ -138,10 +191,10 @@ void DeferredSsao::prepareDescriptorSetAndWrite()
 {
     std::array<VkDescriptorPoolSize, 2> poolSizes;
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = 2;
+    poolSizes[0].descriptorCount = 4;
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = 5;
-    createDescriptorPool(poolSizes.data(), static_cast<uint32_t>(poolSizes.size()), 2);
+    poolSizes[1].descriptorCount = 8;
+    createDescriptorPool(poolSizes.data(), static_cast<uint32_t>(poolSizes.size()), 3);
     
     {
         createDescriptorSet(&m_gbufferDescriptorSetLayout, 1, m_objectDescriptorSet);
@@ -153,6 +206,43 @@ void DeferredSsao::prepareDescriptorSetAndWrite()
 
         std::array<VkWriteDescriptorSet, 1> writes = {};
         writes[0] = Tools::getWriteDescriptorSet(m_objectDescriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo1);
+        vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
+    }
+    
+    {
+        createDescriptorSet(&m_ssaoDescriptorSetLayout, 1, m_ssaoDescriptorSet);
+        
+        VkDescriptorImageInfo imageInfo1 = {};
+        imageInfo1.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo1.imageView = m_gbufferColorImageView[0];
+        imageInfo1.sampler = m_gbufferColorSample;
+        
+        VkDescriptorImageInfo imageInfo2 = {};
+        imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo2.imageView = m_gbufferColorImageView[1];
+        imageInfo2.sampler = m_gbufferColorSample;
+        
+        VkDescriptorImageInfo imageInfo3 = {};
+        imageInfo3.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo3.imageView = m_gbufferColorImageView[2];
+        imageInfo3.sampler = m_gbufferColorSample;
+        
+        VkDescriptorBufferInfo bufferInfo1 = {};
+        bufferInfo1.offset = 0;
+        bufferInfo1.range = VK_WHOLE_SIZE;
+        bufferInfo1.buffer = m_sampleUniformBuffer;
+        
+        VkDescriptorBufferInfo bufferInfo2 = {};
+        bufferInfo2.offset = 0;
+        bufferInfo2.range = VK_WHOLE_SIZE;
+        bufferInfo2.buffer = m_paramsUniformBuffer;
+
+        std::array<VkWriteDescriptorSet, 5> writes = {};
+        writes[0] = Tools::getWriteDescriptorSet(m_ssaoDescriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &imageInfo1);
+        writes[1] = Tools::getWriteDescriptorSet(m_ssaoDescriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo2);
+        writes[2] = Tools::getWriteDescriptorSet(m_ssaoDescriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, &imageInfo3);
+        writes[3] = Tools::getWriteDescriptorSet(m_ssaoDescriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3, &bufferInfo1);
+        writes[4] = Tools::getWriteDescriptorSet(m_ssaoDescriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 4, &bufferInfo2);
         vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
     }
     

@@ -58,6 +58,7 @@ public:
     static void init();
     static void seed();
     static float random01();
+    static float lerp(float a, float b, float t);
     static uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
     static VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
     static void createBufferAndMemoryThenBind(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags, VkBuffer &buffer, VkDeviceMemory& memory);

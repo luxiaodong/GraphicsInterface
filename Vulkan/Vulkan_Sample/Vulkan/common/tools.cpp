@@ -37,6 +37,11 @@ float Tools::random01()
     return rndDist(rndEngine);
 }
 
+float Tools::lerp(float a, float b, float t)
+{
+    return a + (b - a) * t;
+}
+
 std::string Tools::getShaderPath()
 {
     return "assets/shaders/";

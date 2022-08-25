@@ -71,17 +71,26 @@ protected:
     VkDescriptorSetLayout m_gbufferDescriptorSetLayout;
     VkPipelineLayout m_gbufferPipelineLayout;
     
-    // object
-    VkDescriptorSet m_objectDescriptorSet;
+    // ssao
+    VkPipeline m_ssaoPipeline;
+    VkDescriptorSetLayout m_ssaoDescriptorSetLayout;
+    VkPipelineLayout m_ssaoPipelineLayout;
+    
+    // buffer
     VkBuffer m_objectUniformBuffer;
     VkDeviceMemory m_objectUniformMemory;
-    
-    //
-    VkPipeline m_pipeline;
-    VkDescriptorSet m_descriptorSet;
     VkBuffer m_paramsUniformBuffer;
     VkDeviceMemory m_paramsUniformMemory;
+    VkBuffer m_sampleUniformBuffer;
+    VkDeviceMemory m_sampleUniformMemory;
+    
+    // pipeline
+    VkPipeline m_pipeline;
+    VkDescriptorSet m_descriptorSet;
+    VkDescriptorSet m_objectDescriptorSet;
+    VkDescriptorSet m_ssaoDescriptorSet;
     
 private:
     GltfLoader m_objectLoader;
+    Texture* m_pNoise = nullptr;
 };
