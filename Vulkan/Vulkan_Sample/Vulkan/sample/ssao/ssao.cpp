@@ -64,6 +64,8 @@ void DeferredSsao::clear()
     
     vkFreeMemory(m_device, m_objectUniformMemory, nullptr);
     vkDestroyBuffer(m_device, m_objectUniformBuffer, nullptr);
+    vkFreeMemory(m_device, m_paramsUniformMemory, nullptr);
+    vkDestroyBuffer(m_device, m_paramsUniformBuffer, nullptr);
     
     m_objectLoader.clear();
     Application::clear();
@@ -101,9 +103,9 @@ void DeferredSsao::prepareUniform()
     
     SsaoParams params = {};
     params.projection = m_camera.m_projMat;
-    params.ssao = true;
+    params.ssao = false;
     params.ssaoOnly = false;
-    params.ssaoBlur = true;
+    params.ssaoBlur = false;
     Tools::mapMemory(m_paramsUniformMemory, sizeof(SsaoParams), &params);
 }
 
@@ -120,11 +122,13 @@ void DeferredSsao::prepareDescriptorSetLayoutAndPipelineLayout()
     }
     
     {
-        std::array<VkDescriptorSetLayoutBinding, 4> bindings;
-        bindings[0] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
-        bindings[1] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 2);
-        bindings[2] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 3);
-        bindings[3] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 4);
+        std::array<VkDescriptorSetLayoutBinding, 6> bindings;
+        bindings[0] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
+        bindings[1] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
+        bindings[2] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 2);
+        bindings[3] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 3);
+        bindings[4] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 4);
+        bindings[5] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 5);
         createDescriptorSetLayout(bindings.data(), static_cast<uint32_t>(bindings.size()));
         createPipelineLayout();
     }
@@ -136,7 +140,7 @@ void DeferredSsao::prepareDescriptorSetAndWrite()
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[0].descriptorCount = 2;
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = 3;
+    poolSizes[1].descriptorCount = 5;
     createDescriptorPool(poolSizes.data(), static_cast<uint32_t>(poolSizes.size()), 2);
     
     {
@@ -147,7 +151,7 @@ void DeferredSsao::prepareDescriptorSetAndWrite()
         bufferInfo1.range = VK_WHOLE_SIZE;
         bufferInfo1.buffer = m_objectUniformBuffer;
 
-        std::array<VkWriteDescriptorSet, 3> writes = {};
+        std::array<VkWriteDescriptorSet, 1> writes = {};
         writes[0] = Tools::getWriteDescriptorSet(m_objectDescriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo1);
         vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
     }
@@ -168,11 +172,13 @@ void DeferredSsao::prepareDescriptorSetAndWrite()
             imageInfo[i].sampler = m_gbufferColorSample;
         }
 
-        std::array<VkWriteDescriptorSet, 4> writes = {};
-        writes[0] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo[0]);
-        writes[1] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, &imageInfo[1]);
-        writes[2] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3, &imageInfo[2]);
-        writes[3] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 4, &bufferInfo1);
+        std::array<VkWriteDescriptorSet, 6> writes = {};
+        writes[0] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &imageInfo[0]);
+        writes[1] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo[1]);
+        writes[2] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, &imageInfo[2]);
+        writes[3] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3, &imageInfo[1]);
+        writes[4] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4, &imageInfo[2]);
+        writes[5] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 5, &bufferInfo1);
         vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
     }
 }
@@ -421,8 +427,7 @@ void DeferredSsao::createOtherRenderPass(const VkCommandBuffer& commandBuffer)
     
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_gbufferPipelineLayout, 0, 1, &m_objectDescriptorSet, 0, nullptr);
     m_objectLoader.bindBuffers(commandBuffer);
-//    m_objectLoader.draw(commandBuffer);
-    vkCmdDrawIndexed(commandBuffer, m_objectLoader.m_indexData.size(), 3, 0, 0, 0);
+    m_objectLoader.draw(commandBuffer, m_gbufferPipelineLayout, 4);
     
     vkCmdEndRenderPass(commandBuffer);
 }
