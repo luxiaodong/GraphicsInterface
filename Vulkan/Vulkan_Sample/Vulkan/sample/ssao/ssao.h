@@ -44,9 +44,14 @@ protected:
 protected:
     void createDeferredRenderPass();
     void createDeferredFrameBuffer();
+    void createSsaoRenderPass();
+    void createSsaoFrameBuffer();
     virtual void createOtherRenderPass(const VkCommandBuffer& commandBuffer);
     virtual void createOtherBuffer();
-
+    
+    void createGbufferRenderPass(const VkCommandBuffer& commandBuffer);
+    void createSsaoRenderPass(const VkCommandBuffer& commandBuffer);
+    
 protected:
     // 4份 attachment. positon, normal, albedoo, depth
     uint32_t m_gbufferWidth;
@@ -75,6 +80,15 @@ protected:
     VkPipeline m_ssaoPipeline;
     VkDescriptorSetLayout m_ssaoDescriptorSetLayout;
     VkPipelineLayout m_ssaoPipelineLayout;
+    
+    VkFramebuffer m_ssaoFramebuffer;
+    VkRenderPass m_ssaoRenderPass;
+    
+    VkFormat m_ssaoColorFormat;
+    VkImage m_ssaoColorImage;
+    VkDeviceMemory m_ssaoColorMemory;
+    VkImageView m_ssaoColorImageView;
+    VkSampler m_ssaoColorSample;
     
     // buffer
     VkBuffer m_objectUniformBuffer;
