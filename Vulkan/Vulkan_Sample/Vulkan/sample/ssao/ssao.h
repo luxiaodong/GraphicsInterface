@@ -46,11 +46,14 @@ protected:
     void createDeferredFrameBuffer();
     void createSsaoRenderPass();
     void createSsaoFrameBuffer();
+    void createSsaoBlurRenderPass();
+    void createSsaoBlurFrameBuffer();
     virtual void createOtherRenderPass(const VkCommandBuffer& commandBuffer);
     virtual void createOtherBuffer();
     
     void createGbufferRenderPass(const VkCommandBuffer& commandBuffer);
     void createSsaoRenderPass(const VkCommandBuffer& commandBuffer);
+    void createSsaoBlurRenderPass(const VkCommandBuffer& commandBuffer);
     
 protected:
     // 4份 attachment. positon, normal, albedoo, depth
@@ -90,6 +93,21 @@ protected:
     VkImageView m_ssaoColorImageView;
     VkSampler m_ssaoColorSample;
     
+    // ssaoBlur
+    VkPipeline m_ssaoBlurPipeline;
+    VkDescriptorSetLayout m_ssaoBlurDescriptorSetLayout;
+    VkPipelineLayout m_ssaoBlurPipelineLayout;
+    
+    VkFramebuffer m_ssaoBlurFramebuffer;
+    VkRenderPass m_ssaoBlurRenderPass;
+    
+    VkFormat m_ssaoBlurColorFormat;
+    VkImage m_ssaoBlurColorImage;
+    VkDeviceMemory m_ssaoBlurColorMemory;
+    VkImageView m_ssaoBlurColorImageView;
+    VkSampler m_ssaoBlurColorSample;
+    
+    
     // buffer
     VkBuffer m_objectUniformBuffer;
     VkDeviceMemory m_objectUniformMemory;
@@ -103,6 +121,7 @@ protected:
     VkDescriptorSet m_descriptorSet;
     VkDescriptorSet m_objectDescriptorSet;
     VkDescriptorSet m_ssaoDescriptorSet;
+    VkDescriptorSet m_ssaoBlurDescriptorSet;
     
 private:
     GltfLoader m_objectLoader;

@@ -27,6 +27,9 @@ void DeferredSsao::init()
     createSsaoRenderPass();
     createSsaoFrameBuffer();
     
+    createSsaoBlurRenderPass();
+    createSsaoBlurFrameBuffer();
+    
     createGraphicsPipeline();
 }
 
@@ -56,6 +59,12 @@ void DeferredSsao::clear()
     vkDestroyRenderPass(m_device, m_ssaoRenderPass, nullptr);
     vkDestroyFramebuffer(m_device, m_ssaoFramebuffer, nullptr);
     
+    vkDestroyPipeline(m_device, m_ssaoBlurPipeline, nullptr);
+    vkDestroyDescriptorSetLayout(m_device, m_ssaoBlurDescriptorSetLayout, nullptr);
+    vkDestroyPipelineLayout(m_device, m_ssaoBlurPipelineLayout, nullptr);
+    vkDestroyRenderPass(m_device, m_ssaoBlurRenderPass, nullptr);
+    vkDestroyFramebuffer(m_device, m_ssaoBlurFramebuffer, nullptr);
+    
     vkDestroyPipeline(m_device, m_gbufferPipeline, nullptr);
     vkDestroyDescriptorSetLayout(m_device, m_gbufferDescriptorSetLayout, nullptr);
     vkDestroyPipelineLayout(m_device, m_gbufferPipelineLayout, nullptr);
@@ -64,6 +73,11 @@ void DeferredSsao::clear()
     vkDestroyImage(m_device, m_ssaoColorImage, nullptr);
     vkFreeMemory(m_device, m_ssaoColorMemory, nullptr);
     vkDestroySampler(m_device, m_ssaoColorSample, nullptr);
+    
+    vkDestroyImageView(m_device, m_ssaoBlurColorImageView, nullptr);
+    vkDestroyImage(m_device, m_ssaoBlurColorImage, nullptr);
+    vkFreeMemory(m_device, m_ssaoBlurColorMemory, nullptr);
+    vkDestroySampler(m_device, m_ssaoBlurColorSample, nullptr);
 
     vkDestroyRenderPass(m_device, m_gbufferRenderPass, nullptr);
     vkDestroyFramebuffer(m_device, m_gbufferFramebuffer, nullptr);
@@ -156,7 +170,7 @@ void DeferredSsao::prepareUniform()
     params.projection = m_camera.m_projMat;
     params.ssao = 1;
     params.ssaoOnly = 1;
-    params.ssaoBlur = 0;
+    params.ssaoBlur = 1;
     Tools::mapMemory(m_paramsUniformMemory, sizeof(SsaoParams), &params);
 }
 
@@ -185,6 +199,14 @@ void DeferredSsao::prepareDescriptorSetLayoutAndPipelineLayout()
     }
     
     {
+        std::array<VkDescriptorSetLayoutBinding, 1> bindings;
+        bindings[0] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
+        VkDescriptorSetLayoutCreateInfo createInfo = Tools::getDescriptorSetLayoutCreateInfo(bindings.data(), static_cast<uint32_t>(bindings.size()));
+        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_device, &createInfo, nullptr, &m_ssaoBlurDescriptorSetLayout));
+        createPipelineLayout(&m_ssaoBlurDescriptorSetLayout, 1, m_ssaoBlurPipelineLayout);
+    }
+    
+    {
         std::array<VkDescriptorSetLayoutBinding, 6> bindings;
         bindings[0] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
         bindings[1] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
@@ -203,8 +225,8 @@ void DeferredSsao::prepareDescriptorSetAndWrite()
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[0].descriptorCount = 4;
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = 8;
-    createDescriptorPool(poolSizes.data(), static_cast<uint32_t>(poolSizes.size()), 3);
+    poolSizes[1].descriptorCount = 9;
+    createDescriptorPool(poolSizes.data(), static_cast<uint32_t>(poolSizes.size()), 4);
     
     {
         createDescriptorSet(&m_gbufferDescriptorSetLayout, 1, m_objectDescriptorSet);
@@ -257,6 +279,19 @@ void DeferredSsao::prepareDescriptorSetAndWrite()
     }
     
     {
+        createDescriptorSet(&m_ssaoBlurDescriptorSetLayout, 1, m_ssaoBlurDescriptorSet);
+        
+        VkDescriptorImageInfo imageInfo1 = {};
+        imageInfo1.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo1.imageView = m_ssaoColorImageView;
+        imageInfo1.sampler = m_ssaoColorSample;
+        
+        std::array<VkWriteDescriptorSet, 1> writes = {};
+        writes[0] = Tools::getWriteDescriptorSet(m_ssaoBlurDescriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &imageInfo1);
+        vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
+    }
+    
+    {
         createDescriptorSet(m_descriptorSet);
         
         VkDescriptorBufferInfo bufferInfo1 = {};
@@ -276,13 +311,18 @@ void DeferredSsao::prepareDescriptorSetAndWrite()
         imageInfo1.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         imageInfo1.imageView = m_ssaoColorImageView;
         imageInfo1.sampler = m_ssaoColorSample;
+        
+        VkDescriptorImageInfo imageInfo2 = {};
+        imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo2.imageView = m_ssaoBlurColorImageView;
+        imageInfo2.sampler = m_ssaoBlurColorSample;
 
         std::array<VkWriteDescriptorSet, 6> writes = {};
         writes[0] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &imageInfo[0]);
         writes[1] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo[1]);
         writes[2] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, &imageInfo[2]);
         writes[3] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3, &imageInfo1);
-        writes[4] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4, &imageInfo1);
+        writes[4] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4, &imageInfo2);
         writes[5] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 5, &bufferInfo1);
         vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
     }
@@ -362,6 +402,17 @@ void DeferredSsao::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, vertModule, nullptr);
     vkDestroyShaderModule(m_device, fragModule, nullptr);
     
+    // ssaoBlur
+    createInfo.layout = m_ssaoBlurPipelineLayout;
+    createInfo.renderPass = m_ssaoBlurRenderPass;
+    vertModule = Tools::createShaderModule( Tools::getShaderPath() + "ssao/fullscreen.vert.spv");
+    fragModule = Tools::createShaderModule( Tools::getShaderPath() + "ssao/blur.frag.spv");
+    shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
+    shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(fragModule, VK_SHADER_STAGE_FRAGMENT_BIT);
+    VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_ssaoBlurPipeline));
+    vkDestroyShaderModule(m_device, vertModule, nullptr);
+    vkDestroyShaderModule(m_device, fragModule, nullptr);
+    
     // deferred
     createInfo.layout = m_pipelineLayout;
     createInfo.renderPass = m_renderPass;
@@ -419,6 +470,12 @@ void DeferredSsao::createOtherBuffer()
     Tools::createImageAndMemoryThenBind(m_ssaoColorFormat, m_gbufferWidth, m_gbufferHeight, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_ssaoColorImage, m_ssaoColorMemory);
     Tools::createImageView(m_ssaoColorImage, m_ssaoColorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, m_ssaoColorImageView);
     Tools::createTextureSampler(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, 1, m_ssaoColorSample);
+    
+    // ssaoBlur
+    m_ssaoBlurColorFormat = VK_FORMAT_R8_UNORM;
+    Tools::createImageAndMemoryThenBind(m_ssaoBlurColorFormat, m_gbufferWidth, m_gbufferHeight, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_ssaoBlurColorImage, m_ssaoBlurColorMemory);
+    Tools::createImageView(m_ssaoBlurColorImage, m_ssaoBlurColorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, m_ssaoBlurColorImageView);
+    Tools::createTextureSampler(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, 1, m_ssaoBlurColorSample);
     
     // depth
     Tools::createImageAndMemoryThenBind(m_gbufferDepthFormat, m_gbufferWidth, m_gbufferHeight, 1, 1,
@@ -579,10 +636,77 @@ void DeferredSsao::createSsaoFrameBuffer()
     VK_CHECK_RESULT(vkCreateFramebuffer(m_device, &createInfo, nullptr, &m_ssaoFramebuffer));
 }
 
+void DeferredSsao::createSsaoBlurRenderPass()
+{
+    VkAttachmentDescription attachmentDescription = Tools::getAttachmentDescription(m_ssaoBlurColorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);;
+    
+    VkAttachmentReference colorAttachmentReference = {};
+    colorAttachmentReference.attachment = 0;
+    colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    
+    VkSubpassDescription subpassDescription = {};
+    subpassDescription.flags = 0;
+    subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpassDescription.inputAttachmentCount = 0;
+    subpassDescription.pInputAttachments = nullptr;
+    subpassDescription.colorAttachmentCount = 1;
+    subpassDescription.pColorAttachments = &colorAttachmentReference;
+    subpassDescription.pResolveAttachments = nullptr;
+    subpassDescription.pDepthStencilAttachment = nullptr;
+    subpassDescription.preserveAttachmentCount = 0;
+    subpassDescription.pPreserveAttachments = nullptr;
+    
+    std::array<VkSubpassDependency, 2> dependencies;
+    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependencies[0].dstSubpass = 0;
+    dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+    dependencies[1].srcSubpass = 0;
+    dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+    dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+    
+    VkRenderPassCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    createInfo.flags = 0;
+    createInfo.attachmentCount = 1;
+    createInfo.pAttachments = &attachmentDescription;
+    createInfo.subpassCount = 1;
+    createInfo.pSubpasses = &subpassDescription;
+    createInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+    createInfo.pDependencies = dependencies.data();
+    
+    VK_CHECK_RESULT( vkCreateRenderPass(m_device, &createInfo, nullptr, &m_ssaoBlurRenderPass) );
+}
+
+void DeferredSsao::createSsaoBlurFrameBuffer()
+{
+    VkImageView attachment = m_ssaoBlurColorImageView;
+    
+    VkFramebufferCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    createInfo.renderPass = m_ssaoBlurRenderPass;
+    createInfo.attachmentCount = 1;
+    createInfo.pAttachments = &attachment;
+    createInfo.width = m_gbufferWidth;
+    createInfo.height = m_gbufferHeight;
+    createInfo.layers = 1;
+    
+    VK_CHECK_RESULT(vkCreateFramebuffer(m_device, &createInfo, nullptr, &m_ssaoBlurFramebuffer));
+}
+
+
 void DeferredSsao::createOtherRenderPass(const VkCommandBuffer& commandBuffer)
 {
     createGbufferRenderPass(commandBuffer);
     createSsaoRenderPass(commandBuffer);
+    createSsaoBlurRenderPass(commandBuffer);
 }
 
 void DeferredSsao::createGbufferRenderPass(const VkCommandBuffer& commandBuffer)
@@ -650,6 +774,38 @@ void DeferredSsao::createSsaoRenderPass(const VkCommandBuffer& commandBuffer)
     
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_ssaoPipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_ssaoPipelineLayout, 0, 1, &m_ssaoDescriptorSet, 0, nullptr);
+    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    
+    vkCmdEndRenderPass(commandBuffer);
+}
+
+void DeferredSsao::createSsaoBlurRenderPass(const VkCommandBuffer& commandBuffer)
+{
+    VkClearValue clearValues = {};
+    clearValues.color = {1.0f, 0.0f, 0.0f, 1.0f};
+    
+    VkRenderPassBeginInfo passBeginInfo = {};
+    passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    passBeginInfo.renderPass = m_ssaoBlurRenderPass;
+    passBeginInfo.framebuffer = m_ssaoBlurFramebuffer;
+    passBeginInfo.renderArea.offset = {0, 0};
+    passBeginInfo.renderArea.extent.width = m_gbufferWidth;
+    passBeginInfo.renderArea.extent.height = m_gbufferHeight;
+    passBeginInfo.clearValueCount = 1;
+    passBeginInfo.pClearValues = &clearValues;
+    
+    vkCmdBeginRenderPass(commandBuffer, &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    
+    VkViewport viewport = Tools::getViewport(0, 0, m_gbufferWidth, m_gbufferHeight);
+    VkRect2D scissor;
+    scissor.offset = {0, 0};
+    scissor.extent.width = m_gbufferWidth;
+    scissor.extent.height = m_gbufferHeight;
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+    
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_ssaoBlurPipeline);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_ssaoBlurPipelineLayout, 0, 1, &m_ssaoBlurDescriptorSet, 0, nullptr);
     vkCmdDraw(commandBuffer, 3, 1, 0, 0);
     
     vkCmdEndRenderPass(commandBuffer);
