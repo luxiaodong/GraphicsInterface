@@ -50,6 +50,7 @@ public:
     static VkPhysicalDevice m_physicalDevice;
     static VkDevice m_device;
     static VkQueue m_graphicsQueue;
+    static VkQueue m_computerQueue;
     static VkPhysicalDeviceFeatures m_deviceEnabledFeatures;
     static VkPhysicalDeviceProperties m_deviceProperties;
     static VkCommandPool m_commandPool;

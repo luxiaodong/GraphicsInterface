@@ -7,6 +7,7 @@
 VkPhysicalDevice Tools::m_physicalDevice = VK_NULL_HANDLE;
 VkDevice Tools::m_device = VK_NULL_HANDLE;
 VkQueue Tools::m_graphicsQueue = VK_NULL_HANDLE;
+VkQueue Tools::m_computerQueue = VK_NULL_HANDLE;
 VkCommandPool Tools::m_commandPool = VK_NULL_HANDLE;
 VkPhysicalDeviceFeatures Tools::m_deviceEnabledFeatures = {};
 VkPhysicalDeviceProperties Tools::m_deviceProperties = {};
@@ -165,8 +166,10 @@ void Tools::createImageAndMemoryThenBind(VkFormat format, uint32_t width, uint32
     createInfo.tiling = tiling;
     createInfo.usage = usage;
     createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    createInfo.queueFamilyIndexCount = 0;
-    createInfo.pQueueFamilyIndices = nullptr;
+    std::vector<uint32_t> queueFamilyIndices;
+    queueFamilyIndices.push_back(0);
+    createInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilyIndices.size());
+    createInfo.pQueueFamilyIndices = queueFamilyIndices.data();
     createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
     if( vkCreateImage(m_device, &createInfo, nullptr, &image) != VK_SUCCESS )

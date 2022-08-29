@@ -12,9 +12,10 @@ struct QueueFamilyIndices
 {
     std::optional<uint32_t> graphicsFamily;
     std::optional<uint32_t> presentFamily;
+    std::optional<uint32_t> computerFamily;
     
     bool isComplete(){
-        return graphicsFamily.has_value() && presentFamily.has_value();
+        return graphicsFamily.has_value() && presentFamily.has_value() &&  computerFamily.has_value();
     }
 };
 
@@ -32,7 +33,7 @@ public:
     void run();
     void loop();
     void logic();
-    void render();
+    virtual void render();
     virtual void betweenInitAndLoop();
     virtual void updateRenderData();
     void beginRenderCommandAndPass(const VkCommandBuffer commandBuffer, int frameBufferIndex);
@@ -97,6 +98,7 @@ protected:
     VkPhysicalDevice m_physicalDevice;
     VkDevice m_device;
     QueueFamilyIndices m_familyIndices;
+    VkQueue m_computerQueue;
     VkQueue m_graphicsQueue;
     VkQueue m_presentQueue;
     

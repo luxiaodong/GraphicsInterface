@@ -38,6 +38,7 @@
 #include "sample/deferredmutisampling/deferredmutisampling.h"
 #include "sample/deferredshadows/deferredshadows.h"
 #include "sample/ssao/ssao.h"
+#include "sample/computershader/computershader.h"
 
 int main(int argc, const char * argv[])
 {
@@ -80,8 +81,9 @@ int main(int argc, const char * argv[])
 //    Deferred app("deferred");
 //    DeferredMutiSampling app("deferredmutisampling");
 //    DeferredShadows app("deferredshadows");
+//    DeferredSsao app("ssao");
     
-    DeferredSsao app("ssao");
+    ComputerShader app("computershader");
     
     try {
         app.run();

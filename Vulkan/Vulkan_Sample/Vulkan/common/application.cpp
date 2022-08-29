@@ -64,6 +64,7 @@ void Application::init()
     Tools::m_deviceEnabledFeatures = m_deviceEnabledFeatures;
     Tools::m_deviceProperties = m_deviceProperties;
     Tools::m_graphicsQueue = m_graphicsQueue;
+    Tools::m_computerQueue = m_computerQueue;
     createCommandPool();
     Tools::m_commandPool = m_commandPool;
     
@@ -155,7 +156,7 @@ void Application::render()
     vkResetFences(m_device, 1, &m_inFlightFences[m_currentFrame]);
 
     vkAcquireNextImageKHR(m_device, m_swapchainKHR, UINT64_MAX, m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &m_imageIndex);
-
+    
     VkCommandBuffer commandBuffer = m_commandBuffers[m_imageIndex];
     beginRenderCommandAndPass(commandBuffer, m_imageIndex);
     recordRenderCommand(commandBuffer);
@@ -370,18 +371,21 @@ void Application::createLogicDeivce()
     m_familyIndices = findQueueFamilyIndices();
     uint32_t graphicsFamily = m_familyIndices.graphicsFamily.value();
     uint32_t presentFamily = m_familyIndices.presentFamily.value();
-    std::vector<uint32_t> familyIndexs = {};
+    uint32_t computerFamily = m_familyIndices.computerFamily.value();
     
-    if ( graphicsFamily == presentFamily )
+    std::vector<uint32_t> familyIndexs = {};
+    familyIndexs.push_back(graphicsFamily);
+    
+    if(presentFamily != graphicsFamily)
     {
-        familyIndexs.push_back(graphicsFamily);
-    }
-    else
-    {
-        familyIndexs.push_back(graphicsFamily);
         familyIndexs.push_back(presentFamily);
     }
     
+    if((computerFamily != graphicsFamily) && (computerFamily != presentFamily))
+    {
+        familyIndexs.push_back(computerFamily);
+    }
+
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     for(uint32_t index : familyIndexs)
     {
@@ -412,6 +416,7 @@ void Application::createLogicDeivce()
     
     vkGetDeviceQueue(m_device, graphicsFamily, 0, &m_graphicsQueue);
     vkGetDeviceQueue(m_device, presentFamily, 0, &m_presentQueue);
+    vkGetDeviceQueue(m_device, computerFamily, 0, &m_computerQueue);
 }
 
 void Application::createSwapchain()
@@ -679,13 +684,13 @@ void Application::createCommandBuffers()
 {
     m_commandBuffers.resize(m_framebuffers.size());
     
-    VkCommandBufferAllocateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    createInfo.commandPool = m_commandPool;
-    createInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    createInfo.commandBufferCount = static_cast<uint32_t>(m_commandBuffers.size());
+    VkCommandBufferAllocateInfo allocateInfo = {};
+    allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocateInfo.commandPool = m_commandPool;
+    allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocateInfo.commandBufferCount = static_cast<uint32_t>(m_commandBuffers.size());
     
-    if( vkAllocateCommandBuffers(m_device, &createInfo, m_commandBuffers.data()) != VK_SUCCESS )
+    if( vkAllocateCommandBuffers(m_device, &allocateInfo, m_commandBuffers.data()) != VK_SUCCESS )
     {
         throw std::runtime_error("failed to create command buffer!");
     }
@@ -786,9 +791,14 @@ QueueFamilyIndices Application::findQueueFamilyIndices()
     uint32_t i = 0;
     for(auto properties : queueFamilyProperties)
     {
-        if( properties.queueFlags & VK_QUEUE_GRAPHICS_BIT )
+        if( properties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
         {
             indices.graphicsFamily = i;
+        }
+        
+        if( properties.queueFlags & VK_QUEUE_COMPUTE_BIT)
+        {
+            indices.computerFamily = i;
         }
 
         VkBool32 supported;
@@ -798,7 +808,7 @@ QueueFamilyIndices Application::findQueueFamilyIndices()
             indices.presentFamily = i;
         }
         
-        if(indices.graphicsFamily.has_value() && indices.presentFamily.has_value())
+        if(indices.isComplete())
         {
             break;
         }
