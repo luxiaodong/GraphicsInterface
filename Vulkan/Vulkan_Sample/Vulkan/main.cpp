@@ -40,6 +40,7 @@
 #include "sample/ssao/ssao.h"
 #include "sample/computershader/computershader.h"
 #include "sample/geometryshader/geometryshader.h"
+#include "sample/displacement/displacement.h"
 
 int main(int argc, const char * argv[])
 {
@@ -84,7 +85,9 @@ int main(int argc, const char * argv[])
 //    DeferredShadows app("deferredshadows");
 //    DeferredSsao app("ssao");
 //    ComputerShader app("computershader");
-    GeometryShader app("geometryshader");
+//    GeometryShader app("geometryshader");
+    
+    Displacement app("displacement");
     
     try {
         app.run();

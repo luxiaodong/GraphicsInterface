@@ -3,7 +3,6 @@
 
 GeometryShader::GeometryShader(std::string title) : Application(title)
 {
-    m_swapchainImageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 }
 
 GeometryShader::~GeometryShader()

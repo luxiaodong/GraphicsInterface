@@ -14,6 +14,7 @@
 		B0272D8128B71F82002D3602 /* ssao.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272D7A28B70A45002D3602 /* ssao.cpp */; };
 		B0272D8628B899F9002D3602 /* computershader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272D8428B899F9002D3602 /* computershader.cpp */; };
 		B0272DD728BDA078002D3602 /* geometryshader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272DD628BDA078002D3602 /* geometryshader.cpp */; };
+		B0272DDC28BDAC49002D3602 /* displacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272DDA28BDAC49002D3602 /* displacement.cpp */; };
 		B066A145286213A600763515 /* assets in CopyFiles */ = {isa = PBXBuildFile; fileRef = B066A1422862125900763515 /* assets */; };
 		B066DE1E28A4FF5D00726A95 /* thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE1D28A4FF5D00726A95 /* thread.cpp */; };
 		B066DE2328A5074600726A95 /* multithread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE2128A5074600726A95 /* multithread.cpp */; };
@@ -117,6 +118,8 @@
 		B0272D8528B899F9002D3602 /* computershader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = computershader.h; sourceTree = "<group>"; };
 		B0272DD528BDA078002D3602 /* geometryshader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = geometryshader.h; sourceTree = "<group>"; };
 		B0272DD628BDA078002D3602 /* geometryshader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = geometryshader.cpp; sourceTree = "<group>"; };
+		B0272DDA28BDAC49002D3602 /* displacement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = displacement.cpp; sourceTree = "<group>"; };
+		B0272DDB28BDAC49002D3602 /* displacement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = displacement.h; sourceTree = "<group>"; };
 		B066A1422862125900763515 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		B066DE1C28A4FF5D00726A95 /* thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = thread.h; sourceTree = "<group>"; };
 		B066DE1D28A4FF5D00726A95 /* thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = thread.cpp; sourceTree = "<group>"; };
@@ -330,6 +333,15 @@
 				B0272DD628BDA078002D3602 /* geometryshader.cpp */,
 			);
 			path = geometryshader;
+			sourceTree = "<group>";
+		};
+		B0272DD928BDAC49002D3602 /* displacement */ = {
+			isa = PBXGroup;
+			children = (
+				B0272DDA28BDAC49002D3602 /* displacement.cpp */,
+				B0272DDB28BDAC49002D3602 /* displacement.h */,
+			);
+			path = displacement;
 			sourceTree = "<group>";
 		};
 		B066DE2028A5074600726A95 /* multithread */ = {
@@ -761,6 +773,7 @@
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0272DD928BDAC49002D3602 /* displacement */,
 				B0272DD428BDA078002D3602 /* geometryshader */,
 				B0272D8328B899F9002D3602 /* computershader */,
 				B0272D7828B70A45002D3602 /* ssao */,
@@ -887,6 +900,7 @@
 				B0A47F1F282E4D6200209D51 /* main.cpp in Sources */,
 				B0B5D1222890D870003A175D /* gltfscenerendering.cpp in Sources */,
 				B0A010832897DD0D006A339B /* shadowmappingcascade.cpp in Sources */,
+				B0272DDC28BDAC49002D3602 /* displacement.cpp in Sources */,
 				B0272D7128B4C609002D3602 /* deferredmutisampling.cpp in Sources */,
 				B0B5D0202875293B003A175D /* camera.cpp in Sources */,
 				B066DE2728A5FDD800726A95 /* frustum.cpp in Sources */,
