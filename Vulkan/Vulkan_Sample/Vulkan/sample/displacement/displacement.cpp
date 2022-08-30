@@ -22,8 +22,8 @@ void Displacement::init()
 
 void Displacement::initCamera()
 {
-    m_camera.setPosition(glm::vec3(0.0f, 0.0f, -1.0f));
-    m_camera.setRotation(glm::vec3(0.0f, -25.0f, 0.0f));
+    m_camera.setPosition(glm::vec3(0.0f, 0.0f, -1.25f));
+    m_camera.setRotation(glm::vec3(-20.0f, 45.0f, 0.0f));
     m_camera.setPerspective(60.0f, (float)m_width / (float)m_height, 0.1f, 256.0f);
 }
 
@@ -65,7 +65,7 @@ void Displacement::prepareVertex()
     const uint32_t flags = GltfFileLoadFlags::PreTransformVertices | GltfFileLoadFlags::PreMultiplyVertexColors | GltfFileLoadFlags::FlipY;
     m_objectLoader.loadFromFile(Tools::getModelPath() + "displacement_plane.gltf", m_graphicsQueue, flags);
     m_objectLoader.createVertexAndIndexBuffer();
-    m_objectLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal,  VertexComponent::Color});
+    m_objectLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal,  VertexComponent::UV});
 
     m_pHeightMap = Texture::loadTextrue2D(Tools::getTexturePath() + "stonefloor03_color_height_rgba.ktx", m_graphicsQueue);
 }
@@ -162,7 +162,7 @@ void Displacement::createGraphicsPipeline()
     tessellation.patchControlPoints = 3;
     
     VkPipelineDynamicStateCreateInfo dynamic = Tools::getPipelineDynamicStateCreateInfo(dynamicStates);
-    VkPipelineRasterizationStateCreateInfo rasterization = Tools::getPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE);
+    VkPipelineRasterizationStateCreateInfo rasterization = Tools::getPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
     VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
     VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
 
