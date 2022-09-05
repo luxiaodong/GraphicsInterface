@@ -56,8 +56,7 @@ void TerrainTessellation::init()
 void TerrainTessellation::initCamera()
 {
     m_camera.m_isFirstPersion = true;
-//    m_camera.setPosition(glm::vec3(18.0f, 22.5f, 57.5f));
-    m_camera.setTranslation(glm::vec3(0.4f, 1.25f, 0.0f));
+    m_camera.setPosition(glm::vec3(18.0f, 22.5f, 57.5f));
     m_camera.setRotation(glm::vec3(-12.0f, 159.0f, 0.0f));
     m_camera.setPerspective(60.0f, (float)m_width / (float)m_height, 0.1f, 256.0f);
 }
@@ -128,8 +127,7 @@ void TerrainTessellation::prepareUniform()
                                          m_skyboxUniformBuffer, m_skyboxUniformMemory);
     
     SkyboxUniform mvp = {};
-    // mvp.mvp = m_camera.m_projMat * glm::mat4(glm::mat3(m_camera.m_viewMat));
-    mvp.mvp = m_camera.m_projMat * m_camera.m_viewMat;
+    mvp.mvp = m_camera.m_projMat * glm::mat4(glm::mat3(m_camera.m_viewMat));
     Tools::mapMemory(m_skyboxUniformMemory, uniformSize, &mvp);
     
     uniformSize = sizeof(TessEval);
@@ -292,7 +290,7 @@ void TerrainTessellation::createGraphicsPipeline()
     createInfo.pVertexInputState = m_skyboxLoader.getPipelineVertexInputState();
     rasterization.cullMode = VK_CULL_MODE_FRONT_BIT;
     rasterization.polygonMode = VK_POLYGON_MODE_FILL;
-    inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+    inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     depthStencil.depthWriteEnable = VK_FALSE;
     createInfo.pTessellationState = nullptr;
     createInfo.layout = m_skyboxPipelineLayout;
@@ -325,14 +323,12 @@ void TerrainTessellation::recordRenderCommand(const VkCommandBuffer commandBuffe
     m_skyboxLoader.bindBuffers(commandBuffer);
     m_skyboxLoader.draw(commandBuffer);
     
-/*
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
     VkDeviceSize offsets[1] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_vertexBuffer, offsets);
     vkCmdBindIndexBuffer(commandBuffer, m_indexBuffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdDrawIndexed(commandBuffer, m_terrainIndexCount, 1, 0, 0, 0);
-*/
 }
 
 void TerrainTessellation::createTerrain()
