@@ -3,27 +3,47 @@
 
 #include "common/application.h"
 #include "common/gltfLoader.h"
+#include "common/frustum.h"
+
+class TerrainHeight
+{
+public:
+    TerrainHeight(std::string filename, uint32_t patchsize);
+    ~TerrainHeight();
+    
+    float getHeight(uint32_t x, uint32_t y);
+    
+private:
+    uint16_t* m_pData;
+    uint32_t  m_length;
+    uint32_t  m_tileCount;
+};
 
 class TerrainTessellation : public Application
 {
 public:
+    struct TerrainVertex
+    {
+        glm::vec3 pos;
+        glm::vec3 normal;
+        glm::vec2 uv;
+    };
+    
     struct SkyboxUniform
     {
         glm::mat4 mvp;
     };
     
-    struct TessControl
-    {
-        float tessLevel = 64.0f;
-    };
-    
     struct TessEval
     {
         glm::mat4 projection;
-        glm::mat4 modelView;
-        glm::vec4 lightPos = glm::vec4(0.0f, -1.0f, 0.0f, 0.0f);
-        float tessAlpha = 1.0f;
-        float tessStrength = 0.1f;
+        glm::mat4 modelview;
+        glm::vec4 lightPos = glm::vec4(-48.0f, -40.0f, 46.0f, 0.0f);
+        glm::vec4 frustumPlanes[6];
+        float displacementFactor = 32.0f;
+        float tessellationFactor = 0.75f;
+        glm::vec2 viewportDim;
+        float tessellatedEdgeSize = 20.0f;
     };
     
     TerrainTessellation(std::string title);
@@ -43,6 +63,8 @@ protected:
     void prepareDescriptorSetLayoutAndPipelineLayout();
     void prepareDescriptorSetAndWrite();
     void createGraphicsPipeline();
+    
+    void createTerrain();
 
 protected:
     // skybox
@@ -59,8 +81,16 @@ protected:
     
     VkBuffer m_tessEvalmBuffer;
     VkDeviceMemory m_tessEvalMemory;
-    VkBuffer m_tessControlmBuffer;
-    VkDeviceMemory m_tessControlMemory;
+    
+private:
+    //顶点绑定和顶点描述
+    std::vector<VkVertexInputBindingDescription> m_vertexInputBindDes;
+    std::vector<VkVertexInputAttributeDescription> m_vertexInputAttrDes;
+    VkBuffer m_vertexBuffer;
+    VkDeviceMemory m_vertexMemory;
+    VkBuffer m_indexBuffer;
+    VkDeviceMemory m_indexMemory;
+    uint32_t m_terrainIndexCount;
     
 private:
     GltfLoader m_skyboxLoader;
