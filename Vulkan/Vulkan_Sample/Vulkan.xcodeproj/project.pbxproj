@@ -16,6 +16,7 @@
 		B0272DD728BDA078002D3602 /* geometryshader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272DD628BDA078002D3602 /* geometryshader.cpp */; };
 		B0272DDC28BDAC49002D3602 /* displacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272DDA28BDAC49002D3602 /* displacement.cpp */; };
 		B0272E3D28C33A24002D3602 /* terraintessellation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E3B28C33A24002D3602 /* terraintessellation.cpp */; };
+		B0272E4228C6E773002D3602 /* curvedpntriangles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E4028C6E773002D3602 /* curvedpntriangles.cpp */; };
 		B066A145286213A600763515 /* assets in CopyFiles */ = {isa = PBXBuildFile; fileRef = B066A1422862125900763515 /* assets */; };
 		B066DE1E28A4FF5D00726A95 /* thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE1D28A4FF5D00726A95 /* thread.cpp */; };
 		B066DE2328A5074600726A95 /* multithread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE2128A5074600726A95 /* multithread.cpp */; };
@@ -123,6 +124,8 @@
 		B0272DDB28BDAC49002D3602 /* displacement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = displacement.h; sourceTree = "<group>"; };
 		B0272E3B28C33A24002D3602 /* terraintessellation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = terraintessellation.cpp; sourceTree = "<group>"; };
 		B0272E3C28C33A24002D3602 /* terraintessellation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = terraintessellation.h; sourceTree = "<group>"; };
+		B0272E4028C6E773002D3602 /* curvedpntriangles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = curvedpntriangles.cpp; sourceTree = "<group>"; };
+		B0272E4128C6E773002D3602 /* curvedpntriangles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = curvedpntriangles.h; sourceTree = "<group>"; };
 		B066A1422862125900763515 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		B066DE1C28A4FF5D00726A95 /* thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = thread.h; sourceTree = "<group>"; };
 		B066DE1D28A4FF5D00726A95 /* thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = thread.cpp; sourceTree = "<group>"; };
@@ -354,6 +357,15 @@
 				B0272E3C28C33A24002D3602 /* terraintessellation.h */,
 			);
 			path = terraintessellation;
+			sourceTree = "<group>";
+		};
+		B0272E3F28C6E773002D3602 /* curvedpntriangles */ = {
+			isa = PBXGroup;
+			children = (
+				B0272E4028C6E773002D3602 /* curvedpntriangles.cpp */,
+				B0272E4128C6E773002D3602 /* curvedpntriangles.h */,
+			);
+			path = curvedpntriangles;
 			sourceTree = "<group>";
 		};
 		B066DE2028A5074600726A95 /* multithread */ = {
@@ -785,6 +797,7 @@
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0272E3F28C6E773002D3602 /* curvedpntriangles */,
 				B0272E3A28C33A24002D3602 /* terraintessellation */,
 				B0272DD928BDAC49002D3602 /* displacement */,
 				B0272DD428BDA078002D3602 /* geometryshader */,
@@ -957,6 +970,7 @@
 				B0B5D02C28753328003A175D /* gltfLoader.cpp in Sources */,
 				B0272E3D28C33A24002D3602 /* terraintessellation.cpp in Sources */,
 				B0B5D0862876AC3F003A175D /* checkheader.c in Sources */,
+				B0272E4228C6E773002D3602 /* curvedpntriangles.cpp in Sources */,
 				B0B5D110288A8CCA003A175D /* gltfloading.cpp in Sources */,
 				B0B5D0A328794562003A175D /* vertex.cpp in Sources */,
 				B0B5D07D2876AB40003A175D /* texture.c in Sources */,

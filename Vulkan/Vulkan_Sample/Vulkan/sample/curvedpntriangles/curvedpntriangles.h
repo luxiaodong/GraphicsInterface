@@ -4,25 +4,23 @@
 #include "common/application.h"
 #include "common/gltfLoader.h"
 
-class Displacement : public Application
+class CurvedPnTriangles : public Application
 {
 public:
     struct TessControl
     {
-        float tessLevel = 64.0f;
+        float tessLevel = 3.0f;
     };
     
     struct TessEval
     {
         glm::mat4 projection;
         glm::mat4 modelView;
-        glm::vec4 lightPos = glm::vec4(0.0f, -1.0f, 0.0f, 0.0f);
         float tessAlpha = 1.0f;
-        float tessStrength = 0.1f;
     };
     
-    Displacement(std::string title);
-    virtual ~Displacement();
+    CurvedPnTriangles(std::string title);
+    virtual ~CurvedPnTriangles();
     
     virtual void init();
     virtual void initCamera();
@@ -52,5 +50,4 @@ protected:
     
 private:
     GltfLoader m_objectLoader;
-    Texture* m_pHeightMap; //高度贴图
 };

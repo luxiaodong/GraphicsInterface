@@ -1,14 +1,14 @@
 
-#include "displacement.h"
+#include "curvedpntriangles.h"
 
-Displacement::Displacement(std::string title) : Application(title)
+CurvedPnTriangles::CurvedPnTriangles(std::string title) : Application(title)
 {
 }
 
-Displacement::~Displacement()
+CurvedPnTriangles::~CurvedPnTriangles()
 {}
 
-void Displacement::init()
+void CurvedPnTriangles::init()
 {
     Application::init();
     
@@ -20,14 +20,14 @@ void Displacement::init()
     createGraphicsPipeline();
 }
 
-void Displacement::initCamera()
+void CurvedPnTriangles::initCamera()
 {
-    m_camera.setPosition(glm::vec3(0.0f, 0.0f, -1.25f));
-    m_camera.setRotation(glm::vec3(-20.0f, 45.0f, 0.0f));
-    m_camera.setPerspective(60.0f, (float)m_width / (float)m_height, 0.1f, 256.0f);
+    m_camera.setPosition(glm::vec3(0.0f, 0.0f, -4.0f));
+    m_camera.setRotation(glm::vec3(-350.0f, 60.0f, 0.0f));
+    m_camera.setPerspective(45.0f, (float)m_width * 0.5f / (float)m_height, 0.1f, 256.0f);
 }
 
-void Displacement::setEnabledFeatures()
+void CurvedPnTriangles::setEnabledFeatures()
 {
     // tessellation shader support is required for this example
     if(m_deviceFeatures.tessellationShader)
@@ -45,7 +45,7 @@ void Displacement::setEnabledFeatures()
     }
 }
 
-void Displacement::clear()
+void CurvedPnTriangles::clear()
 {
     vkDestroyPipeline(m_device, m_wireframePipeline, nullptr);
     vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
@@ -54,23 +54,20 @@ void Displacement::clear()
     vkFreeMemory(m_device, m_tessControlMemory, nullptr);
     vkDestroyBuffer(m_device, m_tessControlmBuffer, nullptr);
 
-    m_pHeightMap->clear();
-    delete m_pHeightMap;
     m_objectLoader.clear();
     Application::clear();
 }
 
-void Displacement::prepareVertex()
+void CurvedPnTriangles::prepareVertex()
 {
-    const uint32_t flags = GltfFileLoadFlags::PreTransformVertices | GltfFileLoadFlags::PreMultiplyVertexColors | GltfFileLoadFlags::FlipY;
-    m_objectLoader.loadFromFile(Tools::getModelPath() + "displacement_plane.gltf", m_graphicsQueue, flags);
+    const uint32_t flags = GltfFileLoadFlags::PreTransformVertices | GltfFileLoadFlags::FlipY;
+    m_objectLoader.loadFromFile(Tools::getModelPath() + "deer.gltf", m_graphicsQueue, flags);
     m_objectLoader.createVertexAndIndexBuffer();
-    m_objectLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal,  VertexComponent::UV});
-
-    m_pHeightMap = Texture::loadTextrue2D(Tools::getTexturePath() + "stonefloor03_color_height_rgba.ktx", m_graphicsQueue);
+    m_objectLoader.createDescriptorPoolAndLayout();
+    m_objectLoader.setVertexBindingAndAttributeDescription({VertexComponent::Position, VertexComponent::Normal, VertexComponent::UV});
 }
 
-void Displacement::prepareUniform()
+void CurvedPnTriangles::prepareUniform()
 {
     VkDeviceSize uniformSize = sizeof(TessEval);
     Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -79,11 +76,7 @@ void Displacement::prepareUniform()
     TessEval eval = {};
     eval.projection = m_camera.m_projMat;
     eval.modelView = m_camera.m_viewMat;
-    eval.lightPos = glm::vec4(0.0f, -1.0f, 0.0f, 0.0f);
     eval.tessAlpha = 1.0f;
-    eval.tessStrength = 0.1f;
-    eval.lightPos.y = -0.5f - eval.tessStrength;
-    
     Tools::mapMemory(m_tessEvalMemory, uniformSize, &eval);
     
     
@@ -92,34 +85,33 @@ void Displacement::prepareUniform()
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                          m_tessControlmBuffer, m_tessControlMemory);
     TessControl control = {};
-    control.tessLevel = 64.0f;
+    control.tessLevel = 3.0f;
     Tools::mapMemory(m_tessControlMemory, uniformSize, &control);
 }
 
-void Displacement::prepareDescriptorSetLayoutAndPipelineLayout()
+void CurvedPnTriangles::prepareDescriptorSetLayoutAndPipelineLayout()
 {
-    std::array<VkDescriptorSetLayoutBinding, 3> bindings = {};
+    std::array<VkDescriptorSetLayoutBinding, 2> bindings = {};
     bindings[0] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, 0);
     bindings[1] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, 1);
-    bindings[2] = Tools::getDescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 2);
     
     createDescriptorSetLayout(bindings.data(), static_cast<uint32_t>(bindings.size()));
-    createPipelineLayout();
+    
+    const std::vector<VkDescriptorSetLayout> setLayouts = {m_descriptorSetLayout, GltfLoader::m_imageDescriptorSetLayout};
+    createPipelineLayout(setLayouts.data(), 2, m_pipelineLayout);
 }
 
-void Displacement::prepareDescriptorSetAndWrite()
+void CurvedPnTriangles::prepareDescriptorSetAndWrite()
 {
-    std::array<VkDescriptorPoolSize, 2> poolSizes;
+    std::array<VkDescriptorPoolSize, 1> poolSizes;
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[0].descriptorCount = 2;
-    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = 1;
     
     createDescriptorPool(poolSizes.data(), static_cast<uint32_t>(poolSizes.size()), 1);
     
     {
         createDescriptorSet(m_descriptorSet);
-            
+        
         VkDescriptorBufferInfo bufferInfo1 = {};
         bufferInfo1.offset = 0;
         bufferInfo1.range = sizeof(TessControl);
@@ -130,17 +122,14 @@ void Displacement::prepareDescriptorSetAndWrite()
         bufferInfo2.range = sizeof(TessEval);
         bufferInfo2.buffer = m_tessEvalmBuffer;
         
-        VkDescriptorImageInfo imageInfo = m_pHeightMap->getDescriptorImageInfo();
-        
-        std::array<VkWriteDescriptorSet, 3> writes = {};
+        std::array<VkWriteDescriptorSet, 2> writes = {};
         writes[0] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo1);
         writes[1] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, &bufferInfo2);
-        writes[2] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, &imageInfo);
         vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
     }
 }
 
-void Displacement::createGraphicsPipeline()
+void CurvedPnTriangles::createGraphicsPipeline()
 {
     VkPipelineInputAssemblyStateCreateInfo inputAssembly = Tools::getPipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_PATCH_LIST, VK_FALSE);
     
@@ -162,7 +151,7 @@ void Displacement::createGraphicsPipeline()
     tessellation.patchControlPoints = 3;
     
     VkPipelineDynamicStateCreateInfo dynamic = Tools::getPipelineDynamicStateCreateInfo(dynamicStates);
-    VkPipelineRasterizationStateCreateInfo rasterization = Tools::getPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
+    VkPipelineRasterizationStateCreateInfo rasterization = Tools::getPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_LINE, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
     VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
     VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
 
@@ -187,10 +176,10 @@ void Displacement::createGraphicsPipeline()
     createInfo.pTessellationState = &tessellation;
 
     // object
-    VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "displacement/base.vert.spv");
-    VkShaderModule tescModule = Tools::createShaderModule( Tools::getShaderPath() + "displacement/displacement.tesc.spv");
-    VkShaderModule teseModule = Tools::createShaderModule( Tools::getShaderPath() + "displacement/displacement.tese.spv");
-    VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "displacement/base.frag.spv");
+    VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "tessellation/base.vert.spv");
+    VkShaderModule tescModule = Tools::createShaderModule( Tools::getShaderPath() + "tessellation/pntriangles.tesc.spv");
+    VkShaderModule teseModule = Tools::createShaderModule( Tools::getShaderPath() + "tessellation/pntriangles.tese.spv");
+    VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "tessellation/base.frag.spv");
     shaderStages[0] = Tools::getPipelineShaderStageCreateInfo(vertModule, VK_SHADER_STAGE_VERTEX_BIT);
     shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(tescModule, VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT);
     shaderStages[2] = Tools::getPipelineShaderStageCreateInfo(teseModule, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
@@ -198,8 +187,13 @@ void Displacement::createGraphicsPipeline()
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_graphicsPipeline));
     
     // wireframe
-    rasterization.polygonMode = VK_POLYGON_MODE_LINE;
-    rasterization.cullMode = VK_CULL_MODE_NONE;
+    vkDestroyShaderModule(m_device, tescModule, nullptr);
+    vkDestroyShaderModule(m_device, teseModule, nullptr);
+    
+    tescModule = Tools::createShaderModule( Tools::getShaderPath() + "tessellation/passthrough.tesc.spv");
+    teseModule = Tools::createShaderModule( Tools::getShaderPath() + "tessellation/passthrough.tese.spv");
+    shaderStages[1] = Tools::getPipelineShaderStageCreateInfo(tescModule, VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT);
+    shaderStages[2] = Tools::getPipelineShaderStageCreateInfo(teseModule, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_device, m_pipelineCache, 1, &createInfo, nullptr, &m_wireframePipeline));
     
     vkDestroyShaderModule(m_device, vertModule, nullptr);
@@ -208,11 +202,11 @@ void Displacement::createGraphicsPipeline()
     vkDestroyShaderModule(m_device, fragModule, nullptr);
 }
 
-void Displacement::updateRenderData()
+void CurvedPnTriangles::updateRenderData()
 {
 }
 
-void Displacement::recordRenderCommand(const VkCommandBuffer commandBuffer)
+void CurvedPnTriangles::recordRenderCommand(const VkCommandBuffer commandBuffer)
 {
     VkViewport viewport = Tools::getViewport(0, 0, m_swapchainExtent.width*0.5f, m_swapchainExtent.height);
     VkRect2D scissor;
@@ -225,19 +219,19 @@ void Displacement::recordRenderCommand(const VkCommandBuffer commandBuffer)
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_wireframePipeline);
     m_objectLoader.bindBuffers(commandBuffer);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
-    m_objectLoader.draw(commandBuffer);
+    m_objectLoader.draw(commandBuffer, m_pipelineLayout, 4);
     
     viewport.x = viewport.width;
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
-    m_objectLoader.draw(commandBuffer);
+    m_objectLoader.draw(commandBuffer, m_pipelineLayout, 4);
 }
 
-std::vector<VkClearValue> Displacement::getClearValue()
+std::vector<VkClearValue> CurvedPnTriangles::getClearValue()
 {
     std::vector<VkClearValue> clearValues = {};
     VkClearValue color = {};
-    color.color = {{0.5f, 0.5f, 0.5f, 1.0f}};
+    color.color = {{0.25f, 0.25f, 0.25f, 1.0f}};
     
     VkClearValue depth = {};
     depth.depthStencil = {1.0f, 0};
