@@ -19,6 +19,8 @@
 		B0272E4228C6E773002D3602 /* curvedpntriangles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E4028C6E773002D3602 /* curvedpntriangles.cpp */; };
 		B0272E4728C83119002D3602 /* renderheadless.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E4528C83118002D3602 /* renderheadless.cpp */; };
 		B0272E4C28C84C4C002D3602 /* computeheadless.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E4B28C84C4C002D3602 /* computeheadless.cpp */; };
+		B0272E5128C88D04002D3602 /* textoverlay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E5028C88D04002D3602 /* textoverlay.cpp */; };
+		B0272E5528C88D32002D3602 /* text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E5428C88D32002D3602 /* text.cpp */; };
 		B066A145286213A600763515 /* assets in CopyFiles */ = {isa = PBXBuildFile; fileRef = B066A1422862125900763515 /* assets */; };
 		B066DE1E28A4FF5D00726A95 /* thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE1D28A4FF5D00726A95 /* thread.cpp */; };
 		B066DE2328A5074600726A95 /* multithread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE2128A5074600726A95 /* multithread.cpp */; };
@@ -132,6 +134,10 @@
 		B0272E4628C83118002D3602 /* renderheadless.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = renderheadless.h; sourceTree = "<group>"; };
 		B0272E4A28C84C4C002D3602 /* computeheadless.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = computeheadless.h; sourceTree = "<group>"; };
 		B0272E4B28C84C4C002D3602 /* computeheadless.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = computeheadless.cpp; sourceTree = "<group>"; };
+		B0272E4F28C88D04002D3602 /* textoverlay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = textoverlay.h; sourceTree = "<group>"; };
+		B0272E5028C88D04002D3602 /* textoverlay.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = textoverlay.cpp; sourceTree = "<group>"; };
+		B0272E5328C88D32002D3602 /* text.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = text.h; sourceTree = "<group>"; };
+		B0272E5428C88D32002D3602 /* text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = text.cpp; sourceTree = "<group>"; };
 		B066A1422862125900763515 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		B066DE1C28A4FF5D00726A95 /* thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = thread.h; sourceTree = "<group>"; };
 		B066DE1D28A4FF5D00726A95 /* thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = thread.cpp; sourceTree = "<group>"; };
@@ -392,6 +398,15 @@
 			path = computeheadless;
 			sourceTree = "<group>";
 		};
+		B0272E4E28C88D04002D3602 /* textoverlay */ = {
+			isa = PBXGroup;
+			children = (
+				B0272E4F28C88D04002D3602 /* textoverlay.h */,
+				B0272E5028C88D04002D3602 /* textoverlay.cpp */,
+			);
+			path = textoverlay;
+			sourceTree = "<group>";
+		};
 		B066DE2028A5074600726A95 /* multithread */ = {
 			isa = PBXGroup;
 			children = (
@@ -593,6 +608,8 @@
 		B0B5D0162875293B003A175D /* common */ = {
 			isa = PBXGroup;
 			children = (
+				B0272E5428C88D32002D3602 /* text.cpp */,
+				B0272E5328C88D32002D3602 /* text.h */,
 				B066DE2628A5FDD800726A95 /* frustum.cpp */,
 				B066DE2528A5FDD700726A95 /* frustum.h */,
 				B066DE5A28ACD54300726A95 /* svpng.c */,
@@ -821,6 +838,7 @@
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0272E4E28C88D04002D3602 /* textoverlay */,
 				B0272E4928C84C4C002D3602 /* computeheadless */,
 				B0272E4428C83118002D3602 /* renderheadless */,
 				B0272E3F28C6E773002D3602 /* curvedpntriangles */,
@@ -1010,11 +1028,13 @@
 				B0B5D11D288F8C1D003A175D /* animation.cpp in Sources */,
 				B066DE4B28AC955700726A95 /* pbrbasic.cpp in Sources */,
 				B0B5D0212875293B003A175D /* tools.cpp in Sources */,
+				B0272E5128C88D04002D3602 /* textoverlay.cpp in Sources */,
 				B0B5D0F228864606003A175D /* subpasses.cpp in Sources */,
 				B0B5D0A728794942003A175D /* primitive.cpp in Sources */,
 				B0B5D0AB2879863A003A175D /* material.cpp in Sources */,
 				B0B5D115288E85C0003A175D /* gltfskinning.cpp in Sources */,
 				B0272D6C28B47C3B002D3602 /* deferred.cpp in Sources */,
+				B0272E5528C88D32002D3602 /* text.cpp in Sources */,
 				B066DE2C28A9E44600726A95 /* instancing.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -45,6 +45,7 @@
 #include "sample/curvedpntriangles/curvedpntriangles.h"
 #include "sample/renderheadless/renderheadless.h"
 #include "sample/computeheadless/computeheadless.h"
+#include "sample/textoverlay/textoverlay.h"
 
 int main(int argc, const char * argv[])
 {
@@ -94,8 +95,9 @@ int main(int argc, const char * argv[])
 //    TerrainTessellation app("terraintessellation");
 //    CurvedPnTriangles app("curvedpntriangles");
 //    RenderHeadless app("renderheadless");
+//    ComputeHeadless app("computeheadless");
     
-    ComputeHeadless app("computeheadless");
+    Textoverlay app("textoverlay");
     
     try {
         app.run();
