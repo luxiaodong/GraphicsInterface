@@ -17,6 +17,7 @@
 		B0272DDC28BDAC49002D3602 /* displacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272DDA28BDAC49002D3602 /* displacement.cpp */; };
 		B0272E3D28C33A24002D3602 /* terraintessellation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E3B28C33A24002D3602 /* terraintessellation.cpp */; };
 		B0272E4228C6E773002D3602 /* curvedpntriangles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E4028C6E773002D3602 /* curvedpntriangles.cpp */; };
+		B0272E4728C83119002D3602 /* renderheadless.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E4528C83118002D3602 /* renderheadless.cpp */; };
 		B066A145286213A600763515 /* assets in CopyFiles */ = {isa = PBXBuildFile; fileRef = B066A1422862125900763515 /* assets */; };
 		B066DE1E28A4FF5D00726A95 /* thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE1D28A4FF5D00726A95 /* thread.cpp */; };
 		B066DE2328A5074600726A95 /* multithread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE2128A5074600726A95 /* multithread.cpp */; };
@@ -126,6 +127,8 @@
 		B0272E3C28C33A24002D3602 /* terraintessellation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = terraintessellation.h; sourceTree = "<group>"; };
 		B0272E4028C6E773002D3602 /* curvedpntriangles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = curvedpntriangles.cpp; sourceTree = "<group>"; };
 		B0272E4128C6E773002D3602 /* curvedpntriangles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = curvedpntriangles.h; sourceTree = "<group>"; };
+		B0272E4528C83118002D3602 /* renderheadless.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = renderheadless.cpp; sourceTree = "<group>"; };
+		B0272E4628C83118002D3602 /* renderheadless.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = renderheadless.h; sourceTree = "<group>"; };
 		B066A1422862125900763515 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		B066DE1C28A4FF5D00726A95 /* thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = thread.h; sourceTree = "<group>"; };
 		B066DE1D28A4FF5D00726A95 /* thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = thread.cpp; sourceTree = "<group>"; };
@@ -366,6 +369,15 @@
 				B0272E4128C6E773002D3602 /* curvedpntriangles.h */,
 			);
 			path = curvedpntriangles;
+			sourceTree = "<group>";
+		};
+		B0272E4428C83118002D3602 /* renderheadless */ = {
+			isa = PBXGroup;
+			children = (
+				B0272E4528C83118002D3602 /* renderheadless.cpp */,
+				B0272E4628C83118002D3602 /* renderheadless.h */,
+			);
+			path = renderheadless;
 			sourceTree = "<group>";
 		};
 		B066DE2028A5074600726A95 /* multithread */ = {
@@ -797,6 +809,7 @@
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0272E4428C83118002D3602 /* renderheadless */,
 				B0272E3F28C6E773002D3602 /* curvedpntriangles */,
 				B0272E3A28C33A24002D3602 /* terraintessellation */,
 				B0272DD928BDAC49002D3602 /* displacement */,
@@ -948,6 +961,7 @@
 				B0B5D0CA287FC9EC003A175D /* texturemapping.cpp in Sources */,
 				B0A01092289E591A006A339B /* screenshot.cpp in Sources */,
 				B066DE5B28ACD54300726A95 /* svpng.inc in Sources */,
+				B0272E4728C83119002D3602 /* renderheadless.cpp in Sources */,
 				B0B5D0832876ABC0003A175D /* filestream.c in Sources */,
 				B0B5D0CF287FEC3F003A175D /* texturearray.cpp in Sources */,
 				B0A01074289228EE006A339B /* multisampling.cpp in Sources */,

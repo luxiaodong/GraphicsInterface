@@ -59,6 +59,7 @@ void Application::init()
     setEnabledFeatures();
     setSampleCount();
     
+    m_familyIndices = findQueueFamilyIndices();
     createLogicDeivce();
     Tools::m_device = m_device;
     Tools::m_deviceEnabledFeatures = m_deviceEnabledFeatures;
@@ -368,7 +369,6 @@ void Application::choosePhysicalDevice()
 
 void Application::createLogicDeivce()
 {
-    m_familyIndices = findQueueFamilyIndices();
     uint32_t graphicsFamily = m_familyIndices.graphicsFamily.value();
     uint32_t presentFamily = m_familyIndices.presentFamily.value();
     uint32_t computerFamily = m_familyIndices.computerFamily.value();

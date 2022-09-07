@@ -43,6 +43,7 @@
 #include "sample/displacement/displacement.h"
 #include "sample/terraintessellation/terraintessellation.h"
 #include "sample/curvedpntriangles/curvedpntriangles.h"
+#include "sample/renderheadless/renderheadless.h"
 
 int main(int argc, const char * argv[])
 {
@@ -90,8 +91,9 @@ int main(int argc, const char * argv[])
 //    GeometryShader app("geometryshader");
 //    Displacement app("displacement");
 //    TerrainTessellation app("terraintessellation");
+//    CurvedPnTriangles app("curvedpntriangles");
     
-    CurvedPnTriangles app("curvedpntriangles");
+    RenderHeadless app("renderheadless");
     
     try {
         app.run();

@@ -30,9 +30,9 @@ public:
     virtual void setEnabledFeatures();
     virtual void setSampleCount();
     virtual void clear();
-    void run();
-    void loop();
-    void logic();
+    virtual void run();
+    virtual void loop();
+    virtual void logic();
     virtual void render();
     virtual void betweenInitAndLoop();
     virtual void updateRenderData();
