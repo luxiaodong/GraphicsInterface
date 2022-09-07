@@ -44,6 +44,7 @@
 #include "sample/terraintessellation/terraintessellation.h"
 #include "sample/curvedpntriangles/curvedpntriangles.h"
 #include "sample/renderheadless/renderheadless.h"
+#include "sample/computeheadless/computeheadless.h"
 
 int main(int argc, const char * argv[])
 {
@@ -92,8 +93,9 @@ int main(int argc, const char * argv[])
 //    Displacement app("displacement");
 //    TerrainTessellation app("terraintessellation");
 //    CurvedPnTriangles app("curvedpntriangles");
+//    RenderHeadless app("renderheadless");
     
-    RenderHeadless app("renderheadless");
+    ComputeHeadless app("computeheadless");
     
     try {
         app.run();

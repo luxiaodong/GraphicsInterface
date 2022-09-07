@@ -18,6 +18,7 @@
 		B0272E3D28C33A24002D3602 /* terraintessellation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E3B28C33A24002D3602 /* terraintessellation.cpp */; };
 		B0272E4228C6E773002D3602 /* curvedpntriangles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E4028C6E773002D3602 /* curvedpntriangles.cpp */; };
 		B0272E4728C83119002D3602 /* renderheadless.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E4528C83118002D3602 /* renderheadless.cpp */; };
+		B0272E4C28C84C4C002D3602 /* computeheadless.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E4B28C84C4C002D3602 /* computeheadless.cpp */; };
 		B066A145286213A600763515 /* assets in CopyFiles */ = {isa = PBXBuildFile; fileRef = B066A1422862125900763515 /* assets */; };
 		B066DE1E28A4FF5D00726A95 /* thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE1D28A4FF5D00726A95 /* thread.cpp */; };
 		B066DE2328A5074600726A95 /* multithread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE2128A5074600726A95 /* multithread.cpp */; };
@@ -129,6 +130,8 @@
 		B0272E4128C6E773002D3602 /* curvedpntriangles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = curvedpntriangles.h; sourceTree = "<group>"; };
 		B0272E4528C83118002D3602 /* renderheadless.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = renderheadless.cpp; sourceTree = "<group>"; };
 		B0272E4628C83118002D3602 /* renderheadless.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = renderheadless.h; sourceTree = "<group>"; };
+		B0272E4A28C84C4C002D3602 /* computeheadless.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = computeheadless.h; sourceTree = "<group>"; };
+		B0272E4B28C84C4C002D3602 /* computeheadless.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = computeheadless.cpp; sourceTree = "<group>"; };
 		B066A1422862125900763515 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		B066DE1C28A4FF5D00726A95 /* thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = thread.h; sourceTree = "<group>"; };
 		B066DE1D28A4FF5D00726A95 /* thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = thread.cpp; sourceTree = "<group>"; };
@@ -378,6 +381,15 @@
 				B0272E4628C83118002D3602 /* renderheadless.h */,
 			);
 			path = renderheadless;
+			sourceTree = "<group>";
+		};
+		B0272E4928C84C4C002D3602 /* computeheadless */ = {
+			isa = PBXGroup;
+			children = (
+				B0272E4A28C84C4C002D3602 /* computeheadless.h */,
+				B0272E4B28C84C4C002D3602 /* computeheadless.cpp */,
+			);
+			path = computeheadless;
 			sourceTree = "<group>";
 		};
 		B066DE2028A5074600726A95 /* multithread */ = {
@@ -809,6 +821,7 @@
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0272E4928C84C4C002D3602 /* computeheadless */,
 				B0272E4428C83118002D3602 /* renderheadless */,
 				B0272E3F28C6E773002D3602 /* curvedpntriangles */,
 				B0272E3A28C33A24002D3602 /* terraintessellation */,
@@ -971,6 +984,7 @@
 				B0272D8628B899F9002D3602 /* computershader.cpp in Sources */,
 				B0B5D10B288A7935003A175D /* separatevertexattributes.cpp in Sources */,
 				B0B5D0BA287D50A3003A175D /* dynamicuniformbuffer.cpp in Sources */,
+				B0272E4C28C84C4C002D3602 /* computeheadless.cpp in Sources */,
 				B0B5D09728783317003A175D /* gltfModel.cpp in Sources */,
 				B066DE3B28AB7D3300726A95 /* pipelinestatistics.cpp in Sources */,
 				B09AEA2D2862A380006ED326 /* imgui_tables.cpp in Sources */,
