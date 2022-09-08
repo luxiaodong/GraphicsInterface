@@ -18,6 +18,8 @@ void Textoverlay::init()
     prepareDescriptorSetLayoutAndPipelineLayout();
     prepareDescriptorSetAndWrite();
     createGraphicsPipeline();
+    
+    prepareText();
 }
 
 void Textoverlay::initCamera()
@@ -47,6 +49,8 @@ void Textoverlay::clear()
     vkDestroyBuffer(m_device, m_uniformBuffer, nullptr);
     m_gltfLoader.clear();
 
+    m_pText->clear();
+    delete m_pText;
     Application::clear();
 }
 
@@ -66,6 +70,11 @@ void Textoverlay::prepareUniform()
     Tools::createBufferAndMemoryThenBind(uniformSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                          m_uniformBuffer, m_uniformMemory);
+    
+    Uniform mvp = {};
+    mvp.projectionMatrix = m_camera.m_projMat;
+    mvp.viewMatrix = m_camera.m_viewMat * glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
+    Tools::mapMemory(m_uniformMemory, sizeof(Uniform), &mvp);
 }
 
 void Textoverlay::prepareDescriptorSetLayoutAndPipelineLayout()
@@ -153,10 +162,7 @@ void Textoverlay::createGraphicsPipeline()
 
 void Textoverlay::updateRenderData()
 {
-    Uniform mvp = {};
-    mvp.projectionMatrix = m_camera.m_projMat;
-    mvp.viewMatrix = m_camera.m_viewMat * glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
-    Tools::mapMemory(m_uniformMemory, sizeof(Uniform), &mvp);
+    
 }
 
 void Textoverlay::recordRenderCommand(const VkCommandBuffer commandBuffer)
@@ -176,4 +182,24 @@ void Textoverlay::recordRenderCommand(const VkCommandBuffer commandBuffer)
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
     m_gltfLoader.draw(commandBuffer);
+    
+    m_pText->recordRenderCommand(commandBuffer);
 }
+
+void Textoverlay::prepareText()
+{
+    m_pText = new Text(m_surfaceFormatKHR.format, m_depthFormat, m_swapchainExtent.width, m_swapchainExtent.height, Tools::getShaderPath() + "textoverlay/text.vert.spv", Tools::getShaderPath() + "textoverlay/text.frag.spv");
+    m_pText->init();
+
+    glm::vec3 projected = glm::project(glm::vec3(0.0f), m_camera.m_viewMat, m_camera.m_projMat, glm::vec4(0, 0, (float)m_swapchainExtent.width, (float)m_swapchainExtent.height));
+
+    m_pText->begin();
+    m_pText->addString("A Cube", 5.0f, 5.0f, TextAlign::Center);
+    m_pText->end();
+}
+
+void Textoverlay::createOtherRenderPass(const VkFramebuffer& frameBuffer)
+{
+//    m_pText->updateCommandBuffers(frameBuffer);
+}
+

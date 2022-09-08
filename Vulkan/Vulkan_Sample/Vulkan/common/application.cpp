@@ -168,6 +168,8 @@ void Application::render()
     }
     
     endRenderCommandAndPass(commandBuffer);
+    
+    createOtherRenderPass(m_framebuffers[m_imageIndex]);
 
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -734,6 +736,9 @@ std::vector<VkClearValue> Application::getClearValue()
     clearValues.push_back(depth);
     return clearValues;
 }
+
+void Application::createOtherRenderPass(const VkFramebuffer& frameBuffer)
+{}
 
 void Application::createOtherRenderPass(const VkCommandBuffer& commandBuffer)
 {

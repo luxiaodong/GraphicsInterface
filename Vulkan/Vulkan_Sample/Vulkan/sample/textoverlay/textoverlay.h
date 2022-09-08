@@ -4,6 +4,7 @@
 #include "common/application.h"
 #include "common/gltfModel.h"
 #include "common/gltfLoader.h"
+#include "common/text.h"
 
 class Textoverlay : public Application
 {
@@ -24,6 +25,7 @@ public:
 
     virtual void updateRenderData();
     virtual void recordRenderCommand(const VkCommandBuffer commandBuffer);
+    virtual void createOtherRenderPass(const VkFramebuffer& frameBuffer);
 
 protected:
     void prepareVertex();
@@ -31,6 +33,7 @@ protected:
     void prepareDescriptorSetLayoutAndPipelineLayout();
     void prepareDescriptorSetAndWrite();
     void createGraphicsPipeline();
+    void prepareText();
 
 protected:
     VkDescriptorSet m_descriptorSet;
@@ -41,4 +44,5 @@ protected:
 
 private:
     GltfLoader m_gltfLoader;
+    Text* m_pText;
 };
