@@ -174,12 +174,8 @@ void Textoverlay::recordRenderCommand(const VkCommandBuffer commandBuffer)
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
-    m_gltfLoader.bindBuffers(commandBuffer);
-
-    // phong
-    viewport.width = (float)m_swapchainExtent.width;
-    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+    m_gltfLoader.bindBuffers(commandBuffer);
     m_gltfLoader.draw(commandBuffer);
     
     m_pText->recordRenderCommand(commandBuffer);

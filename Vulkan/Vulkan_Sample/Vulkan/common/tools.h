@@ -12,6 +12,7 @@
 #include <optional>
 #include <cstdint>
 #include <fstream>
+#include <sstream>
 #include <array>
 #include <unordered_map>
 

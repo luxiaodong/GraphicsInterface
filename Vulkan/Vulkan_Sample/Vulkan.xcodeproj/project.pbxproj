@@ -21,6 +21,7 @@
 		B0272E4C28C84C4C002D3602 /* computeheadless.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E4B28C84C4C002D3602 /* computeheadless.cpp */; };
 		B0272E5128C88D04002D3602 /* textoverlay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E5028C88D04002D3602 /* textoverlay.cpp */; };
 		B0272E5528C88D32002D3602 /* text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E5428C88D32002D3602 /* text.cpp */; };
+		B0272E5A28CAF102002D3602 /* distancefieldfonts.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E5928CAF101002D3602 /* distancefieldfonts.cpp */; };
 		B066A145286213A600763515 /* assets in CopyFiles */ = {isa = PBXBuildFile; fileRef = B066A1422862125900763515 /* assets */; };
 		B066DE1E28A4FF5D00726A95 /* thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE1D28A4FF5D00726A95 /* thread.cpp */; };
 		B066DE2328A5074600726A95 /* multithread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE2128A5074600726A95 /* multithread.cpp */; };
@@ -138,6 +139,8 @@
 		B0272E5028C88D04002D3602 /* textoverlay.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = textoverlay.cpp; sourceTree = "<group>"; };
 		B0272E5328C88D32002D3602 /* text.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = text.h; sourceTree = "<group>"; };
 		B0272E5428C88D32002D3602 /* text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = text.cpp; sourceTree = "<group>"; };
+		B0272E5828CAF101002D3602 /* distancefieldfonts.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = distancefieldfonts.h; sourceTree = "<group>"; };
+		B0272E5928CAF101002D3602 /* distancefieldfonts.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = distancefieldfonts.cpp; sourceTree = "<group>"; };
 		B066A1422862125900763515 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		B066DE1C28A4FF5D00726A95 /* thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = thread.h; sourceTree = "<group>"; };
 		B066DE1D28A4FF5D00726A95 /* thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = thread.cpp; sourceTree = "<group>"; };
@@ -405,6 +408,15 @@
 				B0272E5028C88D04002D3602 /* textoverlay.cpp */,
 			);
 			path = textoverlay;
+			sourceTree = "<group>";
+		};
+		B0272E5728CAF101002D3602 /* distancefieldfonts */ = {
+			isa = PBXGroup;
+			children = (
+				B0272E5828CAF101002D3602 /* distancefieldfonts.h */,
+				B0272E5928CAF101002D3602 /* distancefieldfonts.cpp */,
+			);
+			path = distancefieldfonts;
 			sourceTree = "<group>";
 		};
 		B066DE2028A5074600726A95 /* multithread */ = {
@@ -838,6 +850,7 @@
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0272E5728CAF101002D3602 /* distancefieldfonts */,
 				B0272E4E28C88D04002D3602 /* textoverlay */,
 				B0272E4928C84C4C002D3602 /* computeheadless */,
 				B0272E4428C83118002D3602 /* renderheadless */,
@@ -970,6 +983,7 @@
 				B0A47F1F282E4D6200209D51 /* main.cpp in Sources */,
 				B0B5D1222890D870003A175D /* gltfscenerendering.cpp in Sources */,
 				B0A010832897DD0D006A339B /* shadowmappingcascade.cpp in Sources */,
+				B0272E5A28CAF102002D3602 /* distancefieldfonts.cpp in Sources */,
 				B0272DDC28BDAC49002D3602 /* displacement.cpp in Sources */,
 				B0272D7128B4C609002D3602 /* deferredmutisampling.cpp in Sources */,
 				B0B5D0202875293B003A175D /* camera.cpp in Sources */,

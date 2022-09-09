@@ -46,6 +46,7 @@
 #include "sample/renderheadless/renderheadless.h"
 #include "sample/computeheadless/computeheadless.h"
 #include "sample/textoverlay/textoverlay.h"
+#include "sample/distancefieldfonts/distancefieldfonts.h"
 
 int main(int argc, const char * argv[])
 {
@@ -96,8 +97,9 @@ int main(int argc, const char * argv[])
 //    CurvedPnTriangles app("curvedpntriangles");
 //    RenderHeadless app("renderheadless");
 //    ComputeHeadless app("computeheadless");
+//    Textoverlay app("textoverlay");
     
-    Textoverlay app("textoverlay");
+    DistanceFieldFonts app("distancefieldfonts");
     
     try {
         app.run();
