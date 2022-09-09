@@ -15,6 +15,7 @@ Text::Text(VkFormat colorformat, VkFormat depthformat, uint32_t framebufferWidth
 
 Text::~Text()
 {
+    
 }
 
 void Text::init()
@@ -45,9 +46,9 @@ void Text::clear()
 
 void Text::prepareResources()
 {
-    const uint32_t fontWidth = STB_FONT_consolas_24_latin1_BITMAP_WIDTH;
-    const uint32_t fontHeight = STB_FONT_consolas_24_latin1_BITMAP_WIDTH;
-    static unsigned char font24pixels[fontWidth][fontHeight];
+    const uint32_t fontWidth =  STB_FONT_consolas_24_latin1_BITMAP_WIDTH;
+    const uint32_t fontHeight = STB_FONT_consolas_24_latin1_BITMAP_HEIGHT;
+    static unsigned char font24pixels[fontHeight][fontWidth];
     stb_font_consolas_24_latin1(m_stbFontData, font24pixels, fontHeight);
     
     unsigned char* fontData = &font24pixels[0][0];
@@ -239,13 +240,13 @@ void Text::createRenderPass()
 
 void Text::createPipeline()
 {
-    std::array<VkVertexInputBindingDescription, 2> vertexInputBindings = {};
+    std::array<VkVertexInputBindingDescription, 1> vertexInputBindings = {};
     vertexInputBindings[0] = Tools::getVertexInputBindingDescription(0, sizeof(glm::vec4));
-    vertexInputBindings[1] = Tools::getVertexInputBindingDescription(1, sizeof(glm::vec4));
+//    vertexInputBindings[1] = Tools::getVertexInputBindingDescription(0, sizeof(glm::vec4));
     
     std::array<VkVertexInputAttributeDescription, 2> vertexInputAttributes = {};
     vertexInputAttributes[0] = Tools::getVertexInputAttributeDescription(0, 0, VK_FORMAT_R32G32_SFLOAT, 0);
-    vertexInputAttributes[1] = Tools::getVertexInputAttributeDescription(1, 1, VK_FORMAT_R32G32_SFLOAT, sizeof(glm::vec2));
+    vertexInputAttributes[1] = Tools::getVertexInputAttributeDescription(0, 1, VK_FORMAT_R32G32_SFLOAT, sizeof(glm::vec2));
     
     VkPipelineVertexInputStateCreateInfo vertexInput = {};
     vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -270,7 +271,7 @@ void Text::createPipeline()
     };
     
     VkPipelineDynamicStateCreateInfo dynamic = Tools::getPipelineDynamicStateCreateInfo(dynamicStates);
-    VkPipelineRasterizationStateCreateInfo rasterization = Tools::getPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE);
+    VkPipelineRasterizationStateCreateInfo rasterization = Tools::getPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
     VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
     VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
 
@@ -307,12 +308,12 @@ void Text::begin()
     m_numLetter = 0;
 }
 
-void Text::addString(std::string str, float x, float y, TextAlign align)
+void Text::addString(std::string str, float x, float y, float sx, float sy,  TextAlign align)
 {
     const uint32_t firstChar = STB_FONT_consolas_24_latin1_FIRST_CHAR;
     
-    const float charW = 1.5f / m_framebufferWidth;
-    const float charH = 1.5f / m_framebufferHeight;
+    const float charW = sx / m_framebufferWidth;
+    const float charH = sy / m_framebufferHeight;
     
     x = (x / m_framebufferWidth * 2.0f) - 1.0f;
     y = (y / m_framebufferHeight * 2.0f) - 1.0f;
@@ -327,11 +328,11 @@ void Text::addString(std::string str, float x, float y, TextAlign align)
     
     if(align == TextAlign::Center)
     {
-        x -= textWidth;
+        x -= textWidth/2.0f;
     }
     else if(align == TextAlign::Right)
     {
-        x -= textWidth/2.0f;
+        x -= textWidth;
     }
     
     // Generate a uv mapped quad per char in the new text
@@ -373,6 +374,35 @@ void Text::end()
 {
     vkUnmapMemory(Tools::m_device, m_vertexMemory);
     mapped = nullptr;
+}
+
+void Text::test()
+{
+    mapped->x = -1.0f;
+    mapped->y = -1.0f;
+    mapped->z =  0.0f;
+    mapped->w =  0.0f;
+    mapped++;
+
+    mapped->x =  1.0f;
+    mapped->y = -1.0f;
+    mapped->z =  1.0f;
+    mapped->w =  0.0f;
+    mapped++;
+
+    mapped->x = -1.0f;
+    mapped->y =  1.0f;
+    mapped->z =  0.0f;
+    mapped->w =  1.0f;
+    mapped++;
+
+    mapped->x =  1.0f;
+    mapped->y =  1.0f;
+    mapped->z =  1.0f;
+    mapped->w =  1.0f;
+    mapped++;
+    
+    m_numLetter = 1;
 }
 
 void Text::updateCommandBuffers(const VkFramebuffer& frameBuffer)

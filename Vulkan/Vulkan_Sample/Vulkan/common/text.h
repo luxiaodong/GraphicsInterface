@@ -17,7 +17,8 @@ public:
     void clear();
     
     void begin();
-    void addString(std::string str, float x, float y, TextAlign align);
+    void addString(std::string str, float x, float y, float sx = 1.0f, float sy = 1.0f, TextAlign align = TextAlign::Center);
+    void test();
     void end();
     void updateCommandBuffers(const VkFramebuffer& frameBuffer);
     void recordRenderCommand(const VkCommandBuffer& commandBuffer);

@@ -3,7 +3,6 @@
 
 Textoverlay::Textoverlay(std::string title) : Application(title)
 {
-
 }
 
 Textoverlay::~Textoverlay()
@@ -194,12 +193,12 @@ void Textoverlay::prepareText()
     glm::vec3 projected = glm::project(glm::vec3(0.0f), m_camera.m_viewMat, m_camera.m_projMat, glm::vec4(0, 0, (float)m_swapchainExtent.width, (float)m_swapchainExtent.height));
 
     m_pText->begin();
-    m_pText->addString("A Cube", 5.0f, 5.0f, TextAlign::Center);
+    m_pText->addString("A Cube", projected.x, projected.y, 4, 4, TextAlign::Center);
     m_pText->end();
 }
 
 void Textoverlay::createOtherRenderPass(const VkFramebuffer& frameBuffer)
 {
-//    m_pText->updateCommandBuffers(frameBuffer);
+    m_pText->updateCommandBuffers(frameBuffer);
 }
 
