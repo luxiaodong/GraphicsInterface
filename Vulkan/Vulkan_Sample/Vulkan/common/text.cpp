@@ -378,6 +378,53 @@ void Text::end()
 
 void Text::test()
 {
+    const float charW = 10.0f / m_framebufferWidth;
+    const float charH = 10.0f / m_framebufferHeight;
+    float x = -1;
+    float y = -1;
+    
+    for(int i = 0; i < STB_FONT_consolas_24_latin1_NUM_CHARS; ++i)
+    {
+        stb_fontchar *charData = &m_stbFontData[i];
+
+        mapped->x = (x + (float)charData->x0 * charW);
+        mapped->y = (y + (float)charData->y0 * charH);
+        mapped->z = charData->s0;
+        mapped->w = charData->t0;
+        mapped++;
+
+        mapped->x = (x + (float)charData->x1 * charW);
+        mapped->y = (y + (float)charData->y0 * charH);
+        mapped->z = charData->s1;
+        mapped->w = charData->t0;
+        mapped++;
+
+        mapped->x = (x + (float)charData->x0 * charW);
+        mapped->y = (y + (float)charData->y1 * charH);
+        mapped->z = charData->s0;
+        mapped->w = charData->t1;
+        mapped++;
+
+        mapped->x = (x + (float)charData->x1 * charW);
+        mapped->y = (y + (float)charData->y1 * charH);
+        mapped->z = charData->s1;
+        mapped->w = charData->t1;
+        mapped++;
+
+        x += charData->advance * charW;
+
+        m_numLetter++;
+        
+        if(m_numLetter%32 == 0)
+        {
+            x = -1;
+            y += 2.0f * charData->advance * charH;
+        }
+    }
+}
+
+void Text::showBitmap()
+{
     mapped->x = -1.0f;
     mapped->y = -1.0f;
     mapped->z =  0.0f;
