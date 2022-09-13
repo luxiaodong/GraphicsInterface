@@ -48,6 +48,7 @@
 #include "sample/textoverlay/textoverlay.h"
 #include "sample/distancefieldfonts/distancefieldfonts.h"
 #include "sample/imgui/imgui.h"
+#include "sample/radialblur/radialblur.h"
 
 int main(int argc, const char * argv[])
 {
@@ -100,8 +101,9 @@ int main(int argc, const char * argv[])
 //    ComputeHeadless app("computeheadless");
 //    Textoverlay app("textoverlay");
 //    DistanceFieldFonts app("distancefieldfonts");
+//    ImGUI app("imgui");
     
-    ImGUI app("imgui");
+    RadialBlur app("radialblur");
     
     try {
         app.run();

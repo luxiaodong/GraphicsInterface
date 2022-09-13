@@ -23,6 +23,7 @@
 		B0272E5528C88D32002D3602 /* text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E5428C88D32002D3602 /* text.cpp */; };
 		B0272E5A28CAF102002D3602 /* distancefieldfonts.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E5928CAF101002D3602 /* distancefieldfonts.cpp */; };
 		B0272E5F28D01F87002D3602 /* imgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E5E28D01F86002D3602 /* imgui.cpp */; };
+		B0272E6428D03470002D3602 /* radialblur.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E6228D03470002D3602 /* radialblur.cpp */; };
 		B066A145286213A600763515 /* assets in CopyFiles */ = {isa = PBXBuildFile; fileRef = B066A1422862125900763515 /* assets */; };
 		B066DE1E28A4FF5D00726A95 /* thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE1D28A4FF5D00726A95 /* thread.cpp */; };
 		B066DE2328A5074600726A95 /* multithread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE2128A5074600726A95 /* multithread.cpp */; };
@@ -144,6 +145,8 @@
 		B0272E5928CAF101002D3602 /* distancefieldfonts.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = distancefieldfonts.cpp; sourceTree = "<group>"; };
 		B0272E5D28D01F86002D3602 /* imgui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui.h; sourceTree = "<group>"; };
 		B0272E5E28D01F86002D3602 /* imgui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui.cpp; sourceTree = "<group>"; };
+		B0272E6228D03470002D3602 /* radialblur.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = radialblur.cpp; sourceTree = "<group>"; };
+		B0272E6328D03470002D3602 /* radialblur.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = radialblur.h; sourceTree = "<group>"; };
 		B066A1422862125900763515 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		B066DE1C28A4FF5D00726A95 /* thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = thread.h; sourceTree = "<group>"; };
 		B066DE1D28A4FF5D00726A95 /* thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = thread.cpp; sourceTree = "<group>"; };
@@ -429,6 +432,15 @@
 				B0272E5E28D01F86002D3602 /* imgui.cpp */,
 			);
 			path = imgui;
+			sourceTree = "<group>";
+		};
+		B0272E6128D03470002D3602 /* radialblur */ = {
+			isa = PBXGroup;
+			children = (
+				B0272E6228D03470002D3602 /* radialblur.cpp */,
+				B0272E6328D03470002D3602 /* radialblur.h */,
+			);
+			path = radialblur;
 			sourceTree = "<group>";
 		};
 		B066DE2028A5074600726A95 /* multithread */ = {
@@ -862,6 +874,7 @@
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0272E6128D03470002D3602 /* radialblur */,
 				B0272E5C28D01F86002D3602 /* imgui */,
 				B0272E5728CAF101002D3602 /* distancefieldfonts */,
 				B0272E4E28C88D04002D3602 /* textoverlay */,
@@ -1062,6 +1075,7 @@
 				B0B5D0AB2879863A003A175D /* material.cpp in Sources */,
 				B0B5D115288E85C0003A175D /* gltfskinning.cpp in Sources */,
 				B0272D6C28B47C3B002D3602 /* deferred.cpp in Sources */,
+				B0272E6428D03470002D3602 /* radialblur.cpp in Sources */,
 				B0272E5528C88D32002D3602 /* text.cpp in Sources */,
 				B066DE2C28A9E44600726A95 /* instancing.cpp in Sources */,
 			);

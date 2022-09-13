@@ -44,9 +44,9 @@ public:
     glm::mat4 m_projMat;
     glm::vec4 m_viewPos = glm::vec4();
     glm::vec3 m_position = glm::vec3();
+    glm::vec3 m_rotation = glm::vec3();
 
 private:
     float m_fov;
     float m_znear, m_zfar;
-    glm::vec3 m_rotation = glm::vec3();
 };
