@@ -247,6 +247,13 @@ void RadialBlur::createGraphicsPipeline()
     createInfo.pDynamicState = &dynamic;
     createInfo.subpass = 0;
     
+    colorBlendAttachment.blendEnable = VK_TRUE;
+    colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+    colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+    colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+    colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+    colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+    colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_DST_ALPHA;
     
     VkShaderModule vertModule = Tools::createShaderModule( Tools::getShaderPath() + "radialblur/radialblur.vert.spv");
     VkShaderModule fragModule = Tools::createShaderModule( Tools::getShaderPath() + "radialblur/radialblur.frag.spv");
@@ -312,8 +319,6 @@ void RadialBlur::recordRenderCommand(const VkCommandBuffer commandBuffer)
     
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_radialBlurPipelineLayout, 0, 1, &m_radialBlurDescriptorSet, 0, NULL);
 //    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_offScreenPipeline);
-//    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-    
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_radialBlurPipeline);
     vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 }
