@@ -47,6 +47,7 @@
 #include "sample/computeheadless/computeheadless.h"
 #include "sample/textoverlay/textoverlay.h"
 #include "sample/distancefieldfonts/distancefieldfonts.h"
+#include "sample/imgui/imgui.h"
 
 int main(int argc, const char * argv[])
 {
@@ -98,8 +99,9 @@ int main(int argc, const char * argv[])
 //    RenderHeadless app("renderheadless");
 //    ComputeHeadless app("computeheadless");
 //    Textoverlay app("textoverlay");
+//    DistanceFieldFonts app("distancefieldfonts");
     
-    DistanceFieldFonts app("distancefieldfonts");
+    ImGUI app("imgui");
     
     try {
         app.run();
