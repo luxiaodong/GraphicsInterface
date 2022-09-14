@@ -49,6 +49,7 @@
 #include "sample/distancefieldfonts/distancefieldfonts.h"
 #include "sample/imgui/imgui.h"
 #include "sample/radialblur/radialblur.h"
+#include "sample/bloom/bloom.h"
 
 int main(int argc, const char * argv[])
 {
@@ -102,8 +103,8 @@ int main(int argc, const char * argv[])
 //    Textoverlay app("textoverlay");
 //    DistanceFieldFonts app("distancefieldfonts");
 //    ImGUI app("imgui");
-    
-    RadialBlur app("radialblur");
+//    RadialBlur app("radialblur");
+    Bloom app("bloom");
     
     try {
         app.run();
