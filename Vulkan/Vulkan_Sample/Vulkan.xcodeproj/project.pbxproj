@@ -25,6 +25,7 @@
 		B0272E5F28D01F87002D3602 /* imgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E5E28D01F86002D3602 /* imgui.cpp */; };
 		B0272E6428D03470002D3602 /* radialblur.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E6228D03470002D3602 /* radialblur.cpp */; };
 		B0272E6928D16CBF002D3602 /* bloom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E6728D16CBF002D3602 /* bloom.cpp */; };
+		B0272E6E28D1AE0B002D3602 /* parallaxmapping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E6D28D1AE0B002D3602 /* parallaxmapping.cpp */; };
 		B066A145286213A600763515 /* assets in CopyFiles */ = {isa = PBXBuildFile; fileRef = B066A1422862125900763515 /* assets */; };
 		B066DE1E28A4FF5D00726A95 /* thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE1D28A4FF5D00726A95 /* thread.cpp */; };
 		B066DE2328A5074600726A95 /* multithread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE2128A5074600726A95 /* multithread.cpp */; };
@@ -150,6 +151,8 @@
 		B0272E6328D03470002D3602 /* radialblur.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = radialblur.h; sourceTree = "<group>"; };
 		B0272E6728D16CBF002D3602 /* bloom.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = bloom.cpp; sourceTree = "<group>"; };
 		B0272E6828D16CBF002D3602 /* bloom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bloom.h; sourceTree = "<group>"; };
+		B0272E6C28D1AE0B002D3602 /* parallaxmapping.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = parallaxmapping.h; sourceTree = "<group>"; };
+		B0272E6D28D1AE0B002D3602 /* parallaxmapping.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = parallaxmapping.cpp; sourceTree = "<group>"; };
 		B066A1422862125900763515 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		B066DE1C28A4FF5D00726A95 /* thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = thread.h; sourceTree = "<group>"; };
 		B066DE1D28A4FF5D00726A95 /* thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = thread.cpp; sourceTree = "<group>"; };
@@ -453,6 +456,15 @@
 				B0272E6828D16CBF002D3602 /* bloom.h */,
 			);
 			path = bloom;
+			sourceTree = "<group>";
+		};
+		B0272E6B28D1AE0B002D3602 /* parallaxmapping */ = {
+			isa = PBXGroup;
+			children = (
+				B0272E6C28D1AE0B002D3602 /* parallaxmapping.h */,
+				B0272E6D28D1AE0B002D3602 /* parallaxmapping.cpp */,
+			);
+			path = parallaxmapping;
 			sourceTree = "<group>";
 		};
 		B066DE2028A5074600726A95 /* multithread */ = {
@@ -886,6 +898,7 @@
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0272E6B28D1AE0B002D3602 /* parallaxmapping */,
 				B0272E6628D16CBF002D3602 /* bloom */,
 				B0272E6128D03470002D3602 /* radialblur */,
 				B0272E5C28D01F86002D3602 /* imgui */,
@@ -1078,6 +1091,7 @@
 				B0272DD728BDA078002D3602 /* geometryshader.cpp in Sources */,
 				B09AEA2C2862A380006ED326 /* imgui.cpp in Sources */,
 				B0B5D119288E9CE0003A175D /* skin.cpp in Sources */,
+				B0272E6E28D1AE0B002D3602 /* parallaxmapping.cpp in Sources */,
 				B0B5D08C2876AC95003A175D /* hashlist.c in Sources */,
 				B0A01088289BA9FC006A339B /* pointlightshadow.cpp in Sources */,
 				B0B5D11D288F8C1D003A175D /* animation.cpp in Sources */,
