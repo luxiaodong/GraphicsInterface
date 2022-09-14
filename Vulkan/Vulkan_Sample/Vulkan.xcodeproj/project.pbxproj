@@ -26,6 +26,7 @@
 		B0272E6428D03470002D3602 /* radialblur.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E6228D03470002D3602 /* radialblur.cpp */; };
 		B0272E6928D16CBF002D3602 /* bloom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E6728D16CBF002D3602 /* bloom.cpp */; };
 		B0272E6E28D1AE0B002D3602 /* parallaxmapping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E6D28D1AE0B002D3602 /* parallaxmapping.cpp */; };
+		B0272E7328D1BD68002D3602 /* sphericalenvmapping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E7228D1BD68002D3602 /* sphericalenvmapping.cpp */; };
 		B066A145286213A600763515 /* assets in CopyFiles */ = {isa = PBXBuildFile; fileRef = B066A1422862125900763515 /* assets */; };
 		B066DE1E28A4FF5D00726A95 /* thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE1D28A4FF5D00726A95 /* thread.cpp */; };
 		B066DE2328A5074600726A95 /* multithread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE2128A5074600726A95 /* multithread.cpp */; };
@@ -153,6 +154,8 @@
 		B0272E6828D16CBF002D3602 /* bloom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bloom.h; sourceTree = "<group>"; };
 		B0272E6C28D1AE0B002D3602 /* parallaxmapping.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = parallaxmapping.h; sourceTree = "<group>"; };
 		B0272E6D28D1AE0B002D3602 /* parallaxmapping.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = parallaxmapping.cpp; sourceTree = "<group>"; };
+		B0272E7128D1BD68002D3602 /* sphericalenvmapping.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sphericalenvmapping.h; sourceTree = "<group>"; };
+		B0272E7228D1BD68002D3602 /* sphericalenvmapping.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sphericalenvmapping.cpp; sourceTree = "<group>"; };
 		B066A1422862125900763515 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		B066DE1C28A4FF5D00726A95 /* thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = thread.h; sourceTree = "<group>"; };
 		B066DE1D28A4FF5D00726A95 /* thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = thread.cpp; sourceTree = "<group>"; };
@@ -465,6 +468,15 @@
 				B0272E6D28D1AE0B002D3602 /* parallaxmapping.cpp */,
 			);
 			path = parallaxmapping;
+			sourceTree = "<group>";
+		};
+		B0272E7028D1BD68002D3602 /* sphericalenvmapping */ = {
+			isa = PBXGroup;
+			children = (
+				B0272E7128D1BD68002D3602 /* sphericalenvmapping.h */,
+				B0272E7228D1BD68002D3602 /* sphericalenvmapping.cpp */,
+			);
+			path = sphericalenvmapping;
 			sourceTree = "<group>";
 		};
 		B066DE2028A5074600726A95 /* multithread */ = {
@@ -898,6 +910,7 @@
 		B0E13A182861729300D1D2B6 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				B0272E7028D1BD68002D3602 /* sphericalenvmapping */,
 				B0272E6B28D1AE0B002D3602 /* parallaxmapping */,
 				B0272E6628D16CBF002D3602 /* bloom */,
 				B0272E6128D03470002D3602 /* radialblur */,
@@ -1045,6 +1058,7 @@
 				B0272D7628B4E294002D3602 /* deferredshadows.cpp in Sources */,
 				B0B5D0C0287EBB26003A175D /* pushconstants.cpp in Sources */,
 				B0B5D0ED28816280003A175D /* inputattachments.cpp in Sources */,
+				B0272E7328D1BD68002D3602 /* sphericalenvmapping.cpp in Sources */,
 				B0B5D0892876AC69003A175D /* swap.c in Sources */,
 				B0B5D09F287944F7003A175D /* mesh.cpp in Sources */,
 				B0B5D0222875293B003A175D /* application.cpp in Sources */,

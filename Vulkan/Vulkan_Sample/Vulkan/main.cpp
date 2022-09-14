@@ -51,6 +51,7 @@
 #include "sample/radialblur/radialblur.h"
 #include "sample/bloom/bloom.h"
 #include "sample/parallaxmapping/parallaxmapping.h"
+#include "sample/sphericalenvmapping/sphericalenvmapping.h"
 
 int main(int argc, const char * argv[])
 {
@@ -106,8 +107,8 @@ int main(int argc, const char * argv[])
 //    ImGUI app("imgui");
 //    RadialBlur app("radialblur");
 //    Bloom app("bloom");
-    
-    ParallaxMapping app("parallaxmapping");
+//    ParallaxMapping app("parallaxmapping");
+    SphericalEnvMapping app("sphericalenvmapping");
     
     try {
         app.run();
