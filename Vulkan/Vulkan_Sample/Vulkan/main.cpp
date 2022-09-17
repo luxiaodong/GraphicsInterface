@@ -104,11 +104,11 @@ int main(int argc, const char * argv[])
 //    ComputeHeadless app("computeheadless");
 //    Textoverlay app("textoverlay");
 //    DistanceFieldFonts app("distancefieldfonts");
-//    ImGUI app("imgui");
+    ImGUI app("imgui");
 //    RadialBlur app("radialblur");
 //    Bloom app("bloom");
 //    ParallaxMapping app("parallaxmapping");
-    SphericalEnvMapping app("sphericalenvmapping");
+//    SphericalEnvMapping app("sphericalenvmapping");
     
     try {
         app.run();

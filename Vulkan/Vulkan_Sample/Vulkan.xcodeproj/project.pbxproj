@@ -27,6 +27,8 @@
 		B0272E6928D16CBF002D3602 /* bloom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E6728D16CBF002D3602 /* bloom.cpp */; };
 		B0272E6E28D1AE0B002D3602 /* parallaxmapping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E6D28D1AE0B002D3602 /* parallaxmapping.cpp */; };
 		B0272E7328D1BD68002D3602 /* sphericalenvmapping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0272E7228D1BD68002D3602 /* sphericalenvmapping.cpp */; };
+		B0458F8128D5B71000EBC922 /* imgui_impl_vulkan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0458F7F28D5B71000EBC922 /* imgui_impl_vulkan.cpp */; };
+		B0458F8528D5C6BB00EBC922 /* imgui_impl_glfw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0458F8328D5C6BB00EBC922 /* imgui_impl_glfw.cpp */; };
 		B066A145286213A600763515 /* assets in CopyFiles */ = {isa = PBXBuildFile; fileRef = B066A1422862125900763515 /* assets */; };
 		B066DE1E28A4FF5D00726A95 /* thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE1D28A4FF5D00726A95 /* thread.cpp */; };
 		B066DE2328A5074600726A95 /* multithread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B066DE2128A5074600726A95 /* multithread.cpp */; };
@@ -156,6 +158,10 @@
 		B0272E6D28D1AE0B002D3602 /* parallaxmapping.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = parallaxmapping.cpp; sourceTree = "<group>"; };
 		B0272E7128D1BD68002D3602 /* sphericalenvmapping.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sphericalenvmapping.h; sourceTree = "<group>"; };
 		B0272E7228D1BD68002D3602 /* sphericalenvmapping.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sphericalenvmapping.cpp; sourceTree = "<group>"; };
+		B0458F7F28D5B71000EBC922 /* imgui_impl_vulkan.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_impl_vulkan.cpp; sourceTree = "<group>"; };
+		B0458F8028D5B71000EBC922 /* imgui_impl_vulkan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui_impl_vulkan.h; sourceTree = "<group>"; };
+		B0458F8328D5C6BB00EBC922 /* imgui_impl_glfw.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_impl_glfw.cpp; sourceTree = "<group>"; };
+		B0458F8428D5C6BB00EBC922 /* imgui_impl_glfw.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui_impl_glfw.h; sourceTree = "<group>"; };
 		B066A1422862125900763515 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		B066DE1C28A4FF5D00726A95 /* thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = thread.h; sourceTree = "<group>"; };
 		B066DE1D28A4FF5D00726A95 /* thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = thread.cpp; sourceTree = "<group>"; };
@@ -479,6 +485,17 @@
 			path = sphericalenvmapping;
 			sourceTree = "<group>";
 		};
+		B0458F7E28D5B71000EBC922 /* backends */ = {
+			isa = PBXGroup;
+			children = (
+				B0458F8328D5C6BB00EBC922 /* imgui_impl_glfw.cpp */,
+				B0458F8428D5C6BB00EBC922 /* imgui_impl_glfw.h */,
+				B0458F7F28D5B71000EBC922 /* imgui_impl_vulkan.cpp */,
+				B0458F8028D5B71000EBC922 /* imgui_impl_vulkan.h */,
+			);
+			path = backends;
+			sourceTree = "<group>";
+		};
 		B066DE2028A5074600726A95 /* multithread */ = {
 			isa = PBXGroup;
 			children = (
@@ -545,6 +562,7 @@
 		B09AE9F82862A380006ED326 /* imgui */ = {
 			isa = PBXGroup;
 			children = (
+				B0458F7E28D5B71000EBC922 /* backends */,
 				B09AEA122862A380006ED326 /* imgui.h */,
 				B09AEA132862A380006ED326 /* imstb_textedit.h */,
 				B09AEA142862A380006ED326 /* imconfig.h */,
@@ -1046,6 +1064,7 @@
 				B066DE3128AA211500726A95 /* indirectdraw.cpp in Sources */,
 				B0B5D0802876ABAF003A175D /* memstream.c in Sources */,
 				B0272E6928D16CBF002D3602 /* bloom.cpp in Sources */,
+				B0458F8128D5B71000EBC922 /* imgui_impl_vulkan.cpp in Sources */,
 				B0A47F1F282E4D6200209D51 /* main.cpp in Sources */,
 				B0B5D1222890D870003A175D /* gltfscenerendering.cpp in Sources */,
 				B0A010832897DD0D006A339B /* shadowmappingcascade.cpp in Sources */,
@@ -1072,6 +1091,7 @@
 				B0B5D0282875297A003A175D /* pipelines.cpp in Sources */,
 				B0B5D0CA287FC9EC003A175D /* texturemapping.cpp in Sources */,
 				B0A01092289E591A006A339B /* screenshot.cpp in Sources */,
+				B0458F8528D5C6BB00EBC922 /* imgui_impl_glfw.cpp in Sources */,
 				B066DE5B28ACD54300726A95 /* svpng.inc in Sources */,
 				B0272E4728C83119002D3602 /* renderheadless.cpp in Sources */,
 				B0B5D0832876ABC0003A175D /* filestream.c in Sources */,

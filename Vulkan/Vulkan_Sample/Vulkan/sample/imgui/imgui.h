@@ -32,6 +32,9 @@ protected:
     void prepareDescriptorSetLayoutAndPipelineLayout();
     void prepareDescriptorSetAndWrite();
     void createGraphicsPipeline();
+    
+    void initImGUI();
+    void showUI();
 
 protected:
     VkDescriptorSet m_descriptorSet;

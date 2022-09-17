@@ -1,5 +1,7 @@
 
 #include "imgui.h"
+#include "backends/imgui_impl_vulkan.h"
+#include "backends/imgui_impl_glfw.h"
 
 ImGUI::ImGUI(std::string title) : Application(title)
 {
@@ -18,6 +20,7 @@ void ImGUI::init()
     prepareDescriptorSetAndWrite();
     createGraphicsPipeline();
 
+    initImGUI();
 }
 
 void ImGUI::initCamera()
@@ -41,6 +44,10 @@ void ImGUI::setEnabledFeatures()
 
 void ImGUI::clear()
 {
+    ImGui_ImplVulkan_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+    
     vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     
     vkFreeMemory(m_device, m_uniformMemory, nullptr);
@@ -89,10 +96,13 @@ void ImGUI::prepareDescriptorSetLayoutAndPipelineLayout()
 
 void ImGUI::prepareDescriptorSetAndWrite()
 {
-    VkDescriptorPoolSize poolSize = {};
-    poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSize.descriptorCount = 1;
-    createDescriptorPool(&poolSize, 1, 1);
+    std::array<VkDescriptorPoolSize, 2> poolSizes;
+    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSizes[0].descriptorCount = 1;
+    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    poolSizes[1].descriptorCount = 1;
+
+    createDescriptorPool(poolSizes.data(), 2, 2);
     createDescriptorSet(m_descriptorSet);
 
     VkDescriptorBufferInfo bufferInfo = {};
@@ -165,7 +175,7 @@ void ImGUI::createGraphicsPipeline()
 
 void ImGUI::updateRenderData()
 {
-    
+    showUI();
 }
 
 void ImGUI::recordRenderCommand(const VkCommandBuffer commandBuffer)
@@ -185,6 +195,44 @@ void ImGUI::recordRenderCommand(const VkCommandBuffer commandBuffer)
     m_gameobjectLoader.draw(commandBuffer);
     m_vulkanlogoLoader.bindBuffers(commandBuffer);
     m_vulkanlogoLoader.draw(commandBuffer);
+
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 }
 
+void ImGUI::initImGUI()
+{
+    ImGui::CreateContext();
+    
+    ImGui_ImplGlfw_InitForVulkan(m_window, true);
+    ImGui_ImplVulkan_InitInfo init_info = {};
+    init_info.Instance = m_instance;
+    init_info.PhysicalDevice = m_physicalDevice;
+    init_info.Device = m_device;
+    init_info.QueueFamily = m_familyIndices.graphicsFamily.value();
+    init_info.Queue = m_graphicsQueue;
+    init_info.DescriptorPool = m_descriptorPool;
+    init_info.Subpass = 0;
+    init_info.MinImageCount = m_swapchainImageCount;
+    init_info.ImageCount = m_swapchainImageCount;
+    ImGui_ImplVulkan_Init(&init_info, m_renderPass);
+    
+    VkCommandBuffer commandBuffer = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+    ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
+    Tools::flushCommandBuffer(commandBuffer, m_graphicsQueue, true);
+    ImGui_ImplVulkan_DestroyFontUploadObjects();
+}
 
+void ImGUI::showUI()
+{
+    ImGui_ImplVulkan_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+    
+//    ImGui::ShowDemoWindow(true);
+    
+    ImGui::Begin("Hello, world!");
+    ImGui::Text("This is some useful text.");
+    ImGui::End();
+
+    ImGui::Render();
+}
