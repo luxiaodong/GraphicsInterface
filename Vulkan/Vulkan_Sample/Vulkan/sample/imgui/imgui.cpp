@@ -228,11 +228,12 @@ void ImGUI::showUI()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
     
-//    ImGui::ShowDemoWindow(true);
+    bool open = false;
+    ImGui::ShowDemoWindow(&open);
     
-    ImGui::Begin("Hello, world!");
-    ImGui::Text("This is some useful text.");
-    ImGui::End();
+//    ImGui::Begin("Hello, world!");
+//    ImGui::Text("This is some useful text.");
+//    ImGui::End();
 
     ImGui::Render();
 }
