@@ -69,6 +69,12 @@ protected:
     VkPipeline m_shadowPipeline;
     
     // shadow map attachment.
+    VkFormat m_offscreenColorFormat = VK_FORMAT_R32_SFLOAT;
+    VkImage m_offscreenColorImage;
+    VkDeviceMemory m_offscreenColorMemory;
+    VkImageView m_offscreenColorImageView;
+    VkSampler m_offscreenColorSampler;
+    
     VkFormat m_offscreenDepthFormat = VK_FORMAT_D32_SFLOAT;
     VkImage m_offscreenDepthImage;
     VkDeviceMemory m_offscreenDepthMemory;

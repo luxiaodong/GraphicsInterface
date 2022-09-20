@@ -77,7 +77,7 @@ int main(int argc, const char * argv[])
 //    GltfSceneRendering app("gltfscenerendering");
 //    MultiSampling app("multisampling");
 //    HighDynamicRange app("highdynamicrange");
-//    ShadowMapping app("shadowmapping");
+    ShadowMapping app("shadowmapping");
 //    ShadowMappingCascade app("shadowmappingcascade");
 //    PointLightShadow app("pointlightshadow");
 //    RuntimeMipmap app("runtimemipmap");
@@ -104,7 +104,7 @@ int main(int argc, const char * argv[])
 //    ComputeHeadless app("computeheadless");
 //    Textoverlay app("textoverlay");
 //    DistanceFieldFonts app("distancefieldfonts");
-    ImGUI app("imgui");
+//    ImGUI app("imgui");
 //    RadialBlur app("radialblur");
 //    Bloom app("bloom");
 //    ParallaxMapping app("parallaxmapping");

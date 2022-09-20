@@ -145,6 +145,10 @@ void ShadowMapping::prepareDescriptorSetAndWrite()
         imageInfo.imageView = m_offscreenDepthImageView;
         imageInfo.sampler = m_offscreenDepthSampler;
         
+        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo.imageView = m_offscreenColorImageView;
+        imageInfo.sampler = m_offscreenColorSampler;
+
         std::array<VkWriteDescriptorSet, 2> writes = {};
         writes[0] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
         writes[1] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, &imageInfo);
@@ -176,7 +180,7 @@ void ShadowMapping::createGraphicsPipeline()
     VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
 
     std::array<VkPipelineColorBlendAttachmentState, 1> colorBlendAttachments;
-    colorBlendAttachments[0] = Tools::getPipelineColorBlendAttachmentState(VK_FALSE);
+    colorBlendAttachments[0] = Tools::getPipelineColorBlendAttachmentState(VK_FALSE, 0xf);
     VkPipelineColorBlendStateCreateInfo colorBlend = Tools::getPipelineColorBlendStateCreateInfo( static_cast<uint32_t>(colorBlendAttachments.size()), colorBlendAttachments.data());
 
     VkGraphicsPipelineCreateInfo createInfo = {};
@@ -318,6 +322,17 @@ void ShadowMapping::updateUniformMVP()
 
 void ShadowMapping::createOtherBuffer()
 {
+    //color
+    Tools::createImageAndMemoryThenBind(m_offscreenColorFormat, m_shadowMapWidth, m_shadowMapHeight, 1, 1,
+                                        VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                                        VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                        m_offscreenColorImage, m_offscreenColorMemory);
+    
+    Tools::createImageView(m_offscreenColorImage, m_offscreenColorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, m_offscreenColorImageView);
+    
+    Tools::createTextureSampler(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, 1, m_offscreenColorSampler);
+    
+    
     // depth
     Tools::createImageAndMemoryThenBind(m_offscreenDepthFormat, m_shadowMapWidth, m_shadowMapHeight, 1, 1,
                                         VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
@@ -333,11 +348,17 @@ void ShadowMapping::createOtherBuffer()
 
 void ShadowMapping::createOffscreenRenderPass()
 {
-    VkAttachmentDescription attachmentDescription;
-    attachmentDescription = Tools::getAttachmentDescription(m_offscreenDepthFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL);
+    VkAttachmentDescription attachmentDescriptions[2];
+    attachmentDescriptions[0] = Tools::getAttachmentDescription(m_offscreenColorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    
+    attachmentDescriptions[1] = Tools::getAttachmentDescription(m_offscreenDepthFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL);
  
+    VkAttachmentReference colorAttachmentReference = {};
+    colorAttachmentReference.attachment = 0;
+    colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    
     VkAttachmentReference depthAttachmentReference = {};
-    depthAttachmentReference.attachment = 0;
+    depthAttachmentReference.attachment = 1;
     depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     
     VkSubpassDescription subpassDescription = {};
@@ -345,8 +366,8 @@ void ShadowMapping::createOffscreenRenderPass()
     subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpassDescription.inputAttachmentCount = 0;
     subpassDescription.pInputAttachments = nullptr;
-    subpassDescription.colorAttachmentCount = 0;
-    subpassDescription.pColorAttachments = nullptr;
+    subpassDescription.colorAttachmentCount = 1;
+    subpassDescription.pColorAttachments = &colorAttachmentReference;
     subpassDescription.pResolveAttachments = nullptr;
     subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
     subpassDescription.preserveAttachmentCount = 0;
@@ -371,8 +392,8 @@ void ShadowMapping::createOffscreenRenderPass()
     VkRenderPassCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     createInfo.flags = 0;
-    createInfo.attachmentCount = 1;
-    createInfo.pAttachments = &attachmentDescription;
+    createInfo.attachmentCount = 2;
+    createInfo.pAttachments = attachmentDescriptions;
     createInfo.subpassCount = 1;
     createInfo.pSubpasses = &subpassDescription;
     createInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
@@ -384,6 +405,7 @@ void ShadowMapping::createOffscreenRenderPass()
 void ShadowMapping::createOffscreenFrameBuffer()
 {
     std::vector<VkImageView> attachments;
+    attachments.push_back(m_offscreenColorImageView);
     attachments.push_back(m_offscreenDepthImageView);
     
     VkFramebufferCreateInfo createInfo = {};
@@ -400,8 +422,9 @@ void ShadowMapping::createOffscreenFrameBuffer()
 
 void ShadowMapping::createOtherRenderPass(const VkCommandBuffer& commandBuffer)
 {
-    std::array<VkClearValue, 1> clearValues = {};
-    clearValues[0].depthStencil = {1.0f, 0};
+    std::array<VkClearValue, 2> clearValues = {};
+    clearValues[0].color = {1.0f, 0.0f, 0.0f, 0.0f};
+    clearValues[1].depthStencil = {1.0f, 0};
     
     VkRenderPassBeginInfo passBeginInfo = {};
     passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

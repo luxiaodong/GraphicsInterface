@@ -549,7 +549,7 @@ VkPipelineDepthStencilStateCreateInfo Tools::getPipelineDepthStencilStateCreateI
     createInfo.depthBoundsTestEnable = VK_FALSE;
     createInfo.stencilTestEnable = VK_FALSE;
     createInfo.minDepthBounds = 0.0f;
-    createInfo.minDepthBounds = 1.0f;
+    createInfo.maxDepthBounds = 1.0f;
     return createInfo;
 }
 
