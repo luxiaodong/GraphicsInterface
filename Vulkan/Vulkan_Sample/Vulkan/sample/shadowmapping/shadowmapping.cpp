@@ -46,6 +46,12 @@ void ShadowMapping::clear()
     
     vkDestroyRenderPass(m_device, m_offscreenRenderPass, nullptr);
     vkDestroyFramebuffer(m_device, m_offscreenFrameBuffer, nullptr);
+    
+    vkDestroyImageView(m_device, m_offscreenColorImageView, nullptr);
+    vkDestroyImage(m_device, m_offscreenColorImage, nullptr);
+    vkFreeMemory(m_device, m_offscreenColorMemory, nullptr);
+    vkDestroySampler(m_device, m_offscreenColorSampler, nullptr);
+    
     vkDestroyImageView(m_device, m_offscreenDepthImageView, nullptr);
     vkDestroyImage(m_device, m_offscreenDepthImage, nullptr);
     vkFreeMemory(m_device, m_offscreenDepthMemory, nullptr);
@@ -171,7 +177,7 @@ void ShadowMapping::createGraphicsPipeline()
     std::vector<VkDynamicState> dynamicStates = {
         VK_DYNAMIC_STATE_VIEWPORT,
         VK_DYNAMIC_STATE_SCISSOR,
-        VK_DYNAMIC_STATE_DEPTH_BIAS
+//        VK_DYNAMIC_STATE_DEPTH_BIAS
     };
 
     VkPipelineDynamicStateCreateInfo dynamic = Tools::getPipelineDynamicStateCreateInfo(dynamicStates);
@@ -194,6 +200,11 @@ void ShadowMapping::createGraphicsPipeline()
     createInfo.pStages = shaderStages.data();
 
 //    createInfo.pVertexInputState = vkglTF::Vertex::getPipelineVertexInputState({vkglTF::VertexComponent::Position, vkglTF::VertexComponent::Normal, vkglTF::VertexComponent::Color});
+    
+//    vkCmdSetDepthBias(commandBuffer, 1.25f, 0.0f, 1.75f);
+    rasterization.depthBiasConstantFactor = 1.25f;
+    rasterization.depthBiasClamp = 0.0f;
+    rasterization.depthBiasSlopeFactor = 1.75;
 
     createInfo.pVertexInputState = m_sceneLoader.getPipelineVertexInputState();
     createInfo.pInputAssemblyState = &inputAssembly;
@@ -448,7 +459,7 @@ void ShadowMapping::createOtherRenderPass(const VkCommandBuffer& commandBuffer)
     
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_shadowPipelineLayout, 0, 1, &m_shadowDescriptorSet, 0, nullptr);
 
-    vkCmdSetDepthBias(commandBuffer, 1.25f, 0.0f, 1.75f);
+//    vkCmdSetDepthBias(commandBuffer, 1.25f, 0.0f, 1.75f);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_shadowPipeline);
     m_sceneLoader.bindBuffers(commandBuffer);
     m_sceneLoader.draw(commandBuffer);
