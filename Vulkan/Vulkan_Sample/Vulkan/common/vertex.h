@@ -21,6 +21,10 @@ public:
     glm::vec4 m_jointWeight;
 
 public:
+    bool operator==(const Vertex& other) const;
+    static VkPipelineVertexInputStateCreateInfo* getPipelineVertexInputState();
+    
+public:
     static void setVertexInputBindingDescription(uint32_t binding);
     static void setVertexInputAttributeDescription(uint32_t binding, const std::vector<VertexComponent> components);
     static VkVertexInputAttributeDescription inputAttributeDescription(uint32_t binding, uint32_t location, VertexComponent component);

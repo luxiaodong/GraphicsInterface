@@ -11,6 +11,11 @@ Vertex::Vertex()
 Vertex::~Vertex()
 {}
 
+bool Vertex::operator==(const Vertex& other) const
+{
+    return m_position == other.m_position && m_color == other.m_color && m_uv == other.m_uv;
+}
+
 void Vertex::setVertexInputBindingDescription(uint32_t binding)
 {
     Vertex::m_vertexInputBindingDescription = Tools::getVertexInputBindingDescription(binding, sizeof(Vertex));
@@ -49,5 +54,16 @@ VkVertexInputAttributeDescription Vertex::inputAttributeDescription(uint32_t bin
     }
     
     return VkVertexInputAttributeDescription({});
+}
+
+VkPipelineVertexInputStateCreateInfo* Vertex::getPipelineVertexInputState()
+{
+    static VkPipelineVertexInputStateCreateInfo vertexInput = {};
+    vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vertexInput.vertexBindingDescriptionCount = 1;
+    vertexInput.pVertexBindingDescriptions = &Vertex::m_vertexInputBindingDescription;
+    vertexInput.vertexAttributeDescriptionCount = static_cast<uint32_t>(Vertex::m_vertexInputAttributeDescriptions.size());
+    vertexInput.pVertexAttributeDescriptions = Vertex::m_vertexInputAttributeDescriptions.data();
+    return &vertexInput;
 }
 

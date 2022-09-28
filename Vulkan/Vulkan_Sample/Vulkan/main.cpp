@@ -52,6 +52,7 @@
 #include "sample/bloom/bloom.h"
 #include "sample/parallaxmapping/parallaxmapping.h"
 #include "sample/sphericalenvmapping/sphericalenvmapping.h"
+#include "sample/shadowquality/shadowquality.h"
 
 int main(int argc, const char * argv[])
 {
@@ -77,7 +78,7 @@ int main(int argc, const char * argv[])
 //    GltfSceneRendering app("gltfscenerendering");
 //    MultiSampling app("multisampling");
 //    HighDynamicRange app("highdynamicrange");
-    ShadowMapping app("shadowmapping");
+//    ShadowMapping app("shadowmapping");
 //    ShadowMappingCascade app("shadowmappingcascade");
 //    PointLightShadow app("pointlightshadow");
 //    RuntimeMipmap app("runtimemipmap");
@@ -109,6 +110,8 @@ int main(int argc, const char * argv[])
 //    Bloom app("bloom");
 //    ParallaxMapping app("parallaxmapping");
 //    SphericalEnvMapping app("sphericalenvmapping");
+    
+    ShadowQuality app("shadowquality");
     
     try {
         app.run();

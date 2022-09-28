@@ -173,3 +173,81 @@ bool Camera::updatePad(glm::vec2 axisLeft, glm::vec2 axisRight, float deltaTime)
 
     return retVal;
 }
+
+
+void Camera::lookAt(glm::vec3 position, glm::vec3 target, glm::vec3 up)
+{
+    m_position = position;
+    m_viewMat = makeLookAtMatrix(position, target, up);
+}
+
+void Camera::projection(float fovy, float aspect, float znear, float zfar)
+{
+    m_projMat = makePerspectiveMatrix(glm::radians(fovy), aspect, znear, zfar);
+    if (m_isFlipY) {
+        m_projMat[1][1] *= -1.0f;
+    }
+}
+
+glm::mat4 Camera::makeLookAtMatrix(glm::vec3& eye_position, glm::vec3& target_position, glm::vec3& up_dir)
+{
+    glm::vec3 up = glm::normalize(up_dir);
+    glm::vec3 f = glm::normalize(target_position - eye_position);
+    glm::vec3 s = glm::normalize(glm::cross(f, up));
+    glm::vec3 u = glm::normalize(glm::cross(s, f));
+    
+    glm::mat4 view_mat = glm::mat4(1.0f);
+    
+    view_mat[0][0] = s.x;
+    view_mat[1][0] = s.y;
+    view_mat[2][0] = s.z;
+    view_mat[3][0] = -glm::dot(s, eye_position);
+    view_mat[0][1] = u.x;
+    view_mat[1][1] = u.y;
+    view_mat[2][1] = u.z;
+    view_mat[3][1] = -glm::dot(u, eye_position);
+    view_mat[0][2] = -f.x;
+    view_mat[1][2] = -f.y;
+    view_mat[2][2] = -f.z;
+    view_mat[3][2] = glm::dot(f, eye_position);
+    return view_mat;
+}
+
+glm::mat4 Camera::makePerspectiveMatrix(float fovy, float aspect, float znear, float zfar)
+{
+    float tan_half_fovy = tan(fovy / 2.f);
+    glm::mat4 proj_mat = glm::mat4(0.0f);
+
+    proj_mat[0][0] = 1.f / (aspect * tan_half_fovy);
+    proj_mat[1][1] = 1.f / tan_half_fovy;
+    proj_mat[2][2] = zfar / (znear - zfar);
+    proj_mat[2][3] = -1.f;
+    proj_mat[3][2] = -(zfar * znear) / (zfar - znear);
+
+    return proj_mat;
+}
+
+glm::mat4 makeOrthographicProjectionMatrix(float left, float right, float bottom, float top, float znear, float zfar)
+{
+    float inv_width    = 1.0f / (right - left);
+    float inv_height   = 1.0f / (top - bottom);
+    float inv_distance = 1.0f / (zfar - znear);
+
+    float A  = 2 * inv_width;
+    float B  = 2 * inv_height;
+    float C  = -(right + left) * inv_width;
+    float D  = -(top + bottom) * inv_height;
+    float q  = -1 * inv_distance;
+    float qn = -znear * inv_distance;
+
+    glm::mat4 orth_matrix = glm::mat4(0.0f);
+    orth_matrix[0][0]     = A;
+    orth_matrix[0][3]     = C;
+    orth_matrix[1][1]     = B;
+    orth_matrix[1][3]     = D;
+    orth_matrix[2][2]     = q;
+    orth_matrix[2][3]     = qn;
+    orth_matrix[3][3]     = 1;
+
+    return orth_matrix;
+}

@@ -24,12 +24,20 @@ public:
     void setTranslation(glm::vec3 translation);
     void translate(glm::vec3 delta);
     
+    void lookAt(glm::vec3 position, glm::vec3 target, glm::vec3 up);
+    void projection(float fovy, float aspect, float znear, float zfar);
+    
     void updateViewMatrix();
     void updateAspectRatio(float aspect);
     void setPerspective(float fov, float aspect, float znear, float zfar);
     void update(float deltaTime);
     bool updatePad(glm::vec2 axisLeft, glm::vec2 axisRight, float deltaTime);
 
+private:
+    glm::mat4 makeLookAtMatrix(glm::vec3& eye_position, glm::vec3& target_position, glm::vec3& up_dir);
+    glm::mat4 makePerspectiveMatrix(float fovy, float aspect, float znear, float zfar);
+    glm::mat4 makeOrthographicProjectionMatrix(float left, float right, float bottom, float top, float znear, float zfar);
+    
 public:
     float m_rotationSpeed = 1.0f;
     float m_movementSpeed = 1.0f;

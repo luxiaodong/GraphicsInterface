@@ -199,7 +199,10 @@ void Application::render()
     presentInfo.pImageIndices = &m_imageIndex;
     presentInfo.pResults = nullptr;
     
-    if(vkQueuePresentKHR(m_presentQueue, &presentInfo) != VK_SUCCESS)
+    VkResult result = vkQueuePresentKHR(m_presentQueue, &presentInfo);
+    if(result == VK_SUBOPTIMAL_KHR)
+    {}
+    else if(result != VK_SUCCESS)
     {
         throw std::runtime_error("failed to queue present!");
     }
