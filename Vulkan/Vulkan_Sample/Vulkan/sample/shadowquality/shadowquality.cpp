@@ -3,8 +3,8 @@
 
 ShadowQuality::ShadowQuality(std::string title) : Application(title)
 {
-    m_width = 1336;
-    m_height = 1018;
+    m_width = 1336/2;
+    m_height = 1018/2;
 }
 
 ShadowQuality::~ShadowQuality()
@@ -76,7 +76,7 @@ void ShadowQuality::prepareVertex()
 {
     std::vector<std::string> filenames = {"capsule.obj", "cone.obj", "convexmesh.obj", "cube.obj", "cylinder.obj", "sphere.obj"};
     
-    m_sphereLoader.loadFromFile2(Tools::getModelPath() + "basic/" + filenames[5]);
+    m_sphereLoader.loadFromFile(Tools::getModelPath() + "basic/" + filenames[5]);
     m_sphereLoader.createVertexAndIndexBuffer();
     
     m_planeLoader.loadFromFile(Tools::getModelPath() + "basic/floor.obj");

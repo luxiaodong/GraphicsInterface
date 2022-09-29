@@ -40,26 +40,19 @@ void main()
     vec3 N = normalize(inNormal);
     vec3 L = normalize( vec3(1,-1,1) );
 
-    // directional light
+    float NoL = min(dot(N, L), 1.0);
+    
+    float shadow;
+    vec4 position_clip = biasMat * ubo.lightSpace * vec4(inWorldPos, 1.0);
+    vec4 shadowCoord  = position_clip / position_clip.w;
+    shadow = textureProj(shadowCoord, vec2(0.0));
+    
+    if (NoL > 0.0f && shadow > 0.0f)
     {
-        float NoL = min(dot(N, L), 1.0);
-
-        if (NoL > 0.0)
-        {
-            float shadow;
-            {
-                vec4 position_clip = biasMat * ubo.lightSpace * vec4(inWorldPos, 1.0);
-                vec4 shadowCoord  = position_clip / position_clip.w;
-
-                shadow = textureProj(shadowCoord, vec2(0.0));
-            }
-
-            if (shadow > 0.0f)
-            {
-                Lo = vec3(shadow, shadow, shadow);
-            }
-        }
+        Lo = vec3(shadow, shadow, shadow);
     }
-
-    outFragColor = vec4(N, 1.0);
+    
+//    Lo = vec3( abs(shadowCoord.x), abs(shadowCoord.y), abs(shadowCoord.z));
+    
+    outFragColor = vec4(Lo, 1.0);
 }
