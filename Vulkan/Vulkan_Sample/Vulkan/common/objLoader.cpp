@@ -2,7 +2,7 @@
 #include "objLoader.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
+#include "tiny_obj_loader.h"
 
 namespace std {
     template<> struct hash<Vertex> {
@@ -32,11 +32,14 @@ void ObjLoader::loadFromFile(std::string filename)
         throw std::runtime_error(warn + err);
     }
 
+    int test_index = 0;
     std::unordered_map<Vertex, uint32_t> uniqueVertices{};
 
     for (const auto& shape : shapes) {
         for (const auto& index : shape.mesh.indices) {
             Vertex vertex{};
+            
+            std::cout<<index.vertex_index<<","<<index.normal_index<<","<<index.texcoord_index<<std::endl;
 
             vertex.m_position = {
                 attrib.vertices[3 * index.vertex_index + 0],
@@ -60,11 +63,15 @@ void ObjLoader::loadFromFile(std::string filename)
             if (uniqueVertices.count(vertex) == 0) {
                 uniqueVertices[vertex] = static_cast<uint32_t>(m_vertexData.size());
                 m_vertexData.push_back(vertex);
+            }else{
+                test_index++;
             }
 
             m_indexData.push_back(uniqueVertices[vertex]);
         }
     }
+    
+    std::cout<<test_index<<std::endl;
 }
 
 void ObjLoader::loadFromFile2(std::string filename)
@@ -214,6 +221,135 @@ void ObjLoader::loadFromFile2(std::string filename)
     for (size_t i = 0; i < m_vertexData.size(); i++)
     {
         m_indexData.push_back(static_cast<uint32_t>(i));
+    }
+}
+
+void ObjLoader::loadFromFile3(std::string filename)
+{
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    std::string warn, err;
+
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename.c_str()))
+    {
+        throw std::runtime_error(warn + err);
+    }
+
+    for (const auto& shape : shapes) {
+        for (const auto& index : shape.mesh.indices) {
+            Vertex vertex{};
+
+            vertex.m_position = {
+                attrib.vertices[3 * index.vertex_index + 0],
+                attrib.vertices[3 * index.vertex_index + 1],
+                attrib.vertices[3 * index.vertex_index + 2]
+            };
+            
+            vertex.m_normal = {
+                attrib.normals[3 * index.normal_index + 0],
+                attrib.normals[3 * index.normal_index + 1],
+                attrib.normals[3 * index.normal_index + 2],
+            };
+            
+            vertex.m_uv = {
+                attrib.texcoords[2 * index.texcoord_index + 0],
+                1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+            };
+            
+            vertex.m_color = {1.0f, 1.0f, 1.0f, 1.0f};
+            
+            int find_index = -1;
+            for(size_t i = 0; i < m_vertexData.size(); ++i)
+            {
+                Vertex temp = m_vertexData[i];
+                if(temp == vertex)
+                {
+                    find_index = static_cast<int>(i);
+                    break;
+                }
+            }
+            
+            if(find_index == -1)
+            {
+                find_index = static_cast<int>(m_vertexData.size());
+                m_vertexData.push_back(vertex);
+            }
+            
+            m_indexData.push_back(find_index);
+        }
+    }
+}
+
+void ObjLoader::loadFromFile4(std::string filename)
+{
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    std::string warn, err;
+
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename.c_str()))
+    {
+        throw std::runtime_error(warn + err);
+    }
+
+    std::vector<MeshVertexDataDefinition> mesh_vertices = {};
+    std::vector<uint16_t> mesh_indices = {};
+    
+    for (const auto& shape : shapes) {
+        for (const auto& index : shape.mesh.indices) {
+            MeshVertexDataDefinition mesh_vertex = {};
+
+            mesh_vertex.x = attrib.vertices[3 * index.vertex_index + 0];
+            mesh_vertex.y = attrib.vertices[3 * index.vertex_index + 1];
+            mesh_vertex.z = attrib.vertices[3 * index.vertex_index + 2];
+            
+            mesh_vertex.nx = attrib.normals[3 * index.normal_index + 0];
+            mesh_vertex.ny = attrib.normals[3 * index.normal_index + 1];
+            mesh_vertex.nz = attrib.normals[3 * index.normal_index + 2];
+            
+            mesh_vertex.tx = 1.0f;
+            mesh_vertex.ty = 0.0f;
+            mesh_vertex.tz = 0.0f;
+            
+            mesh_vertex.u = attrib.texcoords[2 * index.texcoord_index + 0];
+            mesh_vertex.v = 1.0f - attrib.texcoords[2 * index.texcoord_index + 1];
+
+            int find_index = -1;
+            for(size_t i = 0; i < mesh_vertices.size(); ++i)
+            {
+                MeshVertexDataDefinition temp = mesh_vertices[i];
+                if(temp == mesh_vertex)
+                {
+                    find_index = static_cast<int>(i);
+                    break;
+                }
+            }
+            
+            if(find_index == -1)
+            {
+                find_index = static_cast<int>(mesh_vertices.size());
+                mesh_vertices.push_back(mesh_vertex);
+            }
+            
+            mesh_indices.push_back(find_index);
+        }
+    }
+    
+    for (size_t i = 0; i < mesh_vertices.size(); i++)
+    {
+        MeshVertexDataDefinition temp = mesh_vertices[i];
+        Vertex vertex = {};
+        vertex.m_position = glm::vec3(temp.x, temp.y, temp.z);
+        vertex.m_normal = glm::vec3(temp.nx, temp.ny, temp.nz);
+        vertex.m_tangent = glm::vec4(temp.tx, temp.ty, temp.tz, 1.0f);
+        vertex.m_uv = glm::vec2(temp.u, temp.v);
+        m_vertexData.push_back(vertex);
+    }
+    
+    for (size_t i = 0; i < mesh_indices.size(); ++i)
+    {
+        m_indexData.push_back(mesh_indices[i]);
     }
 }
 

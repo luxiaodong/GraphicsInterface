@@ -13,7 +13,7 @@ Vertex::~Vertex()
 
 bool Vertex::operator==(const Vertex& other) const
 {
-    return m_position == other.m_position && m_color == other.m_color && m_uv == other.m_uv;
+    return m_position == other.m_position && m_normal == other.m_normal && m_uv == other.m_uv;
 }
 
 void Vertex::setVertexInputBindingDescription(uint32_t binding)

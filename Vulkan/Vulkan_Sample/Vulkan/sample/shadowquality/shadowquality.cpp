@@ -76,7 +76,7 @@ void ShadowQuality::prepareVertex()
 {
     std::vector<std::string> filenames = {"capsule.obj", "cone.obj", "convexmesh.obj", "cube.obj", "cylinder.obj", "sphere.obj"};
     
-    m_sphereLoader.loadFromFile(Tools::getModelPath() + "basic/" + filenames[5]);
+    m_sphereLoader.loadFromFile3(Tools::getModelPath() + "basic/" + filenames[5]);
     m_sphereLoader.createVertexAndIndexBuffer();
     
     m_planeLoader.loadFromFile(Tools::getModelPath() + "basic/floor.obj");
