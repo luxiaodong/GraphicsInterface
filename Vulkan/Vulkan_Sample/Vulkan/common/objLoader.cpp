@@ -38,8 +38,6 @@ void ObjLoader::loadFromFile(std::string filename)
     for (const auto& shape : shapes) {
         for (const auto& index : shape.mesh.indices) {
             Vertex vertex{};
-            
-            std::cout<<index.vertex_index<<","<<index.normal_index<<","<<index.texcoord_index<<std::endl;
 
             vertex.m_position = {
                 attrib.vertices[3 * index.vertex_index + 0],
@@ -63,16 +61,56 @@ void ObjLoader::loadFromFile(std::string filename)
             if (uniqueVertices.count(vertex) == 0) {
                 uniqueVertices[vertex] = static_cast<uint32_t>(m_vertexData.size());
                 m_vertexData.push_back(vertex);
-            }else{
-                test_index++;
             }
 
             m_indexData.push_back(uniqueVertices[vertex]);
         }
     }
-    
-    std::cout<<test_index<<std::endl;
 }
+
+void ObjLoader::createVertexAndIndexBuffer()
+{
+    VkBuffer vertexStagingBuffer;
+    VkBuffer indexStagingBuffer;
+    VkDeviceMemory vertexStagingMemory;
+    VkDeviceMemory indexStagingMemory;
+    size_t vertexBufferSize = m_vertexData.size() * sizeof(Vertex);
+    size_t indexBufferSize = m_indexData.size() * sizeof(uint32_t);
+    
+    Tools::createBufferAndMemoryThenBind(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexStagingBuffer, vertexStagingMemory);
+    Tools::mapMemory(vertexStagingMemory, vertexBufferSize, m_vertexData.data());
+    Tools::createBufferAndMemoryThenBind(vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,  m_vertexBuffer, m_vertexMemory);
+    
+    Tools::createBufferAndMemoryThenBind(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, indexStagingBuffer, indexStagingMemory);
+    Tools::mapMemory(indexStagingMemory, indexBufferSize, m_indexData.data());
+    Tools::createBufferAndMemoryThenBind(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_indexBuffer, m_indexMemory);
+    
+    VkCommandBuffer copyCmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+    VkBufferCopy copyRegion = {};
+    copyRegion.size = vertexBufferSize;
+    vkCmdCopyBuffer(copyCmd, vertexStagingBuffer, m_vertexBuffer, 1, &copyRegion);
+    copyRegion.size = indexBufferSize;
+    vkCmdCopyBuffer(copyCmd, indexStagingBuffer, m_indexBuffer, 1, &copyRegion);
+    Tools::flushCommandBuffer(copyCmd, Tools::m_graphicsQueue, true);
+
+    vkDestroyBuffer(Tools::m_device, vertexStagingBuffer, nullptr);
+    vkFreeMemory(Tools::m_device, vertexStagingMemory, nullptr);
+    vkDestroyBuffer(Tools::m_device, indexStagingBuffer, nullptr);
+    vkFreeMemory(Tools::m_device, indexStagingMemory, nullptr);
+}
+
+void ObjLoader::bindBuffers(VkCommandBuffer commandBuffer)
+{
+    const VkDeviceSize offsets[1] = {0};
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_vertexBuffer, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, m_indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+}
+
+void ObjLoader::draw(VkCommandBuffer commandBuffer)
+{
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(m_indexData.size()), 1, 0, 0, 0);
+}
+
 
 void ObjLoader::loadFromFile2(std::string filename)
 {
@@ -224,174 +262,72 @@ void ObjLoader::loadFromFile2(std::string filename)
     }
 }
 
-void ObjLoader::loadFromFile3(std::string filename)
+void ObjLoader::loadCustomSphere()
 {
-    tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
-    std::string warn, err;
-
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename.c_str()))
+    const int height = 15;
+    const int width = 30;
+    
+    int index = 0;
+    for(int j = 0; j < height; ++j)
     {
-        throw std::runtime_error(warn + err);
-    }
-
-    for (const auto& shape : shapes) {
-        for (const auto& index : shape.mesh.indices) {
-            Vertex vertex{};
-
-            vertex.m_position = {
-                attrib.vertices[3 * index.vertex_index + 0],
-                attrib.vertices[3 * index.vertex_index + 1],
-                attrib.vertices[3 * index.vertex_index + 2]
-            };
+        int j1 = j;
+        int j2 = j+1;
+        float v1 = 1.0f*j1/height;
+        float v2 = 1.0f*j2/height;
+        float sita1 = 3.1415926f * j1/height;
+        float sita2 = 3.1415926f * j2/height;
+        
+        for(int i = 0; i < width; ++i)
+        {
+            int i1 = i;
+            int i2 = i+1;
             
-            vertex.m_normal = {
-                attrib.normals[3 * index.normal_index + 0],
-                attrib.normals[3 * index.normal_index + 1],
-                attrib.normals[3 * index.normal_index + 2],
-            };
+            float u1 = 1.0f*i1/width;
+            float u2 = 1.0f*i2/width;
             
-            vertex.m_uv = {
-                attrib.texcoords[2 * index.texcoord_index + 0],
-                1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-            };
+            if(i2 == width) i2 = 0;
             
-            vertex.m_color = {1.0f, 1.0f, 1.0f, 1.0f};
+            float alpha1 = 2*3.1415926f * i1/width;
+            float alpha2 = 2*3.1415926f * i2/width;
             
-            int find_index = -1;
-            for(size_t i = 0; i < m_vertexData.size(); ++i)
-            {
-                Vertex temp = m_vertexData[i];
-                if(temp == vertex)
-                {
-                    find_index = static_cast<int>(i);
-                    break;
-                }
-            }
+            glm::vec3 vec1 = glm::vec3(cos(sita1), sin(sita1)*cos(alpha1), sin(sita1)*sin(alpha1));
+            glm::vec3 vec2 = glm::vec3(cos(sita1), sin(sita1)*cos(alpha2), sin(sita1)*sin(alpha2));
+            glm::vec3 vec3 = glm::vec3(cos(sita2), sin(sita2)*cos(alpha1), sin(sita2)*sin(alpha1));
+            glm::vec3 vec4 = glm::vec3(cos(sita2), sin(sita2)*cos(alpha2), sin(sita2)*sin(alpha2));
             
-            if(find_index == -1)
-            {
-                find_index = static_cast<int>(m_vertexData.size());
-                m_vertexData.push_back(vertex);
-            }
+            Vertex vertex1 = {};
+            vertex1.m_position = 0.5f*glm::normalize(vec1);
+            vertex1.m_normal = glm::normalize(vec1);
+            vertex1.m_uv = glm::vec2(u1,v1);
             
-            m_indexData.push_back(find_index);
+            Vertex vertex2 = {};
+            vertex2.m_position = 0.5f*glm::normalize(vec2);
+            vertex2.m_normal = glm::normalize(vec2);
+            vertex2.m_uv = glm::vec2(u2,v1);
+            
+            Vertex vertex3 = {};
+            vertex3.m_position = 0.5f*glm::normalize(vec3);
+            vertex3.m_normal = glm::normalize(vec3);
+            vertex3.m_uv = glm::vec2(u1,v2);
+            
+            Vertex vertex4 = {};
+            vertex4.m_position = 0.5f*glm::normalize(vec4);
+            vertex4.m_normal = glm::normalize(vec4);
+            vertex4.m_uv = glm::vec2(u2,v2);
+            
+            m_vertexData.push_back(vertex1);
+            m_vertexData.push_back(vertex2);
+            m_vertexData.push_back(vertex3);
+            m_vertexData.push_back(vertex4);
+            
+            m_indexData.push_back(index + 0);
+            m_indexData.push_back(index + 1);
+            m_indexData.push_back(index + 2);
+            m_indexData.push_back(index + 2);
+            m_indexData.push_back(index + 1);
+            m_indexData.push_back(index + 3);
+            
+            index += 4;
         }
     }
-}
-
-void ObjLoader::loadFromFile4(std::string filename)
-{
-    tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
-    std::string warn, err;
-
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename.c_str()))
-    {
-        throw std::runtime_error(warn + err);
-    }
-
-    std::vector<MeshVertexDataDefinition> mesh_vertices = {};
-    std::vector<uint16_t> mesh_indices = {};
-    
-    for (const auto& shape : shapes) {
-        for (const auto& index : shape.mesh.indices) {
-            MeshVertexDataDefinition mesh_vertex = {};
-
-            mesh_vertex.x = attrib.vertices[3 * index.vertex_index + 0];
-            mesh_vertex.y = attrib.vertices[3 * index.vertex_index + 1];
-            mesh_vertex.z = attrib.vertices[3 * index.vertex_index + 2];
-            
-            mesh_vertex.nx = attrib.normals[3 * index.normal_index + 0];
-            mesh_vertex.ny = attrib.normals[3 * index.normal_index + 1];
-            mesh_vertex.nz = attrib.normals[3 * index.normal_index + 2];
-            
-            mesh_vertex.tx = 1.0f;
-            mesh_vertex.ty = 0.0f;
-            mesh_vertex.tz = 0.0f;
-            
-            mesh_vertex.u = attrib.texcoords[2 * index.texcoord_index + 0];
-            mesh_vertex.v = 1.0f - attrib.texcoords[2 * index.texcoord_index + 1];
-
-            int find_index = -1;
-            for(size_t i = 0; i < mesh_vertices.size(); ++i)
-            {
-                MeshVertexDataDefinition temp = mesh_vertices[i];
-                if(temp == mesh_vertex)
-                {
-                    find_index = static_cast<int>(i);
-                    break;
-                }
-            }
-            
-            if(find_index == -1)
-            {
-                find_index = static_cast<int>(mesh_vertices.size());
-                mesh_vertices.push_back(mesh_vertex);
-            }
-            
-            mesh_indices.push_back(find_index);
-        }
-    }
-    
-    for (size_t i = 0; i < mesh_vertices.size(); i++)
-    {
-        MeshVertexDataDefinition temp = mesh_vertices[i];
-        Vertex vertex = {};
-        vertex.m_position = glm::vec3(temp.x, temp.y, temp.z);
-        vertex.m_normal = glm::vec3(temp.nx, temp.ny, temp.nz);
-        vertex.m_tangent = glm::vec4(temp.tx, temp.ty, temp.tz, 1.0f);
-        vertex.m_uv = glm::vec2(temp.u, temp.v);
-        m_vertexData.push_back(vertex);
-    }
-    
-    for (size_t i = 0; i < mesh_indices.size(); ++i)
-    {
-        m_indexData.push_back(mesh_indices[i]);
-    }
-}
-
-void ObjLoader::createVertexAndIndexBuffer()
-{
-    VkBuffer vertexStagingBuffer;
-    VkBuffer indexStagingBuffer;
-    VkDeviceMemory vertexStagingMemory;
-    VkDeviceMemory indexStagingMemory;
-    size_t vertexBufferSize = m_vertexData.size() * sizeof(Vertex);
-    size_t indexBufferSize = m_indexData.size() * sizeof(uint32_t);
-    
-    Tools::createBufferAndMemoryThenBind(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexStagingBuffer, vertexStagingMemory);
-    Tools::mapMemory(vertexStagingMemory, vertexBufferSize, m_vertexData.data());
-    Tools::createBufferAndMemoryThenBind(vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,  m_vertexBuffer, m_vertexMemory);
-    
-    Tools::createBufferAndMemoryThenBind(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, indexStagingBuffer, indexStagingMemory);
-    Tools::mapMemory(indexStagingMemory, indexBufferSize, m_indexData.data());
-    Tools::createBufferAndMemoryThenBind(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_indexBuffer, m_indexMemory);
-    
-    VkCommandBuffer copyCmd = Tools::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-    VkBufferCopy copyRegion = {};
-    copyRegion.size = vertexBufferSize;
-    vkCmdCopyBuffer(copyCmd, vertexStagingBuffer, m_vertexBuffer, 1, &copyRegion);
-    copyRegion.size = indexBufferSize;
-    vkCmdCopyBuffer(copyCmd, indexStagingBuffer, m_indexBuffer, 1, &copyRegion);
-    Tools::flushCommandBuffer(copyCmd, Tools::m_graphicsQueue, true);
-
-    vkDestroyBuffer(Tools::m_device, vertexStagingBuffer, nullptr);
-    vkFreeMemory(Tools::m_device, vertexStagingMemory, nullptr);
-    vkDestroyBuffer(Tools::m_device, indexStagingBuffer, nullptr);
-    vkFreeMemory(Tools::m_device, indexStagingMemory, nullptr);
-}
-
-void ObjLoader::bindBuffers(VkCommandBuffer commandBuffer)
-{
-    const VkDeviceSize offsets[1] = {0};
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_vertexBuffer, offsets);
-    vkCmdBindIndexBuffer(commandBuffer, m_indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-}
-
-void ObjLoader::draw(VkCommandBuffer commandBuffer)
-{
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(m_indexData.size()), 1, 0, 0, 0);
 }

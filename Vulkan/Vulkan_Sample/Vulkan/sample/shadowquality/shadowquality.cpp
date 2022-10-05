@@ -76,7 +76,8 @@ void ShadowQuality::prepareVertex()
 {
     std::vector<std::string> filenames = {"capsule.obj", "cone.obj", "convexmesh.obj", "cube.obj", "cylinder.obj", "sphere.obj"};
     
-    m_sphereLoader.loadFromFile3(Tools::getModelPath() + "basic/" + filenames[5]);
+//    m_sphereLoader.loadFromFile(Tools::getModelPath() + "basic/" + filenames[5]);
+    m_sphereLoader.loadCustomSphere();
     m_sphereLoader.createVertexAndIndexBuffer();
     
     m_planeLoader.loadFromFile(Tools::getModelPath() + "basic/floor.obj");
@@ -304,11 +305,11 @@ void ShadowQuality::recordRenderCommand(const VkCommandBuffer commandBuffer)
 //    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
     
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
-    m_planeLoader.bindBuffers(commandBuffer);
-    m_planeLoader.draw(commandBuffer);
-
     m_sphereLoader.bindBuffers(commandBuffer);
     m_sphereLoader.draw(commandBuffer);
+    
+    m_planeLoader.bindBuffers(commandBuffer);
+    m_planeLoader.draw(commandBuffer);
 }
 
 // ================= shadow mapping ======================
