@@ -18,10 +18,12 @@ layout (binding = 0) uniform UBO
 
 layout (location = 0) out vec3 outWorldPos;
 layout (location = 1) out vec3 outNormal;
+layout (location = 2) out vec3 outColor;
 
 void main() 
 {
     outWorldPos = inPos;
     gl_Position = ubo.projection * ubo.view * vec4(outWorldPos, 1.0);
     outNormal = normalize(inNormal);
+    outColor = inColor;
 }

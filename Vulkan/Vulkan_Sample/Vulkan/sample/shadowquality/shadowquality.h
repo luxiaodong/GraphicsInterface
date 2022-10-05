@@ -58,8 +58,8 @@ protected:
     float m_zNear = 1.0f;
     float m_zFar = 96.0f;
     
-    uint32_t m_shadowMapWidth = 1024;
-    uint32_t m_shadowMapHeight = 1024;
+    uint32_t m_shadowMapWidth = 2048;
+    uint32_t m_shadowMapHeight = 2048;
     VkBuffer m_shadowUniformBuffer;
     VkDeviceMemory m_shadowUniformMemory;
     ShadowUniform m_shadowUniformMvp;

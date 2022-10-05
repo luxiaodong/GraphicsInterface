@@ -56,7 +56,7 @@ void ObjLoader::loadFromFile(std::string filename)
                 1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
             };
             
-            vertex.m_color = {1.0f, 1.0f, 1.0f, 1.0f};
+            vertex.m_color = {1.0f, 0.0f, 0.0f, 1.0f};
 
             if (uniqueVertices.count(vertex) == 0) {
                 uniqueVertices[vertex] = static_cast<uint32_t>(m_vertexData.size());
@@ -266,6 +266,7 @@ void ObjLoader::loadCustomSphere()
 {
     const int height = 15;
     const int width = 30;
+    const glm::vec4 color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
     
     int index = 0;
     for(int j = 0; j < height; ++j)
@@ -299,21 +300,25 @@ void ObjLoader::loadCustomSphere()
             vertex1.m_position = 0.5f*glm::normalize(vec1);
             vertex1.m_normal = glm::normalize(vec1);
             vertex1.m_uv = glm::vec2(u1,v1);
+            vertex1.m_color = color;
             
             Vertex vertex2 = {};
             vertex2.m_position = 0.5f*glm::normalize(vec2);
             vertex2.m_normal = glm::normalize(vec2);
             vertex2.m_uv = glm::vec2(u2,v1);
+            vertex2.m_color = color;
             
             Vertex vertex3 = {};
             vertex3.m_position = 0.5f*glm::normalize(vec3);
             vertex3.m_normal = glm::normalize(vec3);
             vertex3.m_uv = glm::vec2(u1,v2);
+            vertex3.m_color = color;
             
             Vertex vertex4 = {};
             vertex4.m_position = 0.5f*glm::normalize(vec4);
             vertex4.m_normal = glm::normalize(vec4);
             vertex4.m_uv = glm::vec2(u2,v2);
+            vertex4.m_color = color;
             
             m_vertexData.push_back(vertex1);
             m_vertexData.push_back(vertex2);
@@ -325,6 +330,13 @@ void ObjLoader::loadCustomSphere()
             m_indexData.push_back(index + 2);
             m_indexData.push_back(index + 2);
             m_indexData.push_back(index + 1);
+            m_indexData.push_back(index + 3);
+            
+            m_indexData.push_back(index + 0);
+            m_indexData.push_back(index + 2);
+            m_indexData.push_back(index + 1);
+            m_indexData.push_back(index + 1);
+            m_indexData.push_back(index + 2);
             m_indexData.push_back(index + 3);
             
             index += 4;

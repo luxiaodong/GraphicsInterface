@@ -15,6 +15,7 @@ layout (binding = 0) uniform UBO
 
 layout (location = 0) in vec3 inWorldPos;
 layout (location = 1) in vec3 inNormal;
+layout (location = 2) in vec3 inColor;
 
 layout (constant_id = 0) const int enablePCF = 0;
 
@@ -31,7 +32,7 @@ const mat4 biasMat = mat4(
     0.5, 0.0, 0.0, 0.0,
     0.0, 0.5, 0.0, 0.0,
     0.0, 0.0, 1.0, 0.0,
-    0.5, 0.5, 0.0, 1.0 );
+    0.5, 0.5, 0.0, 1.0);
 
 
 void main()
@@ -44,7 +45,7 @@ void main()
 
     if(NoL > 0.0f)
     {
-        Lo = vec3(1.0, 1.0, 1.0);
+        Lo = inColor;
         Lo *= NoL;
         
         vec4 position_clip = biasMat * ubo.lightSpace * vec4(inWorldPos, 1.0);
@@ -57,7 +58,7 @@ void main()
         }
         else
         {
-            Lo = vec3(0.1, 0.1, 0.1);
+            Lo = vec3(0.0, 0.0, 0.0);
         }
     }
     

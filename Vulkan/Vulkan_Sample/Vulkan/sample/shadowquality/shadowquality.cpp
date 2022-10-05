@@ -80,7 +80,7 @@ void ShadowQuality::prepareVertex()
     m_sphereLoader.loadCustomSphere();
     m_sphereLoader.createVertexAndIndexBuffer();
     
-    m_planeLoader.loadFromFile(Tools::getModelPath() + "basic/floor.obj");
+    m_planeLoader.loadFromFile2(Tools::getModelPath() + "basic/floor.obj");
     m_planeLoader.createVertexAndIndexBuffer();
     
     Vertex::setVertexInputBindingDescription(0);
@@ -161,9 +161,9 @@ void ShadowQuality::prepareDescriptorSetAndWrite()
         imageInfo.imageView = m_offscreenDepthImageView;
         imageInfo.sampler = m_offscreenDepthSampler;
         
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = m_offscreenColorImageView;
-        imageInfo.sampler = m_offscreenColorSampler;
+//        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+//        imageInfo.imageView = m_offscreenColorImageView;
+//        imageInfo.sampler = m_offscreenColorSampler;
 
         std::array<VkWriteDescriptorSet, 2> writes = {};
         writes[0] = Tools::getWriteDescriptorSet(m_descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &bufferInfo);
@@ -193,7 +193,7 @@ void ShadowQuality::createGraphicsPipeline()
     VkPipelineDynamicStateCreateInfo dynamic = Tools::getPipelineDynamicStateCreateInfo(dynamicStates);
     VkPipelineRasterizationStateCreateInfo rasterization = Tools::getPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE);
     VkPipelineMultisampleStateCreateInfo multisample = Tools::getPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
-    VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
+    VkPipelineDepthStencilStateCreateInfo depthStencil = Tools::getPipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS);
 
     std::array<VkPipelineColorBlendAttachmentState, 1> colorBlendAttachments;
     colorBlendAttachments[0] = Tools::getPipelineColorBlendAttachmentState(VK_FALSE, 0xf);
@@ -307,7 +307,7 @@ void ShadowQuality::recordRenderCommand(const VkCommandBuffer commandBuffer)
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
     m_sphereLoader.bindBuffers(commandBuffer);
     m_sphereLoader.draw(commandBuffer);
-    
+
     m_planeLoader.bindBuffers(commandBuffer);
     m_planeLoader.draw(commandBuffer);
 }
@@ -471,7 +471,7 @@ void ShadowQuality::createOffscreenFrameBuffer()
 void ShadowQuality::createOtherRenderPass(const VkCommandBuffer& commandBuffer)
 {
     std::array<VkClearValue, 2> clearValues = {};
-    clearValues[0].color = {0.0f, 0.0f, 0.0f, 0.0f};
+    clearValues[0].color = {1.0f, 0.0f, 0.0f, 0.0f};
     clearValues[1].depthStencil = {1.0f, 0};
     
     VkRenderPassBeginInfo passBeginInfo = {};
